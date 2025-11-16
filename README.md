@@ -1,3 +1,8 @@
+[![npm version](https://img.shields.io/npm/v/pinets.svg?style=flat-square)](https://www.npmjs.com/package/pinets)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg?style=flat-square)](https://opensource.org/licenses/AGPL-3.0)
+[![Documentation](https://img.shields.io/badge/docs-github--pages-blue?style=flat-square)](https://alaa-eddine.github.io/PineTS/)
+[![Reddit](https://img.shields.io/reddit/subreddit-subscribers/PineTS?style=flat-square&logo=reddit)](https://www.reddit.com/r/PineTS/)
+
 This project aims to provide a Javascript/Typescript port for Tradingview's Pine Script.
 The current version does not run Pine Script directly, instead it runs a close Javascript equivalent called PineTS.
 
