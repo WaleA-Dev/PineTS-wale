@@ -1,7 +1,7 @@
 [![npm version](https://img.shields.io/npm/v/pinets.svg?style=flat-square)](https://www.npmjs.com/package/pinets)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg?style=flat-square)](https://opensource.org/licenses/AGPL-3.0)
-[![Documentation](https://img.shields.io/badge/docs-github--pages-blue?style=flat-square)](https://alaa-eddine.github.io/PineTS/)
-[![Reddit](https://img.shields.io/reddit/subreddit-subscribers/PineTS?style=flat-square&logo=reddit)](https://www.reddit.com/r/PineTS/)
+[![Documentation](https://img.shields.io/badge/docs-github--pages-blue?style=flat-square)](https://quantforgeorg.github.io/PineTS/)
+[![Reddit](https://img.shields.io/reddit/subreddit-subscribers/QuantForge?style=flat-square&logo=reddit)](https://www.reddit.com/r/QuantForge/)
 
 This project aims to provide a Javascript/Typescript port for Tradingview's Pine Script.
 The current version does not run Pine Script directly, instead it runs a close Javascript equivalent called PineTS.
@@ -21,8 +21,8 @@ PineTS enables seamless conversion of Pine Script indicators to JavaScript/TypeS
 Bellow are two ports of Pine Script indicators running in the browser.
 PineTS is used to generate plot data, and tradingview light weight chart is used to display the plot.
 
--   [Williams Vix Fix](https://alaa-eddine.github.io/PineTS/indicators/willvixfix/)
--   [Squeeze Momentum](https://alaa-eddine.github.io/PineTS/indicators/sqzmom/)
+-   [Williams Vix Fix](https://quantforgeorg.github.io/PineTS/indicators/willvixfix/)
+-   [Squeeze Momentum](https://quantforgeorg.github.io/PineTS/indicators/sqzmom/)
 
 ## Key Features
 
@@ -143,7 +143,7 @@ const { result } = await pineTS.run((context) => {
 });
 ```
 
-> **📖 For detailed documentation on initialization options, parameters, and advanced usage, see the [Initialization and Usage Guide](https://alaa-eddine.github.io/PineTS/initialization-and-usage/)**
+> **📖 For detailed documentation on initialization options, parameters, and advanced usage, see the [Initialization and Usage Guide](https://quantforgeorg.github.io/PineTS/initialization-and-usage/)**
 
 ## Key Differences from Pine Script
 
