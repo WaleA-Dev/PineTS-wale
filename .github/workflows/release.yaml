@@ -24,6 +24,12 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Run tests with coverage
+              run: npx vitest run --coverage
+
+            - name: Generate Coverage Badge
+              run: npx coverage-badge -o coverage.svg
+
             - name: Build project
               run: npm run build:prod:all
 
@@ -36,3 +42,23 @@ jobs:
                   overwrite: true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Update Coverage Badge in Repo
+              if: success()
+              run: |
+                  git config --global user.name "github-actions[bot]"
+                  git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+                  # Fetch and checkout the default branch (trying main, falling back to master)
+                  git fetch origin main:main || git fetch origin master:master
+                  BRANCH=$(git show-ref --verify --quiet refs/heads/main && echo "main" || echo "master")
+                  git checkout $BRANCH
+
+                  # Move badge to correct location
+                  mkdir -p .github/badges
+                  mv coverage.svg .github/badges/coverage.svg
+
+                  # Commit and push
+                  git add .github/badges/coverage.svg
+                  git commit -m "docs: update coverage badge [skip ci]" || echo "No changes to commit"
+                  git push origin $BRANCH

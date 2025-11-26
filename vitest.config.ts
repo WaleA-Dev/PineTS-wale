@@ -9,7 +9,7 @@ export default defineConfig({
         include: ['tests/**/*.test.ts'],
         exclude: ['node_modules'],
         coverage: {
-            reporter: ['text', 'text-summary', 'html'],
+            reporter: ['text', 'text-summary', 'html', 'json-summary'],
             reportsDirectory: './coverage',
             include: ['src/**/*.ts'],
             exclude: ['node_modules'],

@@ -1,5 +1,6 @@
 [![npm version](https://img.shields.io/npm/v/pinets.svg?style=flat-square)](https://www.npmjs.com/package/pinets)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg?style=flat-square)](https://opensource.org/licenses/AGPL-3.0)
+[![Coverage](./.github/badges/coverage.svg)](./.github/badges/coverage.svg)
 [![Documentation](https://img.shields.io/badge/docs-github--pages-blue?style=flat-square)](https://quantforgeorg.github.io/PineTS/)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/QuantForge?style=flat-square&logo=reddit)](https://www.reddit.com/r/QuantForge/)
 
