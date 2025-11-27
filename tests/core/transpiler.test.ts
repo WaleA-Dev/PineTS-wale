@@ -50,6 +50,45 @@ describe('Transpiler', () => {
         expect(result).toBe(expected_code);
     });
 
+    it('Data and namespaces', async () => {
+        const fakeContext = {};
+        const transformer = transpile.bind(fakeContext);
+
+        const source = (context) => {
+            //here ta, low and na are missing, but we expect the transpiler to inject them
+            const { open } = context.data;
+            const { plotchar, color, plot, nz } = context.pine;
+
+            const sma = ta.sma(close, 14);
+
+            if (low[0] == na) {
+                const data3 = high[0];
+            }
+        };
+
+        let transpiled = transformer(source);
+
+        console.log(transpiled.toString());
+        const result = transpiled.toString().trim();
+
+        /* prettier-ignore */
+        const expected_code = `$ => {
+  const {high, low, close} = $.data;
+  const {ta, na} = $.pine;
+  const {open} = $.data;
+  const {plotchar, color, plot, nz} = $.pine;
+  const p0 = ta.param(close, undefined, 'p0');
+  const p1 = ta.param(14, undefined, 'p1');
+  const temp_1 = ta.sma(p0, p1, "_ta0");
+  $.const.glb1_sma = $.init($.const.glb1_sma, temp_1);
+  if ($.math.__eq($.get(low, 0), NaN)) {
+    $.const.if2_data3 = $.init($.const.if2_data3, $.get(high, 0));
+  }
+}`;
+
+        expect(result).toBe(expected_code);
+    });
+
     it('Variables and constants Initialization', async () => {
         const fakeContext = {};
         const transformer = transpile.bind(fakeContext);

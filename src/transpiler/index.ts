@@ -49,6 +49,8 @@
 import * as acorn from 'acorn';
 import * as astring from 'astring';
 import ScopeManager from './analysis/ScopeManager';
+import { injectImplicitImports } from './transformers/InjectionTransformer';
+import { normalizeNativeImports } from './transformers/NormalizationTransformer';
 import { transformNestedArrowFunctions, preProcessContextBoundVars, runAnalysisPass } from './analysis/AnalysisPass';
 import { runTransformationPass, transformEqualityChecks } from './transformers/MainTransformer';
 
@@ -74,6 +76,12 @@ export function transpile(fn: string | Function, options: { debug: boolean; ln?:
 
     // Pre-process: Transform all nested arrow functions
     transformNestedArrowFunctions(ast);
+
+    // Pre-process: Normalize native imports (prevent renaming of standard symbols)
+    normalizeNativeImports(ast);
+
+    // Pre-process: Inject implicit imports for missing context variables
+    injectImplicitImports(ast);
 
     const scopeManager = new ScopeManager();
 

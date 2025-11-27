@@ -64,6 +64,15 @@ export function addArrayAccess(node: any, scopeManager: ScopeManager): void {
 export function transformIdentifier(node: any, scopeManager: ScopeManager): void {
     // Transform identifiers to use the context object
     if (node.name !== CONTEXT_NAME) {
+        // Special handling for 'na' - replace with NaN unless it's a function call
+        if (node.name === 'na') {
+            const isFunctionCall = node.parent && node.parent.type === 'CallExpression' && node.parent.callee === node;
+            if (!isFunctionCall) {
+                node.name = 'NaN';
+                return;
+            }
+        }
+
         // Skip transformation for global and native objects
         if (
             node.name === 'Math' ||
@@ -308,6 +317,18 @@ function transformOperand(node: any, scopeManager: ScopeManager, namespace: stri
                 return node;
             }
             const transformedObject = transformIdentifierForParam(node, scopeManager);
+
+            // Skip $.get wrapping for specific constants/globals
+            if (
+                transformedObject.type === 'Identifier' &&
+                (transformedObject.name === 'NaN' ||
+                    transformedObject.name === 'undefined' ||
+                    transformedObject.name === 'Infinity' ||
+                    transformedObject.name === 'null' ||
+                    transformedObject.name === 'Math')
+            ) {
+                return transformedObject;
+            }
 
             return ASTFactory.createGetCall(transformedObject, 0);
         }
