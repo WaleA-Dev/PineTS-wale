@@ -26,13 +26,24 @@ export class Context {
 
     public NA: any = NaN;
 
-    public math: PineMath;
-    public ta: TechnicalAnalysis;
-    public input: Input;
-    public request: PineRequest;
-    public array: PineArray;
-    public core: any;
     public lang: any;
+
+    // Combined namespace and core functions - the default way to access everything
+    public pine: {
+        input: Input;
+        ta: TechnicalAnalysis;
+        math: PineMath;
+        request: PineRequest;
+        array: PineArray;
+        na: () => any;
+        plotchar: (...args: any[]) => any;
+        color: any;
+        plot: (...args: any[]) => any;
+        nz: (...args: any[]) => any;
+    };
+
+    // Track deprecation warnings to avoid spam
+    private static _deprecationWarningsShown = new Set<string>();
 
     public idx: number = 0;
 
@@ -79,20 +90,28 @@ export class Context {
         this.sDate = sDate;
         this.eDate = eDate;
 
-        this.math = new PineMath(this);
-
-        this.ta = new TechnicalAnalysis(this);
-        this.input = new Input(this);
-        this.request = new PineRequest(this);
-
-        this.array = new PineArray(this);
+        // Initialize core functions
         const core = new Core(this);
-        this.core = {
+        const coreFunctions = {
             plotchar: core.plotchar.bind(core),
             na: core.na.bind(core),
             color: core.color,
             plot: core.plot.bind(core),
             nz: core.nz.bind(core),
+        };
+
+        // Initialize everything directly in pine - the default way to access everything
+        this.pine = {
+            input: new Input(this),
+            ta: new TechnicalAnalysis(this),
+            math: new PineMath(this),
+            request: new PineRequest(this),
+            array: new PineArray(this),
+            na: coreFunctions.na,
+            plotchar: coreFunctions.plotchar,
+            color: coreFunctions.color,
+            plot: coreFunctions.plot,
+            nz: coreFunctions.nz,
         };
     }
 
@@ -219,6 +238,90 @@ export class Context {
             return;
         }
     }
+
+    //#region [Deprecated getters] ===========================
+
+    /**
+     * @deprecated Use context.pine.math instead. This will be removed in a future version.
+     */
+    get math(): PineMath {
+        this._showDeprecationWarning('const math = context.math', 'const { math, ta, input } = context.pine');
+        return this.pine.math;
+    }
+
+    /**
+     * @deprecated Use context.pine.ta instead. This will be removed in a future version.
+     */
+    get ta(): TechnicalAnalysis {
+        this._showDeprecationWarning('const ta = context.ta', 'const { ta, math, input } = context.pine');
+        return this.pine.ta;
+    }
+
+    /**
+     * @deprecated Use context.pine.input instead. This will be removed in a future version.
+     */
+    get input(): Input {
+        this._showDeprecationWarning('const input = context.input', 'const { input, math, ta } = context.pine');
+        return this.pine.input;
+    }
+
+    /**
+     * @deprecated Use context.pine.request instead. This will be removed in a future version.
+     */
+    get request(): PineRequest {
+        this._showDeprecationWarning('const request = context.request', 'const { request, math, ta } = context.pine');
+        return this.pine.request;
+    }
+
+    /**
+     * @deprecated Use context.pine.array instead. This will be removed in a future version.
+     */
+    get array(): PineArray {
+        this._showDeprecationWarning('const array = context.array', 'const { array, math, ta } = context.pine');
+        return this.pine.array;
+    }
+
+    /**
+     * @deprecated Use context.pine.* (e.g., context.pine.na, context.pine.plot) instead. This will be removed in a future version.
+     */
+    get core(): any {
+        this._showDeprecationWarning('context.core.*', 'context.pine (e.g., const { na, plotchar, color, plot, nz } = context.pine)');
+        return {
+            na: this.pine.na,
+            plotchar: this.pine.plotchar,
+            color: this.pine.color,
+            plot: this.pine.plot,
+            nz: this.pine.nz,
+        };
+    }
+
+    /**
+     * Shows a deprecation warning once per property access pattern
+     */
+    private _showDeprecationWarning(oldUsage: string, newUsage: string): void {
+        const warningKey = `${oldUsage}->${newUsage}`;
+        if (!Context._deprecationWarningsShown.has(warningKey)) {
+            Context._deprecationWarningsShown.add(warningKey);
+
+            // Try CSS styling for browsers, fallback to ANSI codes for Node.js
+            if (typeof window !== 'undefined') {
+                // Browser environment - use CSS styling
+                console.warn(
+                    '%c[WARNING]%c %s syntax is deprecated. Use %s instead. This will be removed in a future version.',
+                    'color: #FFA500; font-weight: bold;',
+                    'color: #FFA500;',
+                    oldUsage,
+                    newUsage
+                );
+            } else {
+                // Node.js environment - use ANSI color codes
+                console.warn(
+                    `\x1b[33m[WARNING] ${oldUsage} syntax is deprecated. Use ${newUsage} instead. This will be removed in a future version.\x1b[0m`
+                );
+            }
+        }
+    }
+
     //#endregion
 }
 export default Context;
