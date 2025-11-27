@@ -172,50 +172,110 @@ This prevents scope collisions and ensures each variable is tracked independentl
 
 ## Series and Time-Series Processing
 
-### The Reverse Order Paradigm
+### The Series Class and Data Storage
 
-**Critical Concept**: In PineTS, all series data is stored and accessed in **reverse chronological order**.
+**Critical Concept**: PineTS uses a **Series class** to provide Pine Script-compatible array access on forward-ordered data.
 
 ```
-Pine Script Perspective (Natural Order):
+Pine Script Perspective:
 [Bar 0, Bar 1, Bar 2, Bar 3, ..., Bar N]
    ↑
-  Current bar
+  Current bar (index 0)
 
-PineTS Internal Storage (Reverse Order):
-[Bar N, Bar N-1, ..., Bar 2, Bar 1, Bar 0]
-   ↑
-  Index 0 = Most Recent = Current Bar
+PineTS Internal Storage (Forward Order):
+[Bar 0, Bar 1, Bar 2, ..., Bar N-1, Bar N]
+   ↑                                   ↑
+  Oldest bar                     Newest bar (current)
+
+Series Access Layer:
+Series.get(0) → Bar N (most recent)
+Series.get(1) → Bar N-1 (previous)
+Series.get(n) → Bar N-n (n bars ago)
 ```
 
-#### Why Reverse Order?
+#### Why Forward Storage with Series Wrapper?
 
-1. **Pine Script Compatibility**: In Pine Script, `close[0]` is the current bar, `close[1]` is the previous bar
-2. **Efficient Access**: Current bar is always at index 0
-3. **Natural Lookback**: `array[n]` naturally accesses n bars ago
-4. **Memory Management**: Easy to shift values as new bars arrive
+1. **Pine Script Compatibility**: The Series class provides `series[0]` = current bar semantics
+2. **Efficient Appending**: New bars are added with `.push()` at the end
+3. **Natural Storage**: Matches chronological order of market data
+4. **Reverse Index Calculation**: `Series.get(index)` translates to `data[length - 1 - index]`
+
+### The Series Class
+
+The `Series` class is a wrapper around standard JavaScript arrays that provides Pine Script-compatible indexing:
+
+```typescript
+class Series {
+    constructor(public data: any[], public offset: number = 0) {}
+    
+    // Get value at Pine Script index (0 = current, 1 = previous, etc.)
+    get(index: number): any {
+        const realIndex = this.data.length - 1 - (this.offset + index);
+        if (realIndex < 0 || realIndex >= this.data.length) {
+            return NaN;
+        }
+        return this.data[realIndex];
+    }
+    
+    // Set value at Pine Script index
+    set(index: number, value: any): void {
+        const realIndex = this.data.length - 1 - (this.offset + index);
+        if (realIndex >= 0 && realIndex < this.data.length) {
+            this.data[realIndex] = value;
+        }
+    }
+}
+```
+
+**Key Features:**
+- **Offset Support**: Enables lookback operations like `close[1]` by creating a new Series with `offset = 1`
+- **Automatic NaN**: Returns NaN for out-of-bounds access (Pine Script behavior)
+- **Forward Array**: Wraps a standard forward-ordered array
 
 ### Series Initialization with $.init()
 
 Every variable assignment goes through the `$.init()` function:
 
 ```javascript
-$.init(targetArray, sourceValue, lookbackIndex?)
+$.init(target, source, index = 0)
 ```
 
 **Purpose:**
 
 -   Creates a time-series array if it doesn't exist
--   Sets the current value (index 0) from the source
--   Handles lookback operations when index is provided
+-   Sets the current value (last element) from the source
+-   Handles Series objects and regular values
 -   Returns the array for chaining
 
 **Implementation Logic:**
 
-1. If target is undefined, create new array with value at index 0
-2. If target exists, update index 0 with new value
-3. If source is an array and index is provided, handle lookback
-4. Apply precision formatting (10 decimals by default)
+```typescript
+init(trg, src: any, idx: number = 0) {
+    // Handle Series objects
+    if (src instanceof Series) {
+        src = src.get(0);
+    }
+    
+    if (!trg) {
+        // Initialize new array
+        if (Array.isArray(src)) {
+            trg = [this.precision(src[src.length - 1 + idx])];
+        } else {
+            trg = [this.precision(src)];
+        }
+    } else {
+        // Update existing array (at last index = current value)
+        if (!Array.isArray(src) || Array.isArray(src[0])) {
+            // Handle 2D arrays (tuples) or scalar values
+            trg[trg.length - 1] = Array.isArray(src?.[0]) ? src[0] : this.precision(src);
+        } else {
+            trg[trg.length - 1] = this.precision(src[src.length - 1 + idx]);
+        }
+    }
+    
+    return trg;
+}
+```
 
 **Example Transformation:**
 
@@ -224,24 +284,109 @@ $.init(targetArray, sourceValue, lookbackIndex?)
 let sma20 = ta.sma(close, 20);
 
 // Transpiler generates:
-$.let.glb1_sma20 = $.init($.let.glb1_sma20, ta.sma(ta.param(close, undefined, 'p0'), ta.param(20, undefined, 'p1'), '_ta0'));
+$.let.glb1_sma20 = $.init(
+    $.let.glb1_sma20, 
+    ta.sma(ta.param(close, undefined, 'p0'), ta.param(20, undefined, 'p1'), '_ta0')
+);
 ```
 
-### Series Shifting
+### Context $.get() and $.set() Methods
 
-At the end of each iteration (each bar processed), all series are shifted:
+The transpiler transforms all array access and assignments to use context methods:
 
-```javascript
-// For each variable in context
-for (let key in $.let) {
-    if (Array.isArray($.let[key])) {
-        const val = $.let[key][0];
-        $.let[key].unshift(val); // Duplicate current value to maintain history
+```typescript
+// Access a series value with Pine Script semantics
+get(source: any, index: number) {
+    if (source instanceof Series) {
+        return source.get(index);
+    }
+    
+    if (Array.isArray(source)) {
+        // Forward array access: index 0 -> last element
+        const realIndex = source.length - 1 - index;
+        if (realIndex < 0 || realIndex >= source.length) {
+            return NaN;
+        }
+        return source[realIndex];
+    }
+    
+    // Scalar value - return as is
+    return source;
+}
+
+// Set the current value of a series (index 0)
+set(target: any, value: any) {
+    if (target instanceof Series) {
+        target.set(0, value);
+        return;
+    }
+    
+    if (Array.isArray(target)) {
+        if (target.length > 0) {
+            target[target.length - 1] = value;  // Update current (last element)
+        } else {
+            target.push(value);
+        }
     }
 }
 ```
 
-This creates the time-series behavior where `variable[1]` accesses the previous bar's value.
+**Transpiler Transformations:**
+
+```javascript
+// User writes:
+let prev_close = close[1];
+cc = close[2];
+
+// Transpiler generates:
+$.let.glb1_prev_close = $.init($.let.glb1_prev_close, $.get(close, 1));
+$.set($.let.glb1_cc, $.get(close, 2));
+```
+
+### Series Growth (Pushing New Values)
+
+At the end of each iteration, all series grow by pushing the current value:
+
+```javascript
+// For each variable in context ['const', 'var', 'let', 'params']
+for (let ctxVarName of contextVarNames) {
+    for (let key in context[ctxVarName]) {
+        if (Array.isArray(context[ctxVarName][key])) {
+            const arr = context[ctxVarName][key];
+            const val = arr[arr.length - 1];  // Current value (last element)
+            arr.push(val);  // Append to create history
+        }
+    }
+}
+```
+
+This creates the time-series behavior where `variable[1]` accesses the previous bar's value:
+
+```
+Before iteration N+1: [val0, val1, ..., valN]
+                                          ↑ current
+                                          
+After processing N+1:  [val0, val1, ..., valN, valN+1]
+                                          ↑            ↑
+                                          [1]          [0] current
+```
+
+### Understanding Series.from() Helper
+
+Many TA functions use `Series.from()` to normalize inputs:
+
+```typescript
+static from(source: any): Series {
+    if (source instanceof Series) return source;
+    if (Array.isArray(source)) return new Series(source);
+    return new Series([source]); // Wrap scalar in array
+}
+```
+
+This allows functions to accept:
+- Series objects (pass through)
+- Arrays (wrap in Series)
+- Scalar values (wrap in single-element array, then Series)
 
 ---
 
@@ -287,51 +432,94 @@ param(source, index, uniqueId);
 
 ### param() Implementation
 
-```javascript
-param(source, index, name) {
-    // Skip non-series types
+The param() function now returns **Series objects** instead of raw arrays:
+
+```typescript
+// Context.param() implementation
+param(source, index, name?: string) {
     if (typeof source === 'string') return source;
+    
+    // Handle Series objects
+    if (source instanceof Series) {
+        if (index) {
+            return new Series(source.data, source.offset + index);
+        }
+        return source;
+    }
+
+    // Skip non-series object types
     if (!Array.isArray(source) && typeof source === 'object') return source;
 
-    // Initialize series array if needed
+    // Initialize params array if needed
     if (!this.params[name]) this.params[name] = [];
-
+    
     if (Array.isArray(source)) {
-        if (index) {
-            // Handle lookback: close[1] becomes close.slice(1)
-            this.params[name] = source.slice(index);
-            this.params[name].length = source.length;
-            return this.params[name];
-        }
-        // No lookback: clone the array
-        this.params[name] = source.slice(0);
-        return this.params[name];
+        // Wrap array in Series with optional offset
+        return new Series(source, index || 0);
     } else {
-        // Single value: wrap in array format
-        this.params[name][0] = source;
-        return this.params[name];
+        // Wrap scalar value: store in params array, then wrap in Series
+        if (this.params[name].length === 0) {
+            this.params[name].push(source);
+        } else {
+            this.params[name][this.params[name].length - 1] = source;
+        }
+        return new Series(this.params[name], 0);
     }
 }
 ```
 
-### How Lookback Works
+**Namespace-Specific param() implementations (ta, math) are similar:**
+
+```typescript
+// ta.param() and math.param() 
+export function param(context: any) {
+    return (source: any, index: any, name?: string) => {
+        if (source instanceof Series) {
+            if (index) {
+                return new Series(source.data, source.offset + index);
+            }
+            return source;
+        }
+        
+        if (!context.params[name]) context.params[name] = [];
+        
+        if (Array.isArray(source)) {
+            return new Series(source, index || 0);
+        } else {
+            if (context.params[name].length === 0) {
+                context.params[name].push(source);
+            } else {
+                context.params[name][context.params[name].length - 1] = source;
+            }
+            return new Series(context.params[name], 0);
+        }
+    };
+}
+```
+
+### How Lookback Works with Series
 
 When you write `close[1]`, the transpiler transforms it to:
 
 ```javascript
-ta.param(close, 1, 'p0');
+ta.param(close, 1, 'p0')
 ```
 
 Inside param():
 
 ```javascript
-// close is [100, 99, 98, 97, ...]
+// close is [oldestValue, ..., newestValue] (forward array)
 // index is 1
-// Result: [99, 98, 97, ...] (shifted by 1)
-this.params[name] = source.slice(1);
+// Result: new Series(close, 1)
+// 
+// When Series.get(0) is called:
+// realIndex = close.length - 1 - (offset + 0)
+// realIndex = close.length - 1 - 1 = close.length - 2
+// Returns the second-to-last element (previous bar)
+return new Series(source, index);
 ```
 
-This effectively creates a series that's "offset" by 1 bar, so accessing index 0 gives you the previous bar's value.
+This creates a **Series wrapper with an offset**, so when the TA function accesses `series.get(0)`, it automatically gets the value from `n` bars ago.
 
 ---
 
@@ -417,24 +605,26 @@ The **Context** class is the runtime execution environment. It holds all state d
 
 ### Context Structure
 
-```javascript
+```typescript
 class Context {
-    // Market data (reverse chronological order)
+    // Market data (forward chronological order - oldest to newest)
     data: {
-        open: [], // Opening prices
-        high: [], // High prices
-        low: [], // Low prices
-        close: [], // Closing prices
-        volume: [], // Volume data
-        hl2: [], // (high + low) / 2
-        hlc3: [], // (high + low + close) / 3
-        ohlc4: [], // (open + high + low + close) / 4
+        open: [],      // Opening prices (forward array)
+        high: [],      // High prices (forward array)
+        low: [],       // Low prices (forward array)
+        close: [],     // Closing prices (forward array)
+        volume: [],    // Volume data (forward array)
+        hl2: [],       // (high + low) / 2
+        hlc3: [],      // (high + low + close) / 3
+        ohlc4: [],     // (open + high + low + close) / 4
+        openTime: [],  // Bar open timestamps
+        closeTime: [], // Bar close timestamps
     };
 
     // User variables by declaration type
-    const: {}; // Variables declared with const
-    let: {}; // Variables declared with let
-    var: {}; // Variables declared with var
+    const: {};  // Variables declared with const
+    let: {};    // Variables declared with let
+    var: {};    // Variables declared with var
     params: {}; // Parameter-wrapped series
 
     // Namespace instances
@@ -444,15 +634,36 @@ class Context {
     input: Input;
     request: PineRequest;
     core: Core;
+    lang: any;
+
+    // Constants
+    NA: any = NaN;
 
     // State management
     taState: {}; // TA function states (for incremental calculations)
-    cache: {}; // General caching
+    cache: {};   // General caching
 
     // Execution state
-    idx: number; // Current iteration index
-    result: any; // Accumulated results
-    plots: {}; // Plot metadata
+    idx: number;        // Current iteration index
+    result: any;        // Accumulated results
+    plots: {};          // Plot metadata
+    
+    // Market data references
+    marketData: any;
+    source: IProvider | any[];
+    tickerId: string;
+    timeframe: string;
+    limit: number;
+    sDate: number;
+    eDate: number;
+    pineTSCode: Function | String;
+
+    // Runtime methods
+    init(target, source, index): any;     // Initialize/update series
+    param(source, index, name): Series;    // Wrap values in Series
+    get(source, index): any;              // Get value from series
+    set(target, value): void;             // Set current value in series
+    precision(value, decimals): number;   // Round to N decimals (default 10)
 }
 ```
 
@@ -475,11 +686,11 @@ class Context {
 │  3. Iteration Loop      │◄───┐
 │  For each bar:          │    │
 │  - Update context.idx   │    │
-│  - Unshift new data     │    │
+│  - Push new data        │    │
 │  - Execute transpiled   │    │
 │    code                 │    │
 │  - Collect results      │    │
-│  - Shift all series     │────┘
+│  - Grow all series      │────┘
 └──────────┬──────────────┘
            ↓
 ┌─────────────────────────┐
@@ -581,19 +792,24 @@ export function ema(context: any) {
    ↓
 4. Transpile user code
    ↓
-5. For each bar (iteration):
+5. For each bar (iteration i):
    ┌─────────────────────────────────┐
-   │ a. Set context.idx              │
-   │ b. Unshift new OHLCV data       │
-   │    (data.close.unshift(value))  │
+   │ a. Set context.idx = i          │
+   │ b. Push new OHLCV data          │
+   │    (data.close.push(value))     │
    │ c. Execute transpiled function  │
    │ d. Collect result               │
-   │ e. Shift all user variables     │
-   │    ($.let.var.unshift(val))     │
+   │ e. Grow all user variables      │
+   │    ($.let.var.push(current))    │
    └─────────────────────────────────┘
    ↓
 6. Return final Context with results
 ```
+
+**Key Points:**
+- Data arrays grow with `.push()` (forward append)
+- Variables accessed via `$.get(var, index)` use Pine Script semantics
+- Each iteration processes one bar, growing all series by one element
 
 ### Data Flow During Iteration
 
@@ -602,32 +818,32 @@ Iteration N (Processing Bar N):
 
 ┌──────────────────────┐
 │  Market Data Arrays  │
-│  [N, N-1, N-2, ...]  │
+│  [0, 1, 2, ..., N]   │  (Forward order)
 └─────────┬────────────┘
-          │ unshift()
+          │ push(value[N])
           ▼
 ┌──────────────────────┐
 │ Context.data.close   │
-│ [Current, Prev, ...] │
+│  [0, 1, ..., N]      │  (Forward order)
 └─────────┬────────────┘
-          │
+          │ Access via $.get(close, index)
           ▼
 ┌──────────────────────┐
 │  Transpiled Code     │
-│  Executes with       │
-│  current data        │
+│  $.get(close, 0)     │  → close[N] (current)
+│  $.get(close, 1)     │  → close[N-1] (previous)
 └─────────┬────────────┘
-          │
+          │ Results written to $.let.var
           ▼
 ┌──────────────────────┐
 │  Variable Updates    │
-│  $.let.var[0] = val  │
+│  $.set($.let.var, x) │  → var[var.length-1] = x
 └─────────┬────────────┘
-          │ unshift()
+          │ push(current_value)
           ▼
 ┌──────────────────────┐
 │  Series History      │
-│  [Current, Prev, ...] │
+│  [0, 1, ..., N]      │  (Forward order)
 └──────────────────────┘
 ```
 
@@ -649,32 +865,51 @@ for await (const pageContext of generator) {
 -   Processes data in chunks (pages)
 -   Maintains state across pages
 -   Supports live data streaming
--   Can recalculate last candle on updates
+-   Automatically recalculates last candle on updates (for live data)
+-   Each page yields only new results, not cumulative
+
+**Live Streaming Behavior:**
+When live streaming is enabled (`eDate` undefined + provider source):
+1. Fetches new candles from provider starting at last candle's openTime
+2. Updates last candle if still open (same openTime)
+3. Recalculates last bar's results to reflect updated data
+4. Appends new complete candles
+5. Yields `null` when no new data is available
 
 ---
 
 ## Critical Implementation Details
 
-### 1. The Double Shift Pattern
+### 1. The Forward Array Growth Pattern
 
-Variables maintain history through a "double shift" pattern:
+Variables maintain history through appending (pushing):
 
 ```javascript
-// After calculation
-$.let.var[0] = newValue;
+// After calculation (updates last element)
+$.set($.let.var, newValue);  // Updates last element
+// Or during init: $.let.var[$.let.var.length - 1] = newValue
 
 // At end of iteration
-const val = $.let.var[0];
-$.let.var.unshift(val); // Duplicate current to create history
+const arr = $.let.var;
+const val = arr[arr.length - 1];  // Get current value (last element)
+arr.push(val);  // Append to create history
 ```
 
 Result:
 
 ```
-Before: [current, prev1, prev2, ...]
-After:  [current, current, prev1, prev2, ...]
-                  ^
-                  This becomes [1] (previous)
+Before: [oldest, ..., prev1, current]  (length = N)
+                              ↑
+                              index N-1
+
+After:  [oldest, ..., prev1, current, current]  (length = N+1)
+                              ↑       ↑
+                              index   index N
+                              N-1     (new current)
+
+Access via $.get():
+  $.get(arr, 0) → arr[N]     (current)
+  $.get(arr, 1) → arr[N-1]   (previous)
 ```
 
 ### 2. Equality Check Transformation
@@ -699,17 +934,31 @@ The `__eq()` function properly handles:
 
 ### 3. Array Pattern Destructuring
 
-Destructuring requires special handling:
+Destructuring requires special handling for tuple-returning functions:
 
 ```javascript
 // User writes:
 let [a, b] = ta.supertrend(close, 10, 3);
 
-// Transpiler creates:
-let temp_1 = ta.supertrend(...);
-let a = $.init($.let.glb1_a, temp_1?.[0][0]);
-let b = $.init($.let.glb1_b, temp_1?.[0][1]);
+// Transpiler analyzes and converts to:
+// Step 1: Create temp variable for the tuple result
+let temp_1 = ta.supertrend(
+    ta.param(close, undefined, 'p0'), 
+    ta.param(10, undefined, 'p1'), 
+    ta.param(3, undefined, 'p2'), 
+    '_ta0'
+);
+
+// Step 2: Extract elements (functions return 2D arrays: [[val1, val2]])
+let a = $.init($.let.glb1_a, temp_1?.[0][0]); // First element of tuple
+let b = $.init($.let.glb1_b, temp_1?.[0][1]); // Second element of tuple
 ```
+
+**Why `?.[0][0]`?**
+- TA functions return arrays where each element can be a tuple: `[[supertrend, direction]]`
+- `[0]` gets the current bar's tuple
+- `[0]` again gets the first element of the tuple
+- Optional chaining `?.` handles undefined gracefully
 
 ### 4. Nested Function Parameters
 
@@ -750,19 +999,138 @@ context.precision(value, decimals = 10) {
 
 ---
 
+## Real Transpiler Examples
+
+These examples show actual transpiler output from the test suite:
+
+### Example 1: Basic Variable Assignment
+
+```javascript
+// Input:
+let sma = ta.sma(close, 20);
+
+// Transpiled Output:
+$.let.glb1_sma = $.init(
+    $.let.glb1_sma, 
+    ta.sma(
+        ta.param(close, undefined, 'p0'), 
+        ta.param(20, undefined, 'p1'), 
+        "_ta0"
+    )
+);
+```
+
+### Example 2: Array Access and Assignment
+
+```javascript
+// Input:
+let prev_close = close[1];
+cc = close[2];
+
+// Transpiled Output:
+$.let.glb1_prev_close = $.init($.let.glb1_prev_close, $.get(close, 1));
+$.set($.let.glb1_cc, $.get(close, 2));
+```
+
+### Example 3: Binary Operations
+
+```javascript
+// Input:
+const green_candle = close > open;
+const bull_bias = ema9 > ema18;
+
+// Transpiled Output:
+$.const.glb1_green_candle = $.init(
+    $.const.glb1_green_candle, 
+    $.get(close, 0) > $.get(open, 0)
+);
+$.const.glb1_bull_bias = $.init(
+    $.const.glb1_bull_bias, 
+    $.get($.const.glb1_ema9, 0) > $.get($.const.glb1_ema18, 0)
+);
+```
+
+### Example 4: Nested Function Calls
+
+```javascript
+// Input:
+let d = ta.ema(math.abs(ap - 99), 10);
+
+// Transpiled Output:
+$.let.glb1_d = $.init(
+    $.let.glb1_d, 
+    ta.ema(
+        ta.param(
+            math.abs(
+                math.param(
+                    $.get($.let.glb1_ap, 0) - 99, 
+                    undefined, 
+                    'p12'
+                )
+            ), 
+            undefined, 
+            'p13'
+        ), 
+        ta.param(10, undefined, 'p14'), 
+        "_ta6"
+    )
+);
+```
+
+### Example 5: Scoped Variables (If Statement)
+
+```javascript
+// Input:
+let aa = 0;
+if (_cc > 1) {
+    let bb = 1;
+    aa = 1;
+}
+
+// Transpiled Output:
+$.let.glb1_aa = $.init($.let.glb1_aa, 0);
+if ($.get($.const.glb1__cc, 0) > 1) {
+    $.let.if2_bb = $.init($.let.if2_bb, 1);  // Scoped to 'if2'
+    $.set($.let.glb1_aa, 1);                 // Updates global scope
+}
+```
+
+### Example 6: Equality Checks
+
+```javascript
+// Input:
+if (avg_len === 0) {
+    ret_val = cc[1];
+}
+
+// Transpiled Output:
+if ($.math.__eq($.get(avg_len, 0), 0)) {
+    $.set($.let.fn2_ret_val, $.get($.let.fn2_cc, 1));
+}
+```
+
+**Note:** Equality operators (`==`, `===`) are transformed to `$.math.__eq()` to handle NaN comparisons correctly.
+
+---
+
 ## Common Pitfalls and Best Practices
 
-### ⚠️ Pitfall 1: Forgetting About Reverse Order
+### ⚠️ Pitfall 1: Confusing Storage Order vs Access Order
 
 **Problem:**
 
 ```javascript
-// Thinking in forward order
-let firstBar = close[0]; // Actually current bar, not first historical bar!
+// Thinking arrays are stored in reverse
+let lastValue = context.data.close[0]; // Actually oldest bar!
+let currentValue = context.data.close[context.data.close.length - 1]; // Current bar
 ```
 
 **Solution:**
-Always remember: index 0 = current bar, higher indices = further back in time.
+Remember the distinction:
+- **Storage**: Forward order (oldest at [0], newest at [length-1])
+- **Access via $.get() or Series**: Pine Script semantics (0 = current, 1 = previous)
+- Always use `$.get(close, index)` or `Series.get(index)` for Pine Script semantics
+- Direct array access `close[i]` gives forward chronological order
 
 ### ⚠️ Pitfall 2: Modifying Transpiler Without Understanding Scope
 
@@ -846,31 +1214,52 @@ Don't bypass it or modify its state inconsistently.
 
 When implementing new TA functions, prefer incremental calculations over full recalculation:
 
-```javascript
+```typescript
 // ❌ Bad: Recalculate from scratch each time
-function sma(source, period) {
+function sma(source: any, period: any) {
     let sum = 0;
     for (let i = 0; i < period; i++) {
-        sum += source[i];
+        sum += Series.from(source).get(i); // Expensive repeated calls
     }
     return sum / period;
 }
 
 // ✅ Good: Incremental with state
-function sma(source, period, callId) {
-    const state = context.taState[callId] || { window: [], sum: 0 };
-    const current = source[0];
-
-    state.window.unshift(current);
-    state.sum += current;
-
-    if (state.window.length > period) {
-        state.sum -= state.window.pop();
-    }
-
-    return state.window.length >= period ? state.sum / period : NaN;
+export function sma(context: any) {
+    return (source: any, _period: any, _callId?: string) => {
+        const period = Series.from(_period).get(0); // Extract period value
+        const stateKey = _callId || `sma_${period}`;
+        
+        if (!context.taState[stateKey]) {
+            context.taState[stateKey] = { window: [], sum: 0 };
+        }
+        
+        const state = context.taState[stateKey];
+        const current = Series.from(source).get(0); // Get current value
+        
+        // Add new value
+        state.window.push(current);
+        state.sum += current;
+        
+        // Remove old value if window is full
+        if (state.window.length > period) {
+            state.sum -= state.window.shift();
+        }
+        
+        // Return average or NaN if not enough data
+        return state.window.length >= period 
+            ? context.precision(state.sum / period) 
+            : NaN;
+    };
 }
 ```
+
+**Key Points:**
+- Use `callId` for unique state per function call
+- Extract values from Series using `.get(0)` or `Series.from()`
+- Maintain internal state (window, sum) for efficiency
+- Return NaN during initialization period (Pine Script behavior)
+- Use `context.precision()` for consistent decimal precision
 
 ---
 
@@ -896,15 +1285,27 @@ console.log('Current Index:', context.idx);
 ### Common Debug Patterns
 
 ```javascript
-// Check series values
-console.log('close[0]:', context.data.close[0]); // Current
-console.log('close[1]:', context.data.close[1]); // Previous
+// Check series values (remember: forward storage!)
+const close = context.data.close;
+console.log('Current close:', close[close.length - 1]); // Last element = current
+console.log('Previous close:', close[close.length - 2]); // Second-to-last = previous
 
-// Check variable history
-console.log('ema9:', context.let.glb1_ema9); // Full series
+// Using $.get() (Pine Script semantics)
+console.log('close[0]:', context.get(close, 0)); // Current
+console.log('close[1]:', context.get(close, 1)); // Previous
 
-// Check parameter transformations
+// Check variable history (forward arrays)
+console.log('ema9 series:', context.let.glb1_ema9); // Full forward array
+console.log('ema9 current:', context.let.glb1_ema9[context.let.glb1_ema9.length - 1]);
+
+// Check parameter transformations (Series objects)
 console.log('Params:', context.params);
+
+// Check Series objects
+const series = context.ta.param(close, 1, 'test');
+console.log('Series data:', series.data); // Underlying forward array
+console.log('Series offset:', series.offset); // Offset for lookback
+console.log('Series.get(0):', series.get(0)); // Value at Pine Script index 0
 ```
 
 ---
@@ -966,16 +1367,19 @@ Executable JS
 
 ## Summary of Key Concepts
 
-| Concept           | Purpose                 | Critical Detail                        |
-| ----------------- | ----------------------- | -------------------------------------- |
-| **Reverse Order** | Series storage          | Index 0 = current, higher = older      |
-| **$.init()**      | Variable initialization | Creates time-series arrays             |
-| **param()**       | Argument wrapping       | Namespace-specific, handles lookback   |
-| **Unique IDs**    | State isolation         | Separate state for each function call  |
-| **Scope Manager** | Variable renaming       | Prevents collisions, tracks context    |
-| **Context ($)**   | Runtime environment     | Holds all state and data               |
-| **Double Shift**  | Series history          | Current value duplicated to create [1] |
-| **Transpiler**    | Code transformation     | AST-based, multi-pass                  |
+| Concept            | Purpose                   | Critical Detail                                   |
+| ------------------ | ------------------------- | ------------------------------------------------- |
+| **Series Class**   | Pine Script indexing      | Wraps forward arrays, provides reverse indexing   |
+| **Forward Storage**| Data storage order        | Arrays stored oldest→newest, accessed via Series  |
+| **$.get()**        | Array access              | Translates Pine index to forward array index      |
+| **$.set()**        | Value assignment          | Sets current value (last element in forward array)|
+| **$.init()**       | Variable initialization   | Creates/updates time-series arrays                |
+| **param()**        | Argument wrapping         | Returns Series objects, handles lookback          |
+| **Unique IDs**     | State isolation           | Separate state for each function call             |
+| **Scope Manager**  | Variable renaming         | Prevents collisions, tracks context               |
+| **Context ($)**    | Runtime environment       | Holds all state, data, and methods                |
+| **Array Growth**   | Series history            | Current value pushed to maintain history          |
+| **Transpiler**     | Code transformation       | AST-based, multi-pass transformation              |
 
 ---
 
@@ -983,18 +1387,21 @@ Executable JS
 
 PineTS is a sophisticated system that bridges Pine Script semantics with JavaScript execution. The key to understanding and maintaining it is recognizing:
 
-1. **Everything is a series** - Variables, parameters, and data are all time-series arrays
-2. **Reverse chronological order** - Current data is at index 0, past data at higher indices
-3. **State isolation** - Unique IDs ensure independent state for each function call
-4. **Context-driven execution** - The $ object is the central nervous system
-5. **Incremental calculations** - TA functions maintain state for efficiency
+1. **Series-based architecture** - The Series class provides Pine Script indexing on forward-ordered arrays
+2. **Forward storage, reverse access** - Data stored oldest→newest, accessed via Series with Pine Script semantics
+3. **Dual access methods** - `$.get()/$.set()` for Pine Script semantics, direct array access for chronological order
+4. **State isolation** - Unique IDs ensure independent state for each function call
+5. **Context-driven execution** - The $ object is the central nervous system
+6. **Incremental calculations** - TA functions maintain state for efficiency
+7. **param() returns Series** - All namespace functions receive and return Series objects
 
 When modifying PineTS:
 
--   Understand the transpilation pipeline
--   Respect the scope manager
--   Maintain the series paradigm
--   Test thoroughly with edge cases
--   Document any new transformations
+-   Understand the Series class and its role in bridging storage and access semantics
+-   Understand the transpilation pipeline and how it transforms array access
+-   Respect the scope manager and variable transformation rules
+-   Maintain the series paradigm (forward storage, Series-based access)
+-   Test thoroughly with edge cases, especially array indexing
+-   Document any new transformations or Series-related changes
 
-This architecture enables running thousands of Pine Script indicators in JavaScript with high fidelity and performance.
+This architecture enables running thousands of Pine Script indicators in JavaScript with high fidelity and performance while maintaining compatibility with Pine Script's unique time-series semantics.

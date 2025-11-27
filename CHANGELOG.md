@@ -1,5 +1,87 @@
 # Change Log
 
+## [0.3.1] - 2025-11-26 - Code coverage
+
+### Added
+
+-   Automatic code coverage badge generation
+
+## [0.3.0] - 2025-11-26 - Major refactor + optimization
+
+### Added
+
+-   Pagination and streaming mode support for processing large datasets
+-   Automatic regression tests generator for Pine Script compatibility testing
+-   Series class implementation for forward arrays optimization
+-   Support for checking transpiled code during development
+-   Added Pine Script language unit tests
+-   Added WillVixFix and SQZMOM indicators for compatibility tests
+-   Automatic code coverage badge
+
+### Changed
+
+-   Major namespaces refactoring for better organization and maintainability
+-   Transpiler refactor for improved code generation
+-   Updated unit tests with new approach to compare to Pine Script data
+-   Updated documentation pages and build process
+-   Improved README readability and documentation links
+
+### Fixed
+
+-   Fixed compound assignment operations
+-   Fixed history access in series
+-   Fixed index handling in forward arrays
+-   Fixed plot parameters
+-   Fixed arithmetic operations for native series
+-   Fixed browser build
+-   Fixed plot values and time indexes
+
+## [0.2.1] - 2025-11-16 - Hotfix: floating point equality + performance optimization
+
+### Fixed
+
+-   Missing math namespace for floating point equality check
+-   Small performance optimization (removed array slicing in the main loop)
+
+### Changed
+
+-   Updated README and transpiler unit tests (added cache id)
+-   Documentation indicators update
+
+## [0.2.0] - 2025-11-15 - Major TA performance optimization
+
+### Changed
+
+-   Performance optimization: reimplementation of most TA functions to enhance performance (~x5 execution speed on average)
+-   Documentation updates
+
+## [0.1.34] - 2025-04-24 - Documentation and bug fixes
+
+### Fixed
+
+-   Fix issue #4 (https://github.com/alaa-eddine/PineTS/issues/4)
+-   Fix doc page chart
+
+### Changed
+
+-   Documentation updates
+-   Added demo chart to the documentation
+-   Theme update: switching to just-the-docs theme
+-   GitHub pages layout updates
+-   Documentation layout fixes
+
+## [0.1.33] - 2025-04-24 - Functions variables bug fix
+
+### Fixed
+
+-   Functions variables bug fix
+
+## [0.1.32] - 2025-04-23 - TA crossover functions
+
+### Added
+
+-   Support for ta.crossover, ta.crossunder, ta.pivothigh, ta.pivotlow functions
+
 ## [0.1.31] - 2025-02-12 -
 
 ### Added
