@@ -460,6 +460,7 @@ export class PineTS {
             context.data.hlc3.push(this.hlc3[i]);
             context.data.ohlc4.push(this.ohlc4[i]);
             context.data.openTime.push(this.openTime[i]);
+            context.data.closeTime.push(this.closeTime[i]);
 
             const result = await transpiledFn(context);
 
