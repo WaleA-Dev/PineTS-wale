@@ -47,6 +47,11 @@ export class PineTS {
         return this._transpiledCode;
     }
 
+    private _isSecondaryContext: boolean = false;
+    public markAsSecondary() {
+        this._isSecondaryContext = true;
+    }
+
     constructor(
         private source: IProvider | any[],
         private tickerId?: string,
@@ -151,7 +156,7 @@ export class PineTS {
         await this.ready();
         if (!periods) periods = this.data.length;
 
-        const context = this._initializeContext(pineTSCode);
+        const context = this._initializeContext(pineTSCode, this._isSecondaryContext);
         this._transpiledCode = this._transpileCode(pineTSCode);
 
         await this._executeIterations(context, this._transpiledCode, this.data.length - periods, this.data.length);
@@ -174,7 +179,7 @@ export class PineTS {
         await this.ready();
         if (!periods) periods = this.data.length;
 
-        const context = this._initializeContext(pineTSCode);
+        const context = this._initializeContext(pineTSCode, this._isSecondaryContext);
         this._transpiledCode = this._transpileCode(pineTSCode);
 
         const startIdx = this.data.length - periods;
@@ -406,7 +411,7 @@ export class PineTS {
      * Initialize a new context for running Pine Script code
      * @private
      */
-    private _initializeContext(pineTSCode: Function | String): Context {
+    private _initializeContext(pineTSCode: Function | String, isSecondary: boolean = false): Context {
         const context = new Context({
             marketData: this.data,
             source: this.source,
@@ -418,6 +423,7 @@ export class PineTS {
         });
 
         context.pineTSCode = pineTSCode;
+        context.isSecondaryContext = isSecondary; // Set secondary context flag
         context.data.close = new Series([]);
         context.data.open = new Series([]);
         context.data.high = new Series([]);

@@ -23,6 +23,7 @@ export class Context {
     };
     public cache: any = {};
     public taState: any = {}; // State for incremental TA calculations
+    public isSecondaryContext: boolean = false; // Flag to prevent infinite recursion in request.security
 
     public NA: any = NaN;
 

@@ -1,6 +1,52 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2025 Alaa-eddine KADDOURI
 
+/**
+ * JavaScript global literals and objects that should never be treated as user variables
+ */
+const JS_GLOBAL_LITERALS = new Set([
+    'Infinity',
+    'NaN',
+    'undefined',
+    'null',
+    'true',
+    'false',
+]);
+
+/**
+ * JavaScript global objects that should not be transformed
+ */
+const JS_GLOBAL_OBJECTS = new Set([
+    'Math',
+    'Array',
+    'Object',
+    'String',
+    'Number',
+    'Boolean',
+    'Date',
+    'RegExp',
+    'Error',
+    'JSON',
+    'Promise',
+    'Set',
+    'Map',
+    'WeakSet',
+    'WeakMap',
+    'Symbol',
+    'BigInt',
+    'Proxy',
+    'Reflect',
+    'console',
+    'isNaN',
+    'isFinite',
+    'parseInt',
+    'parseFloat',
+    'encodeURI',
+    'decodeURI',
+    'encodeURIComponent',
+    'decodeURIComponent',
+]);
+
 export class ScopeManager {
     private scopes: Map<string, string>[] = [];
     private scopeTypes: string[] = [];
@@ -96,6 +142,10 @@ export class ScopeManager {
     }
 
     isContextBound(name: string): boolean {
+        // JavaScript global literals and objects should never be treated as context-bound
+        if (JS_GLOBAL_LITERALS.has(name) || JS_GLOBAL_OBJECTS.has(name)) {
+            return false;
+        }
         // Check if a variable is context-bound
         return this.contextBoundVars.has(name);
     }

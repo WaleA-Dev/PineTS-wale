@@ -24,6 +24,13 @@ export function security(context: any) {
         const _gaps = Array.isArray(gaps) ? gaps[0] : gaps;
         const _lookahead = Array.isArray(lookahead) ? lookahead[0] : lookahead;
 
+        // CRITICAL: Prevent infinite recursion in secondary contexts
+        // If this is a secondary context (created by another request.security),
+        // just return the expression value directly without creating another context
+        if (context.isSecondaryContext) {
+            return _expression;
+        }
+
         const ctxTimeframeIdx = TIMEFRAMES.indexOf(context.timeframe);
         const reqTimeframeIdx = TIMEFRAMES.indexOf(_timeframe);
 
@@ -40,11 +47,13 @@ export function security(context: any) {
         const myOpenTime = Series.from(context.data.openTime).get(0);
         const myCloseTime = Series.from(context.data.closeTime).get(0);
 
+        // Cache key must be unique per symbol+timeframe+expression to avoid collisions
+        const cacheKey = `${_symbol}_${_timeframe}_${_expression_name}`;
         // Cache key for tracking previous bar index (for gaps detection)
-        const gapCacheKey = `${_expression_name}_prevIdx`;
+        const gapCacheKey = `${cacheKey}_prevIdx`;
 
-        if (context.cache[_expression_name]) {
-            const secContext = context.cache[_expression_name];
+        if (context.cache[cacheKey]) {
+            const secContext = context.cache[cacheKey];
             const secContextIdx = isLTF
                 ? findLTFContextIdx(
                       myOpenTime,
@@ -97,9 +106,12 @@ export function security(context: any) {
         // We pass undefined for eDate to allow loading full history for the security context
         const pineTS = new PineTS(context.source, _symbol, _timeframe, limit, adjustedSDate, undefined);
 
+        // Mark as secondary context to prevent infinite recursion
+        pineTS.markAsSecondary();
+
         const secContext = await pineTS.run(context.pineTSCode);
 
-        context.cache[_expression_name] = secContext;
+        context.cache[cacheKey] = secContext;
 
         const secContextIdx = isLTF
             ? findLTFContextIdx(

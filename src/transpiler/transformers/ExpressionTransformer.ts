@@ -281,21 +281,34 @@ function transformIdentifierForParam(node: any, scopeManager: ScopeManager): any
         if (scopeManager.isLoopVariable(node.name)) {
             return node;
         }
+
         // If it's a root parameter, transform it with $.let prefix
         if (scopeManager.isRootParam(node.name)) {
             const [scopedName, kind] = scopeManager.getVariable(node.name);
             return ASTFactory.createContextVariableReference(kind, scopedName);
         }
+
         // If it's a nested function parameter or other context-bound variable, return as is
+        // NOTE: isContextBound now returns false for JavaScript globals like Infinity, NaN, etc.
         if (scopeManager.isContextBound(node.name)) {
             return node;
         }
+
         // If it's a local series variable (hoisted), return as is
         if (scopeManager.isLocalSeriesVar(node.name)) {
             return node;
         }
-        // Otherwise transform with $.let prefix
+
+        // JavaScript global literals should never be transformed
+        // They are not in scopes, so return them as-is
         const [scopedName, kind] = scopeManager.getVariable(node.name);
+        if (scopedName === node.name && !scopeManager.isContextBound(node.name)) {
+            // Variable not found in scopes and not context-bound
+            // Check if it's a JavaScript global before transforming
+            return node; // Return as-is to preserve JavaScript globals
+        }
+
+        // Otherwise transform with context variable reference
         return ASTFactory.createContextVariableReference(kind, scopedName);
     }
     return node;

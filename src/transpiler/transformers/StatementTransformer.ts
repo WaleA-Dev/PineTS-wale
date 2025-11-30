@@ -609,7 +609,7 @@ export function transformReturnStatement(node: any, scopeManager: ScopeManager):
                 },
             });
         } else if (node.argument.type === 'ObjectExpression') {
-            // Handle object expressions (existing code)
+            // Handle object expressions
             node.argument.properties = node.argument.properties.map((prop: any) => {
                 // Check for shorthand properties
                 if (prop.shorthand) {
@@ -627,6 +627,20 @@ export function transformReturnStatement(node: any, scopeManager: ScopeManager):
                         computed: false,
                     };
                 }
+
+                // Handle regular properties with identifier values
+                if (prop.value && prop.value.type === 'Identifier') {
+                    // Check if it's a context-bound variable (like 'close', 'open', etc.)
+                    if (scopeManager.isContextBound(prop.value.name) && !scopeManager.isRootParam(prop.value.name)) {
+                        // It's a data variable - use $.get(variable, 0)
+                        prop.value = ASTFactory.createGetCall(prop.value, 0);
+                    } else if (!scopeManager.isContextBound(prop.value.name)) {
+                        // It's a user variable - transform to context reference
+                        const [scopedName, kind] = scopeManager.getVariable(prop.value.name);
+                        prop.value = ASTFactory.createContextVariableReference(kind, scopedName);
+                    }
+                }
+
                 return prop;
             });
         } else if (node.argument.type === 'Identifier') {

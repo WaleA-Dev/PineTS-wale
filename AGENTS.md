@@ -1858,6 +1858,216 @@ All tuple scenarios are covered by tests:
 
 ---
 
+## request.security Infinite Recursion Prevention
+
+### The Problem
+
+The `request.security` function creates a **secondary execution context** to evaluate expressions in a different timeframe. This secondary context runs the **same user code** as the primary context, which can contain additional `request.security` calls, leading to infinite recursion.
+
+**Example of Infinite Recursion:**
+
+```javascript
+// Primary context (1h timeframe)
+const { plots } = await pineTS.run(async ($) => {
+    const { close, request, plotchar } = $.pine;
+
+    // This creates a secondary context for 4h timeframe
+    const tf_4h = await request.security('BTCUSDC', '240', close, false, false);
+
+    // Inside request.security (line 100 of security.ts):
+    const secContext = await pineTS.run(context.pineTSCode);
+    // ^^^ This runs THE SAME user code again in 4h timeframe!
+
+    // Secondary context ALSO executes request.security!
+    const tf_4h = await request.security('BTCUSDC', '240', close, false, false);
+    // ^^^ RECURSION! Creates tertiary context...
+    //     Creates quaternary context...
+    //     Creates quinary context...
+    //     STACK OVERFLOW!
+});
+```
+
+### Cache Collision Bug
+
+Additionally, there was a **cache collision bug** where multiple `request.security` calls with the same parameter position but different symbols or timeframes would share the same cache key:
+
+```javascript
+// First call - expression is 3rd param
+const tf_4h = await request.security('BTCUSDC', '240', close, false, false);
+// Cache key: 'p2' (just the parameter name!)
+
+// Second call - expression is ALSO 3rd param
+const tf_1d = await request.security('BTCUSDC', 'D', close, false, false);
+// Cache key: 'p2' (COLLISION! Reuses 4h data for 1d!)
+```
+
+This caused:
+
+-   Incorrect data being returned (wrong timeframe)
+-   Tests hanging (attempting to create infinite contexts)
+-   Memory exhaustion
+
+### The Solution: Two-Part Fix
+
+#### Part 1: Unique Cache Keys
+
+The cache key must include **symbol, timeframe, AND expression name** to be unique:
+
+**Implementation** (`src/namespaces/request/methods/security.ts`):
+
+```typescript
+// OLD (buggy):
+const gapCacheKey = `${_expression_name}_prevIdx`;
+if (context.cache[_expression_name]) {
+    const secContext = context.cache[_expression_name];
+    // ...
+}
+
+// NEW (fixed):
+const cacheKey = `${_symbol}_${_timeframe}_${_expression_name}`;
+const gapCacheKey = `${cacheKey}_prevIdx`;
+if (context.cache[cacheKey]) {
+    const secContext = context.cache[cacheKey];
+    // ...
+}
+```
+
+This ensures:
+
+-   Each symbol+timeframe+expression combination has its own cache
+-   Multiple security calls don't collide
+-   State is properly isolated
+
+#### Part 2: Secondary Context Flag
+
+To prevent infinite recursion, we added an `isSecondaryContext` flag that marks contexts created by `request.security`. When a secondary context encounters a `request.security` call, it **returns the expression directly** instead of creating another context.
+
+**Implementation Steps:**
+
+1. **Add flag to Context class** (`src/Context.class.ts`):
+
+```typescript
+export class Context {
+    // ... existing properties
+    public isSecondaryContext: boolean = false; // Prevent infinite recursion
+    // ...
+}
+```
+
+2. **Add marking method to PineTS** (`src/PineTS.class.ts`):
+
+```typescript
+private _isSecondaryContext: boolean = false;
+public markAsSecondary() {
+    this._isSecondaryContext = true;
+}
+```
+
+3. **Pass flag during initialization** (`src/PineTS.class.ts`):
+
+```typescript
+private _initializeContext(pineTSCode: Function | String, isSecondary: boolean = false): Context {
+    const context = new Context({...});
+    context.isSecondaryContext = isSecondary; // Set the flag
+    // ...
+    return context;
+}
+
+private async _runComplete(pineTSCode: Function | String, periods?: number): Promise<Context> {
+    // ...
+    const context = this._initializeContext(pineTSCode, this._isSecondaryContext);
+    // ...
+}
+```
+
+4. **Mark secondary contexts in security.ts**:
+
+```typescript
+// When creating a secondary context for different timeframe
+const pineTS = new PineTS(context.source, _symbol, _timeframe, limit, adjustedSDate, undefined);
+
+// Mark as secondary BEFORE running!
+pineTS.markAsSecondary();
+
+const secContext = await pineTS.run(context.pineTSCode);
+```
+
+5. **Early return in secondary contexts** (`src/namespaces/request/methods/security.ts`):
+
+```typescript
+export function security(context: any) {
+    return async (...args) => {
+        const _expression = expression[0];
+
+        // CRITICAL: Prevent infinite recursion
+        // If this is a secondary context, just return the expression
+        if (context.isSecondaryContext) {
+            return _expression;
+        }
+
+        // ... normal security logic for primary context
+    };
+}
+```
+
+### Execution Flow
+
+**Primary Context (User's 1h chart):**
+
+```
+1. User code: tf_4h = await request.security('BTCUSDC', '240', close, false, false);
+2. Check cache: cacheKey = "BTCUSDC_240_p2" (not found)
+3. Create secondary PineTS for 4h
+4. Mark it as secondary: pineTS.markAsSecondary()
+5. Run user code in 4h context: secContext = await pineTS.run(...)
+```
+
+**Secondary Context (4h timeframe):**
+
+```
+1. User code executes in 4h context
+2. Encounters: tf_4h = await request.security('BTCUSDC', '240', close, false, false);
+3. Check: context.isSecondaryContext === true
+4. Early return: return _expression (close value at 4h)
+5. No tertiary context created! ✅
+```
+
+**Back to Primary Context:**
+
+```
+6. Secondary context completes without recursion
+7. Cache result: context.cache["BTCUSDC_240_p2"] = secContext
+8. Extract value from secContext and return
+9. Future calls use cached result
+```
+
+### Why This Works
+
+1. **Prevents Recursion**: Secondary contexts never create tertiary contexts
+2. **Preserves Functionality**: Expressions still evaluate correctly in secondary contexts
+3. **Maintains Cache**: Each symbol+timeframe combo is cached independently
+4. **No Performance Impact**: Flag check is O(1) at the start of the function
+
+### Testing Coverage
+
+All scenarios are covered by `tests/namespaces/request-edge-cases.test.ts`:
+
+-   ✅ Multiple different timeframes (4h, 1d, 1w) without hanging
+-   ✅ Multiple expressions on same timeframe
+-   ✅ Independent state for different security calls
+-   ✅ Complex expressions (ternary, arithmetic, nested TA)
+-   ✅ Tuple returns
+-   ✅ Lookahead and gaps parameters
+
+### Key Takeaways
+
+1. **Cache keys must be unique**: Include all dimensions that distinguish calls
+2. **Recursive execution needs guards**: Flag secondary contexts to prevent infinite loops
+3. **Test edge cases**: Multiple calls, nested calls, and state independence
+4. **Document architectural decisions**: This was a critical bug that could reoccur if the pattern isn't understood
+
+---
+
 ## Conclusion
 
 PineTS is a sophisticated system that bridges Pine Script semantics with JavaScript execution. The key to understanding and maintaining it is recognizing:
@@ -1869,6 +2079,7 @@ PineTS is a sophisticated system that bridges Pine Script semantics with JavaScr
 5. **Context-driven execution** - The $ object is the central nervous system
 6. **Incremental calculations** - TA functions maintain state for efficiency
 7. **param() returns Series** - All namespace functions receive and return Series objects
+8. **Secondary context prevention** - request.security uses flags to prevent infinite recursion
 
 When modifying PineTS:
 
@@ -1878,5 +2089,6 @@ When modifying PineTS:
 -   Maintain the series paradigm (forward storage, Series-based access)
 -   Test thoroughly with edge cases, especially array indexing
 -   Document any new transformations or Series-related changes
+-   Be aware of recursive execution patterns and guard against them
 
 This architecture enables running thousands of Pine Script indicators in JavaScript with high fidelity and performance while maintaining compatibility with Pine Script's unique time-series semantics.
