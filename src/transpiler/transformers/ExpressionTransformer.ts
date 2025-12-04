@@ -229,17 +229,18 @@ export function transformMemberExpression(memberNode: any, originalParamName: st
 
     if (isDirectNamespaceMemberAccess) {
         // Check if this member expression is NOT already the callee of a CallExpression
-        const isAlreadyBeingCalled =
-            memberNode.parent && memberNode.parent.type === 'CallExpression' && memberNode.parent.callee === memberNode;
+        const isAlreadyBeingCalled = memberNode.parent && memberNode.parent.type === 'CallExpression' && memberNode.parent.callee === memberNode;
 
         // Also check if this is part of a destructuring or variable declaration
         const isInDestructuring =
             memberNode.parent &&
-            (memberNode.parent.type === 'VariableDeclarator' || memberNode.parent.type === 'Property' || memberNode.parent.type === 'AssignmentExpression');
+            (memberNode.parent.type === 'VariableDeclarator' ||
+                memberNode.parent.type === 'Property' ||
+                memberNode.parent.type === 'AssignmentExpression');
 
         if (!isAlreadyBeingCalled && !isInDestructuring) {
             // Convert namespace.method to namespace.method()
-            const callExpr = {
+            const callExpr: any = {
                 type: 'CallExpression',
                 callee: {
                     type: 'MemberExpression',
@@ -408,7 +409,7 @@ function transformOperand(node: any, scopeManager: ScopeManager, namespace: stri
             const transformedTest = transformOperand(node.test, scopeManager, namespace);
             const transformedConsequent = transformOperand(node.consequent, scopeManager, namespace);
             const transformedAlternate = transformOperand(node.alternate, scopeManager, namespace);
-            
+
             return {
                 type: 'ConditionalExpression',
                 test: transformedTest,

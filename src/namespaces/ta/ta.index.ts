@@ -210,12 +210,7 @@ export class TechnicalAnalysis {
 
   constructor(private context: any) {
     // Install getters
-    Object.entries(getters).forEach(([name, factory]) => {
-      Object.defineProperty(this, name, {
-        get: factory(context),
-        enumerable: true
-      });
-    });
+
     
     // Install methods
     Object.entries(methods).forEach(([name, factory]) => {
