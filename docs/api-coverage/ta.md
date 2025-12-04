@@ -101,8 +101,8 @@ All functions listed below are verified to exist in Pine Script v5.
 
 | Function         | Status | Description          |
 | ---------------- | ------ | -------------------- |
-| `ta.pivothigh()` | ✔️     | Pivot High Detection |
-| `ta.pivotlow()`  | ✔️     | Pivot Low Detection  |
+| `ta.pivothigh()` | ✅     | Pivot High Detection |
+| `ta.pivotlow()`  | ✅     | Pivot Low Detection  |
 
 ### Utility Functions
 
@@ -111,8 +111,3 @@ All functions listed below are verified to exist in Pine Script v5.
 | `ta.valuewhen()` | ✅     | Value When Condition Met |
 | `ta.barssince()` | ✅     | Bars Since Condition     |
 | `ta.cum()`       | ✅     | Cumulative Sum           |
-
-### Notes
-
--   Some indicators exist as both variables and functions (e.g., `ta.vwap`, `ta.tr`)
--   `ta.adx()` is **not** a standalone function in Pine Script v5 (it's part of `ta.dmi()`)
