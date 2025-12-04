@@ -216,6 +216,50 @@ export function transformMemberExpression(memberNode: any, originalParamName: st
         return;
     }
 
+    // Check if this is a direct namespace method access without parentheses (e.g., ta.tr, math.pi)
+    // Only apply to known Pine Script namespaces: ta, math, request, array, input
+    // If so, convert it to a call expression (e.g., ta.tr(), math.pi())
+    const KNOWN_NAMESPACES = ['ta', 'math', 'request', 'array', 'input'];
+    const isDirectNamespaceMemberAccess =
+        memberNode.object &&
+        memberNode.object.type === 'Identifier' &&
+        KNOWN_NAMESPACES.includes(memberNode.object.name) &&
+        scopeManager.isContextBound(memberNode.object.name) &&
+        !memberNode.computed;
+
+    if (isDirectNamespaceMemberAccess) {
+        // Check if this member expression is NOT already the callee of a CallExpression
+        const isAlreadyBeingCalled =
+            memberNode.parent && memberNode.parent.type === 'CallExpression' && memberNode.parent.callee === memberNode;
+
+        // Also check if this is part of a destructuring or variable declaration
+        const isInDestructuring =
+            memberNode.parent &&
+            (memberNode.parent.type === 'VariableDeclarator' || memberNode.parent.type === 'Property' || memberNode.parent.type === 'AssignmentExpression');
+
+        if (!isAlreadyBeingCalled && !isInDestructuring) {
+            // Convert namespace.method to namespace.method()
+            const callExpr = {
+                type: 'CallExpression',
+                callee: {
+                    type: 'MemberExpression',
+                    object: memberNode.object,
+                    property: memberNode.property,
+                    computed: false,
+                },
+                arguments: [],
+                _transformed: false, // Allow further transformation of this call
+            };
+
+            // Preserve location info
+            if (memberNode.start !== undefined) callExpr.start = memberNode.start;
+            if (memberNode.end !== undefined) callExpr.end = memberNode.end;
+
+            Object.assign(memberNode, callExpr);
+            return;
+        }
+    }
+
     //if statment variables always need to be transformed
     const isIfStatement = scopeManager.getCurrentScopeType() == 'if';
     const isElseStatement = scopeManager.getCurrentScopeType() == 'els';
@@ -359,6 +403,21 @@ function transformOperand(node: any, scopeManager: ScopeManager, namespace: stri
         case 'UnaryExpression': {
             return getParamFromUnaryExpression(node, scopeManager, namespace);
         }
+        case 'ConditionalExpression': {
+            // Transform test, consequent, and alternate
+            const transformedTest = transformOperand(node.test, scopeManager, namespace);
+            const transformedConsequent = transformOperand(node.consequent, scopeManager, namespace);
+            const transformedAlternate = transformOperand(node.alternate, scopeManager, namespace);
+            
+            return {
+                type: 'ConditionalExpression',
+                test: transformedTest,
+                consequent: transformedConsequent,
+                alternate: transformedAlternate,
+                start: node.start,
+                end: node.end,
+            };
+        }
     }
 
     return node;
@@ -462,6 +521,18 @@ function getParamFromConditionalExpression(node: any, scopeManager: ScopeManager
                 // Then continue with object transformation
                 if (node.object) {
                     c(node.object, { parent: node, inNamespaceCall: state.inNamespaceCall });
+                }
+            },
+            ConditionalExpression(node: any, state: any, c: any) {
+                // Traverse test, consequent, and alternate with correct parent
+                if (node.test) {
+                    c(node.test, { parent: node, inNamespaceCall: state.inNamespaceCall });
+                }
+                if (node.consequent) {
+                    c(node.consequent, { parent: node, inNamespaceCall: state.inNamespaceCall });
+                }
+                if (node.alternate) {
+                    c(node.alternate, { parent: node, inNamespaceCall: state.inNamespaceCall });
                 }
             },
             CallExpression(node: any, state: any, c: any) {

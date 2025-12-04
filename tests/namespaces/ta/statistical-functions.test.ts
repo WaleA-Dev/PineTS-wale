@@ -116,5 +116,396 @@ describe('Technical Analysis - Statistical Functions', () => {
         console.log(' STDEV (unbiased) ', part);
         expect(part).toEqual(arrayPrecision(expected));
     });
-});
 
+    it('HIGHESTBARS - Bars Since Highest', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2020-01-27').getTime());
+
+        const sourceCode = (context) => {
+            const { close, volume } = context.data;
+            const { ta, plotchar } = context.pine;
+
+            const res = ta.highestbars(close, 6);
+            plotchar(res, 'plot');
+
+            return { res };
+        };
+
+        const { result, plots } = await pineTS.run(sourceCode);
+
+        let _plotdata = plots['plot']?.data;
+        const startDate = new Date('2018-12-10').getTime();
+        const endDate = new Date('2019-04-20').getTime();
+
+        let plotdata_str = '';
+        for (let i = 0; i < _plotdata.length; i++) {
+            const time = _plotdata[i].time;
+            if (time < startDate || time > endDate) {
+                continue;
+            }
+
+            const str_time = new Date(time).toISOString().slice(0, -1) + '-00:00';
+            const res = _plotdata[i].value;
+            plotdata_str += `[${str_time}]: ${res}\n`;
+        }
+
+        const expected_plot = `[2018-12-10T00:00:00.000-00:00]: NaN
+[2018-12-17T00:00:00.000-00:00]: NaN
+[2018-12-24T00:00:00.000-00:00]: NaN
+[2018-12-31T00:00:00.000-00:00]: NaN
+[2019-01-07T00:00:00.000-00:00]: NaN
+[2019-01-14T00:00:00.000-00:00]: -2
+[2019-01-21T00:00:00.000-00:00]: -3
+[2019-01-28T00:00:00.000-00:00]: -4
+[2019-02-04T00:00:00.000-00:00]: -5
+[2019-02-11T00:00:00.000-00:00]: -1
+[2019-02-18T00:00:00.000-00:00]: 0
+[2019-02-25T00:00:00.000-00:00]: 0
+[2019-03-04T00:00:00.000-00:00]: 0
+[2019-03-11T00:00:00.000-00:00]: 0
+[2019-03-18T00:00:00.000-00:00]: 0
+[2019-03-25T00:00:00.000-00:00]: 0
+[2019-04-01T00:00:00.000-00:00]: 0
+[2019-04-08T00:00:00.000-00:00]: -1
+[2019-04-15T00:00:00.000-00:00]: 0`;
+
+        console.log('expected_plot', expected_plot);
+        console.log('plotdata_str', plotdata_str);
+        expect(plotdata_str.trim()).toEqual(expected_plot.trim());
+    });
+
+    it('MODE - Mode Value', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2020-01-27').getTime());
+
+        const sourceCode = (context) => {
+            const { close, volume } = context.data;
+            const { ta, plotchar } = context.pine;
+
+            const res = ta.mode(close, 6);
+            plotchar(res, 'plot');
+
+            return { res };
+        };
+
+        const { result, plots } = await pineTS.run(sourceCode);
+
+        let _plotdata = plots['plot']?.data;
+        const startDate = new Date('2018-12-10').getTime();
+        const endDate = new Date('2019-04-20').getTime();
+
+        let plotdata_str = '';
+        for (let i = 0; i < _plotdata.length; i++) {
+            const time = _plotdata[i].time;
+            if (time < startDate || time > endDate) {
+                continue;
+            }
+
+            const str_time = new Date(time).toISOString().slice(0, -1) + '-00:00';
+            const res = _plotdata[i].value;
+            plotdata_str += `[${str_time}]: ${res}\n`;
+        }
+
+        const expected_plot = `[2018-12-10T00:00:00.000-00:00]: NaN
+[2018-12-17T00:00:00.000-00:00]: NaN
+[2018-12-24T00:00:00.000-00:00]: NaN
+[2018-12-31T00:00:00.000-00:00]: NaN
+[2019-01-07T00:00:00.000-00:00]: NaN
+[2019-01-14T00:00:00.000-00:00]: 3199.27
+[2019-01-21T00:00:00.000-00:00]: 3509.21
+[2019-01-28T00:00:00.000-00:00]: 3413.46
+[2019-02-04T00:00:00.000-00:00]: 3413.46
+[2019-02-11T00:00:00.000-00:00]: 3413.46
+[2019-02-18T00:00:00.000-00:00]: 3413.46
+[2019-02-25T00:00:00.000-00:00]: 3413.46
+[2019-03-04T00:00:00.000-00:00]: 3413.46
+[2019-03-11T00:00:00.000-00:00]: 3628.54
+[2019-03-18T00:00:00.000-00:00]: 3628.54
+[2019-03-25T00:00:00.000-00:00]: 3721.64
+[2019-04-01T00:00:00.000-00:00]: 3784.63
+[2019-04-08T00:00:00.000-00:00]: 3897.55
+[2019-04-15T00:00:00.000-00:00]: 3967.01`;
+
+        console.log('expected_plot', expected_plot);
+        console.log('plotdata_str', plotdata_str);
+        expect(plotdata_str.trim()).toEqual(expected_plot.trim());
+    });
+
+    it('LOWESTBARS - Bars Since Lowest', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2020-01-27').getTime());
+
+        const sourceCode = (context) => {
+            const { close, volume } = context.data;
+            const { ta, plotchar } = context.pine;
+
+            const res = ta.lowestbars(close, 6);
+            plotchar(res, 'plot');
+
+            return { res };
+        };
+
+        const { result, plots } = await pineTS.run(sourceCode);
+
+        let _plotdata = plots['plot']?.data;
+        const startDate = new Date('2018-12-10').getTime();
+        const endDate = new Date('2019-04-20').getTime();
+
+        let plotdata_str = '';
+        for (let i = 0; i < _plotdata.length; i++) {
+            const time = _plotdata[i].time;
+            if (time < startDate || time > endDate) {
+                continue;
+            }
+
+            const str_time = new Date(time).toISOString().slice(0, -1) + '-00:00';
+            const res = _plotdata[i].value;
+            plotdata_str += `[${str_time}]: ${res}\n`;
+        }
+
+        const expected_plot = `[2018-12-10T00:00:00.000-00:00]: NaN
+[2018-12-17T00:00:00.000-00:00]: NaN
+[2018-12-24T00:00:00.000-00:00]: NaN
+[2018-12-31T00:00:00.000-00:00]: NaN
+[2019-01-07T00:00:00.000-00:00]: NaN
+[2019-01-14T00:00:00.000-00:00]: -5
+[2019-01-21T00:00:00.000-00:00]: -2
+[2019-01-28T00:00:00.000-00:00]: 0
+[2019-02-04T00:00:00.000-00:00]: -1
+[2019-02-11T00:00:00.000-00:00]: -2
+[2019-02-18T00:00:00.000-00:00]: -3
+[2019-02-25T00:00:00.000-00:00]: -4
+[2019-03-04T00:00:00.000-00:00]: -5
+[2019-03-11T00:00:00.000-00:00]: -4
+[2019-03-18T00:00:00.000-00:00]: -5
+[2019-03-25T00:00:00.000-00:00]: -5
+[2019-04-01T00:00:00.000-00:00]: -5
+[2019-04-08T00:00:00.000-00:00]: -5
+[2019-04-15T00:00:00.000-00:00]: -5`;
+
+        console.log('expected_plot', expected_plot);
+        console.log('plotdata_str', plotdata_str);
+        expect(plotdata_str.trim()).toEqual(expected_plot.trim());
+    });
+
+    it('PERCENTRANK - Percentile Rank', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2020-01-27').getTime());
+
+        const sourceCode = (context) => {
+            const { close, volume } = context.data;
+            const { ta, plotchar } = context.pine;
+
+            const res = ta.percentrank(close, 6);
+            plotchar(res, 'plot');
+
+            return { res };
+        };
+
+        const { result, plots } = await pineTS.run(sourceCode);
+
+        let _plotdata = plots['plot']?.data;
+        const startDate = new Date('2018-12-10').getTime();
+        const endDate = new Date('2019-04-20').getTime();
+
+        let plotdata_str = '';
+        for (let i = 0; i < _plotdata.length; i++) {
+            const time = _plotdata[i].time;
+            if (time < startDate || time > endDate) {
+                continue;
+            }
+
+            const str_time = new Date(time).toISOString().slice(0, -1) + '-00:00';
+            const res = _plotdata[i].value;
+            plotdata_str += `[${str_time}]: ${res}\n`;
+        }
+
+        const expected_plot = `[2018-12-10T00:00:00.000-00:00]: NaN
+[2018-12-17T00:00:00.000-00:00]: NaN
+[2018-12-24T00:00:00.000-00:00]: NaN
+[2018-12-31T00:00:00.000-00:00]: NaN
+[2019-01-07T00:00:00.000-00:00]: NaN
+[2019-01-14T00:00:00.000-00:00]: NaN
+[2019-01-21T00:00:00.000-00:00]: 33.3333333333
+[2019-01-28T00:00:00.000-00:00]: 0
+[2019-02-04T00:00:00.000-00:00]: 66.6666666667
+[2019-02-11T00:00:00.000-00:00]: 66.6666666667
+[2019-02-18T00:00:00.000-00:00]: 100
+[2019-02-25T00:00:00.000-00:00]: 100
+[2019-03-04T00:00:00.000-00:00]: 100
+[2019-03-11T00:00:00.000-00:00]: 100
+[2019-03-18T00:00:00.000-00:00]: 100
+[2019-03-25T00:00:00.000-00:00]: 100
+[2019-04-01T00:00:00.000-00:00]: 100
+[2019-04-08T00:00:00.000-00:00]: 83.3333333333
+[2019-04-15T00:00:00.000-00:00]: 100`;
+
+        console.log('expected_plot', expected_plot);
+        console.log('plotdata_str', plotdata_str);
+        expect(plotdata_str.trim()).toEqual(expected_plot.trim());
+    });
+
+    it('percentile_linear_interpolation - Percentile (Linear)', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2020-01-27').getTime());
+
+        const sourceCode = (context) => {
+            const { close, volume } = context.data;
+            const { ta, plotchar } = context.pine;
+
+            const res = ta.percentile_linear_interpolation(close, 3, 42.1);
+            plotchar(res, 'plot');
+
+            return { res };
+        };
+
+        const { result, plots } = await pineTS.run(sourceCode);
+
+        let _plotdata = plots['plot']?.data;
+        const startDate = new Date('2018-12-10').getTime();
+        const endDate = new Date('2019-04-20').getTime();
+
+        let plotdata_str = '';
+        for (let i = 0; i < _plotdata.length; i++) {
+            const time = _plotdata[i].time;
+            if (time < startDate || time > endDate) {
+                continue;
+            }
+
+            const str_time = new Date(time).toISOString().slice(0, -1) + '-00:00';
+            const res = _plotdata[i].value;
+            plotdata_str += `[${str_time}]: ${res}\n`;
+        }
+
+        const expected_plot = `[2018-12-10T00:00:00.000-00:00]: NaN
+[2018-12-17T00:00:00.000-00:00]: NaN
+[2018-12-24T00:00:00.000-00:00]: 3674.15357
+[2018-12-31T00:00:00.000-00:00]: 3922.24629
+[2019-01-07T00:00:00.000-00:00]: 3747.60935
+[2019-01-14T00:00:00.000-00:00]: 3529.49054
+[2019-01-21T00:00:00.000-00:00]: 3526.11045
+[2019-01-28T00:00:00.000-00:00]: 3503.4177
+[2019-02-04T00:00:00.000-00:00]: 3503.4177
+[2019-02-11T00:00:00.000-00:00]: 3577.56604
+[2019-02-18T00:00:00.000-00:00]: 3646.11189
+[2019-02-25T00:00:00.000-00:00]: 3699.5753
+[2019-03-04T00:00:00.000-00:00]: 3769.70137
+[2019-03-11T00:00:00.000-00:00]: 3870.78796
+[2019-03-18T00:00:00.000-00:00]: 3950.54798
+[2019-03-25T00:00:00.000-00:00]: 3971.62615
+[2019-04-01T00:00:00.000-00:00]: 4064.66578
+[2019-04-08T00:00:00.000-00:00]: 4908.33972
+[2019-04-15T00:00:00.000-00:00]: 5185.01462`;
+
+        console.log('expected_plot', expected_plot);
+        console.log('plotdata_str', plotdata_str);
+        expect(plotdata_str.trim()).toEqual(expected_plot.trim());
+    });
+
+    it('percentile_nearest_rank - Percentile (Nearest Rank)', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2020-01-27').getTime());
+
+        const sourceCode = (context) => {
+            const { close, volume } = context.data;
+            const { ta, plotchar } = context.pine;
+
+            const res = ta.percentile_nearest_rank(close, 6, 30);
+            plotchar(res, 'plot');
+
+            return { res };
+        };
+
+        const { result, plots } = await pineTS.run(sourceCode);
+
+        let _plotdata = plots['plot']?.data;
+        const startDate = new Date('2018-12-10').getTime();
+        const endDate = new Date('2019-04-20').getTime();
+
+        let plotdata_str = '';
+        for (let i = 0; i < _plotdata.length; i++) {
+            const time = _plotdata[i].time;
+            if (time < startDate || time > endDate) {
+                continue;
+            }
+
+            const str_time = new Date(time).toISOString().slice(0, -1) + '-00:00';
+            const res = _plotdata[i].value;
+            plotdata_str += `[${str_time}]: ${res}\n`;
+        }
+
+        const expected_plot = `[2018-12-10T00:00:00.000-00:00]: NaN
+[2018-12-17T00:00:00.000-00:00]: NaN
+[2018-12-24T00:00:00.000-00:00]: NaN
+[2018-12-31T00:00:00.000-00:00]: NaN
+[2019-01-07T00:00:00.000-00:00]: NaN
+[2019-01-14T00:00:00.000-00:00]: 3509.21
+[2019-01-21T00:00:00.000-00:00]: 3531.36
+[2019-01-28T00:00:00.000-00:00]: 3509.21
+[2019-02-04T00:00:00.000-00:00]: 3509.21
+[2019-02-11T00:00:00.000-00:00]: 3509.21
+[2019-02-18T00:00:00.000-00:00]: 3531.36
+[2019-02-25T00:00:00.000-00:00]: 3531.36
+[2019-03-04T00:00:00.000-00:00]: 3628.54
+[2019-03-11T00:00:00.000-00:00]: 3651.57
+[2019-03-18T00:00:00.000-00:00]: 3721.64
+[2019-03-25T00:00:00.000-00:00]: 3784.63
+[2019-04-01T00:00:00.000-00:00]: 3897.55
+[2019-04-08T00:00:00.000-00:00]: 3967.01
+[2019-04-15T00:00:00.000-00:00]: 3973.06`;
+
+        console.log('expected_plot', expected_plot);
+        console.log('plotdata_str', plotdata_str);
+        expect(plotdata_str.trim()).toEqual(expected_plot.trim());
+    });
+
+    it('correlation - Correlation Coefficient', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2020-01-27').getTime());
+
+        const sourceCode = (context) => {
+            const { close, volume, high, low } = context.data;
+            const { ta, plotchar } = context.pine;
+
+            const res = ta.correlation(close, low, 6);
+            plotchar(res, 'plot');
+
+            return { res };
+        };
+
+        const { result, plots } = await pineTS.run(sourceCode);
+
+        let _plotdata = plots['plot']?.data;
+        const startDate = new Date('2018-12-10').getTime();
+        const endDate = new Date('2019-04-20').getTime();
+
+        let plotdata_str = '';
+        for (let i = 0; i < _plotdata.length; i++) {
+            const time = _plotdata[i].time;
+            if (time < startDate || time > endDate) {
+                continue;
+            }
+
+            const str_time = new Date(time).toISOString().slice(0, -1) + '-00:00';
+            const res = _plotdata[i].value;
+            plotdata_str += `[${str_time}]: ${res}\n`;
+        }
+
+        const expected_plot = `[2018-12-10T00:00:00.000-00:00]: NaN
+[2018-12-17T00:00:00.000-00:00]: NaN
+[2018-12-24T00:00:00.000-00:00]: NaN
+[2018-12-31T00:00:00.000-00:00]: NaN
+[2019-01-07T00:00:00.000-00:00]: NaN
+[2019-01-14T00:00:00.000-00:00]: 0.5782893392
+[2019-01-21T00:00:00.000-00:00]: 0.019891278
+[2019-01-28T00:00:00.000-00:00]: 0.9543756814
+[2019-02-04T00:00:00.000-00:00]: 0.7185400569
+[2019-02-11T00:00:00.000-00:00]: 0.1211169002
+[2019-02-18T00:00:00.000-00:00]: 0.5220449671
+[2019-02-25T00:00:00.000-00:00]: 0.7203047067
+[2019-03-04T00:00:00.000-00:00]: 0.785390748
+[2019-03-11T00:00:00.000-00:00]: 0.8216331801
+[2019-03-18T00:00:00.000-00:00]: 0.9328191299
+[2019-03-25T00:00:00.000-00:00]: 0.9091316696
+[2019-04-01T00:00:00.000-00:00]: 0.8754026899
+[2019-04-08T00:00:00.000-00:00]: 0.7828922169
+[2019-04-15T00:00:00.000-00:00]: 0.8171521982`;
+
+        console.log('expected_plot', expected_plot);
+        console.log('plotdata_str', plotdata_str);
+        expect(plotdata_str.trim()).toEqual(expected_plot.trim());
+    });
+});

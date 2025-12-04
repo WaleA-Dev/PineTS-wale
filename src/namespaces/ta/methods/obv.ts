@@ -5,12 +5,12 @@ import { Series } from '../../../Series';
 /**
  * On-Balance Volume (OBV)
  * Cumulative indicator that adds volume on up days and subtracts on down days
- * 
+ *
  * Logic:
  * - If close > close[1]: OBV = OBV[1] + volume
  * - If close < close[1]: OBV = OBV[1] - volume
  * - If close == close[1]: OBV = OBV[1]
- * 
+ *
  * Note: OBV starts at 0 on the first bar (when there's no previous close to compare)
  */
 export function obv(context: any) {
@@ -20,8 +20,8 @@ export function obv(context: any) {
         const stateKey = 'obv';
 
         if (!context.taState[stateKey]) {
-            context.taState[stateKey] = { 
-                prevOBV: 0
+            context.taState[stateKey] = {
+                prevOBV: 0,
             };
         }
 
@@ -30,7 +30,7 @@ export function obv(context: any) {
         // Get current close and volume using context.get() for Pine Script semantics
         const close0 = context.get(context.data.close, 0);
         const volume0 = context.get(context.data.volume, 0);
-        
+
         // Get previous close
         const close1 = context.get(context.data.close, 1);
 

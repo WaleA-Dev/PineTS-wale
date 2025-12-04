@@ -144,6 +144,65 @@ export function myIndicator(context: any) {
 }
 ```
 
+## Getter-Like Methods in TA Namespace
+
+Some Pine Script TA functions can be accessed both as properties and as methods. PineTS handles this through transpiler transformation.
+
+### Example: `ta.tr` (True Range)
+
+**Pine Script behavior:**
+
+```pinescript
+// As property (getter)
+tr1 = ta.tr  // Uses default behavior
+
+// As method with parameter
+tr2 = ta.tr(true)   // handle_na = true
+tr3 = ta.tr(false)  // handle_na = false
+```
+
+**PineTS implementation:**
+
+```typescript
+export function tr(context: any) {
+    return (handle_na?: any) => {
+        // Default to true for backward compatibility
+        const handleNa = handle_na !== undefined ? Series.from(handle_na).get(0) : true;
+        
+        const high0 = context.get(context.data.high, 0);
+        const low0 = context.get(context.data.low, 0);
+        const close1 = context.get(context.data.close, 1);
+
+        if (isNaN(close1)) {
+            return handleNa ? high0 - low0 : NaN;
+        }
+
+        return Math.max(high0 - low0, Math.abs(high0 - close1), Math.abs(low0 - close1));
+    };
+}
+```
+
+**Usage in PineTS:**
+
+```javascript
+// All these work correctly:
+const tr1 = ta.tr;          // Auto-converted to ta.tr()
+const tr2 = ta.tr();        // Explicit call with default
+const tr3 = ta.tr(true);    // Explicit parameter
+const tr4 = ta.tr(false);   // Different behavior
+```
+
+### Implementation Guidelines
+
+When implementing getter-like methods:
+
+1. **Always implement as a method** in `methods/` directory (not `getters/`)
+2. **Use optional parameters** with sensible defaults
+3. **Document the default behavior** in comments
+4. **Maintain backward compatibility** when converting from getters
+
+The transpiler automatically handles the conversion from property access to method calls for all known namespaces (`ta`, `math`, `request`, `array`, `input`).
+
 ## Generating the Barrel File
 
 When you add a new method (e.g., `methods/newIndicator.ts`), you must regenerate the namespace index file (`ta.index.ts`) to export it.
@@ -159,3 +218,5 @@ This script automatically:
 1.  Scans the `methods/` and `getters/` directories.
 2.  Generates imports for all detected files.
 3.  Updates `ta.index.ts` to register the new functions in the `TechnicalAnalysis` class.
+
+**Note**: The `getters/` directory is maintained for backward compatibility but new getter-like functions should be implemented as methods with optional parameters.
