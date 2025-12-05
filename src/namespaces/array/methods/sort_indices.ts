@@ -10,7 +10,6 @@ export function sort_indices(context: any) {
             const valB = id.array[b];
             return comparator ? comparator(valA, valB) : valA - valB;
         });
-        return new PineArrayObject(indices);
+        return new PineArrayObject(indices, context);
     };
 }
-

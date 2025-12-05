@@ -7,11 +7,25 @@ export function standardize(context: any) {
         const mean = context.array.avg(id);
         const stdev = context.array.stdev(id);
 
-        if (stdev === 0) {
-            return new PineArrayObject(id.array.map(() => 0));
+        if (isNaN(stdev)) {
+            return new PineArrayObject(
+                id.array.map(() => NaN),
+                context
+            );
         }
 
-        return new PineArrayObject(id.array.map((x) => (x - mean) / stdev));
+        if (stdev === 0) {
+            // If stdev is 0, Pine Script appears to return 1s.
+            // This is an edge case behavior observed in testing.
+            return new PineArrayObject(
+                id.array.map(() => 1),
+                context
+            );
+        }
+
+        return new PineArrayObject(
+            id.array.map((x) => (x - mean) / stdev),
+            context
+        );
     };
 }
-

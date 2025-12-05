@@ -4,18 +4,45 @@ import { PineArrayObject } from '../PineArrayObject';
 
 export function covariance(context: any) {
     return (arr1: PineArrayObject, arr2: PineArrayObject, biased: boolean = true): number => {
-        if (arr1.array.length !== arr2.array.length || arr1.array.length < 2) return NaN;
-        const divisor = biased ? arr1.array.length : arr1.array.length - 1;
+        const a1 = arr1.array;
+        const a2 = arr2.array;
 
-        const mean1 = context.array.avg(arr1);
-        const mean2 = context.array.avg(arr2);
-        let sum = 0;
+        if (a1.length !== a2.length) return NaN;
 
-        for (let i = 0; i < arr1.array.length; i++) {
-            sum += (arr1.array[i] - mean1) * (arr2.array[i] - mean2);
+        let sum1 = 0;
+        let sum2 = 0;
+        let count = 0;
+        const validIndices: number[] = [];
+
+        // First pass: Identify valid pairs and calculate sums for means
+        for (let i = 0; i < a1.length; i++) {
+            const v1 = Number(a1[i]);
+            const v2 = Number(a2[i]);
+
+            if (!isNaN(v1) && v1 !== null && v1 !== undefined && !isNaN(v2) && v2 !== null && v2 !== undefined) {
+                sum1 += v1;
+                sum2 += v2;
+                count++;
+                validIndices.push(i);
+            }
         }
 
-        return sum / divisor;
+        if (count === 0) return NaN;
+
+        const mean1 = sum1 / count;
+        const mean2 = sum2 / count;
+        let sumProd = 0;
+
+        // Second pass: Calculate sum of products of differences
+        for (const i of validIndices) {
+            const v1 = Number(a1[i]);
+            const v2 = Number(a2[i]);
+            sumProd += (v1 - mean1) * (v2 - mean2);
+        }
+
+        const divisor = biased ? count : count - 1;
+        if (divisor <= 0) return NaN;
+
+        return sumProd / divisor;
     };
 }
-

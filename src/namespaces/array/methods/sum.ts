@@ -4,7 +4,9 @@ import { PineArrayObject } from '../PineArrayObject';
 
 export function sum(context: any) {
     return (id: PineArrayObject): number => {
-        return id.array.reduce((a: number, b: any) => a + (isNaN(b) ? 0 : b), 0);
+        return id.array.reduce((a: number, b: any) => {
+            const val = Number(b);
+            return isNaN(val) ? a : a + val;
+        }, 0);
     };
 }
-

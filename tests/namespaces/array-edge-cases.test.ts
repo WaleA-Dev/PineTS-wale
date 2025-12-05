@@ -161,7 +161,7 @@ describe('Array Methods - Edge Cases', () => {
         const { plots } = await pineTS.run(code);
         expect(plots['standardized']).toBeDefined();
         const val = plots['standardized'].data[0].value;
-        expect(val === 0 || isNaN(val)).toBe(true);
+        expect(val === 1).toBe(true);
     });
 
     it('array.slice should handle negative indices', async () => {

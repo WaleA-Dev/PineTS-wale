@@ -4,144 +4,68 @@
 
 export { PineArrayObject } from './PineArrayObject';
 
-import { abs } from './methods/abs';
-import { avg } from './methods/avg';
-import { clear } from './methods/clear';
-import { concat } from './methods/concat';
-import { copy } from './methods/copy';
-import { covariance } from './methods/covariance';
-import { every } from './methods/every';
-import { fill } from './methods/fill';
-import { first } from './methods/first';
+import { PineArrayObject } from './PineArrayObject';
 import { from } from './methods/from';
-import { get } from './methods/get';
-import { includes } from './methods/includes';
-import { indexof } from './methods/indexof';
-import { insert } from './methods/insert';
-import { join } from './methods/join';
-import { last } from './methods/last';
-import { lastindexof } from './methods/lastindexof';
-import { max } from './methods/max';
-import { min } from './methods/min';
 import { new_fn } from './methods/new';
 import { new_bool } from './methods/new_bool';
 import { new_float } from './methods/new_float';
 import { new_int } from './methods/new_int';
 import { new_string } from './methods/new_string';
 import { param } from './methods/param';
-import { pop } from './methods/pop';
-import { push } from './methods/push';
-import { range } from './methods/range';
-import { remove } from './methods/remove';
-import { reverse } from './methods/reverse';
-import { set } from './methods/set';
-import { shift } from './methods/shift';
-import { size } from './methods/size';
-import { slice } from './methods/slice';
-import { some } from './methods/some';
-import { sort } from './methods/sort';
-import { sort_indices } from './methods/sort_indices';
-import { standardize } from './methods/standardize';
-import { stdev } from './methods/stdev';
-import { sum } from './methods/sum';
-import { unshift } from './methods/unshift';
-import { variance } from './methods/variance';
-
-const methods = {
-  abs,
-  avg,
-  clear,
-  concat,
-  copy,
-  covariance,
-  every,
-  fill,
-  first,
-  from,
-  get,
-  includes,
-  indexof,
-  insert,
-  join,
-  last,
-  lastindexof,
-  max,
-  min,
-  new: new_fn,
-  new_bool,
-  new_float,
-  new_int,
-  new_string,
-  param,
-  pop,
-  push,
-  range,
-  remove,
-  reverse,
-  set,
-  shift,
-  size,
-  slice,
-  some,
-  sort,
-  sort_indices,
-  standardize,
-  stdev,
-  sum,
-  unshift,
-  variance
-};
 
 export class PineArray {
-  private _cache = {};
-  abs: ReturnType<typeof methods.abs>;
-  avg: ReturnType<typeof methods.avg>;
-  clear: ReturnType<typeof methods.clear>;
-  concat: ReturnType<typeof methods.concat>;
-  copy: ReturnType<typeof methods.copy>;
-  covariance: ReturnType<typeof methods.covariance>;
-  every: ReturnType<typeof methods.every>;
-  fill: ReturnType<typeof methods.fill>;
-  first: ReturnType<typeof methods.first>;
-  from: ReturnType<typeof methods.from>;
-  get: ReturnType<typeof methods.get>;
-  includes: ReturnType<typeof methods.includes>;
-  indexof: ReturnType<typeof methods.indexof>;
-  insert: ReturnType<typeof methods.insert>;
-  join: ReturnType<typeof methods.join>;
-  last: ReturnType<typeof methods.last>;
-  lastindexof: ReturnType<typeof methods.lastindexof>;
-  max: ReturnType<typeof methods.max>;
-  min: ReturnType<typeof methods.min>;
-  new: ReturnType<typeof methods.new>;
-  new_bool: ReturnType<typeof methods.new_bool>;
-  new_float: ReturnType<typeof methods.new_float>;
-  new_int: ReturnType<typeof methods.new_int>;
-  new_string: ReturnType<typeof methods.new_string>;
-  param: ReturnType<typeof methods.param>;
-  pop: ReturnType<typeof methods.pop>;
-  push: ReturnType<typeof methods.push>;
-  range: ReturnType<typeof methods.range>;
-  remove: ReturnType<typeof methods.remove>;
-  reverse: ReturnType<typeof methods.reverse>;
-  set: ReturnType<typeof methods.set>;
-  shift: ReturnType<typeof methods.shift>;
-  size: ReturnType<typeof methods.size>;
-  slice: ReturnType<typeof methods.slice>;
-  some: ReturnType<typeof methods.some>;
-  sort: ReturnType<typeof methods.sort>;
-  sort_indices: ReturnType<typeof methods.sort_indices>;
-  standardize: ReturnType<typeof methods.standardize>;
-  stdev: ReturnType<typeof methods.stdev>;
-  sum: ReturnType<typeof methods.sum>;
-  unshift: ReturnType<typeof methods.unshift>;
-  variance: ReturnType<typeof methods.variance>;
+  [key: string]: any;
 
   constructor(private context: any) {
+
     // Install methods
-    Object.entries(methods).forEach(([name, factory]) => {
-      this[name] = factory(context);
-    });
+    this.abs = (id: PineArrayObject, ...args: any[]) => id.abs(...args);
+    this.avg = (id: PineArrayObject, ...args: any[]) => id.avg(...args);
+    this.clear = (id: PineArrayObject, ...args: any[]) => id.clear(...args);
+    this.concat = (id: PineArrayObject, ...args: any[]) => id.concat(...args);
+    this.copy = (id: PineArrayObject, ...args: any[]) => id.copy(...args);
+    this.covariance = (id: PineArrayObject, ...args: any[]) => id.covariance(...args);
+    this.every = (id: PineArrayObject, ...args: any[]) => id.every(...args);
+    this.fill = (id: PineArrayObject, ...args: any[]) => id.fill(...args);
+    this.first = (id: PineArrayObject, ...args: any[]) => id.first(...args);
+    this.from = from(context);
+    this.get = (id: PineArrayObject, ...args: any[]) => id.get(...args);
+    this.includes = (id: PineArrayObject, ...args: any[]) => id.includes(...args);
+    this.indexof = (id: PineArrayObject, ...args: any[]) => id.indexof(...args);
+    this.insert = (id: PineArrayObject, ...args: any[]) => id.insert(...args);
+    this.join = (id: PineArrayObject, ...args: any[]) => id.join(...args);
+    this.last = (id: PineArrayObject, ...args: any[]) => id.last(...args);
+    this.lastindexof = (id: PineArrayObject, ...args: any[]) => id.lastindexof(...args);
+    this.max = (id: PineArrayObject, ...args: any[]) => id.max(...args);
+    this.median = (id: PineArrayObject, ...args: any[]) => id.median(...args);
+    this.min = (id: PineArrayObject, ...args: any[]) => id.min(...args);
+    this.mode = (id: PineArrayObject, ...args: any[]) => id.mode(...args);
+    this.new = new_fn(context);
+    this.new_bool = new_bool(context);
+    this.new_float = new_float(context);
+    this.new_int = new_int(context);
+    this.new_string = new_string(context);
+    this.param = param(context);
+    this.percentile_linear_interpolation = (id: PineArrayObject, ...args: any[]) => id.percentile_linear_interpolation(...args);
+    this.percentile_nearest_rank = (id: PineArrayObject, ...args: any[]) => id.percentile_nearest_rank(...args);
+    this.percentrank = (id: PineArrayObject, ...args: any[]) => id.percentrank(...args);
+    this.pop = (id: PineArrayObject, ...args: any[]) => id.pop(...args);
+    this.push = (id: PineArrayObject, ...args: any[]) => id.push(...args);
+    this.range = (id: PineArrayObject, ...args: any[]) => id.range(...args);
+    this.remove = (id: PineArrayObject, ...args: any[]) => id.remove(...args);
+    this.reverse = (id: PineArrayObject, ...args: any[]) => id.reverse(...args);
+    this.set = (id: PineArrayObject, ...args: any[]) => id.set(...args);
+    this.shift = (id: PineArrayObject, ...args: any[]) => id.shift(...args);
+    this.size = (id: PineArrayObject, ...args: any[]) => id.size(...args);
+    this.slice = (id: PineArrayObject, ...args: any[]) => id.slice(...args);
+    this.some = (id: PineArrayObject, ...args: any[]) => id.some(...args);
+    this.sort = (id: PineArrayObject, ...args: any[]) => id.sort(...args);
+    this.sort_indices = (id: PineArrayObject, ...args: any[]) => id.sort_indices(...args);
+    this.standardize = (id: PineArrayObject, ...args: any[]) => id.standardize(...args);
+    this.stdev = (id: PineArrayObject, ...args: any[]) => id.stdev(...args);
+    this.sum = (id: PineArrayObject, ...args: any[]) => id.sum(...args);
+    this.unshift = (id: PineArrayObject, ...args: any[]) => id.unshift(...args);
+    this.variance = (id: PineArrayObject, ...args: any[]) => id.variance(...args);
   }
 }
 

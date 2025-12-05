@@ -4,7 +4,6 @@ import { PineArrayObject } from '../PineArrayObject';
 
 export function from(context: any) {
     return (...values: any[]): PineArrayObject => {
-        return new PineArrayObject([...values]);
+        return new PineArrayObject([...values], context);
     };
 }
-

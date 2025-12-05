@@ -197,6 +197,11 @@ export function transformIdentifier(node: any, scopeManager: ScopeManager): void
         }
 
         const [scopedName, kind] = scopeManager.getVariable(node.name);
+
+        if (scopedName === node.name && !scopeManager.isContextBound(node.name)) {
+            return;
+        }
+
         const memberExpr = ASTFactory.createContextVariableReference(kind, scopedName);
 
         if (!hasArrayAccess && !isArrayAccess) {
@@ -808,6 +813,13 @@ export function transformCallExpression(node: any, scopeManager: ScopeManager, n
             return transformFunctionArgument(arg, CONTEXT_NAME, scopeManager);
         });
         node._transformed = true;
+    }
+
+    // Handle method calls on local variables (e.g. arr.set())
+    if (!isNamespaceCall && node.callee && node.callee.type === 'MemberExpression') {
+        if (node.callee.object.type === 'Identifier') {
+            transformIdentifier(node.callee.object, scopeManager);
+        }
     }
 
     // Transform any nested call expressions in the arguments
