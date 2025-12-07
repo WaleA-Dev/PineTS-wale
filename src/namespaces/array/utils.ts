@@ -1,8 +1,8 @@
 import { PineArrayType } from './PineArrayObject';
 
-export function precision(value: any, epsilon: number = 1e10): number {
-    return typeof value === 'number' ? Math.round(value * epsilon) / epsilon : value;
-}
+// export function precision(value: any, epsilon: number = 1e10): number {
+//     return typeof value === 'number' ? Math.round(value * epsilon) / epsilon : value;
+// }
 
 export function inferArrayType(values: any[]): PineArrayType {
     if (values.every((value) => typeof value === 'number')) {

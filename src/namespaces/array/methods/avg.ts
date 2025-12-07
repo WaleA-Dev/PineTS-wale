@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { PineArrayObject } from '../PineArrayObject';
+import { Context } from '../../../Context.class';
 
-export function avg(context: any) {
+export function avg(context: Context) {
     return (id: PineArrayObject): number => {
         let mean = 0;
         let count = 0;
@@ -14,6 +15,6 @@ export function avg(context: any) {
             }
         }
         if (count === 0) return NaN;
-        return mean;
+        return context.precision(mean);
     };
 }

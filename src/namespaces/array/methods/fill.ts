@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { PineArrayObject } from '../PineArrayObject';
-import { isValueOfType, precision } from '../utils';
+import { isValueOfType } from '../utils';
+import { Context } from '../../../Context.class';
 
-export function fill(context: any) {
+export function fill(context: Context) {
     return (id: PineArrayObject, value: any, start: number = 0, end?: number): void => {
         const length = id.array.length;
         const adjustedEnd = end !== undefined ? Math.min(end, length) : length;
@@ -16,7 +17,7 @@ export function fill(context: any) {
                     }' is expected.`
                 );
             }
-            id.array[i] = precision(value);
+            id.array[i] = context.precision(value);
         }
     };
 }

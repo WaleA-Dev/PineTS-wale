@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { PineArrayObject } from '../PineArrayObject';
+import { Context } from '../../../Context.class';
 
-export function covariance(context: any) {
+export function covariance(context: Context) {
     return (arr1: PineArrayObject, arr2: PineArrayObject, biased: boolean = true): number => {
         const a1 = arr1.array;
         const a2 = arr2.array;
@@ -43,6 +44,6 @@ export function covariance(context: any) {
         const divisor = biased ? count : count - 1;
         if (divisor <= 0) return NaN;
 
-        return sumProd / divisor;
+        return context.precision(sumProd / divisor);
     };
 }

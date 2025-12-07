@@ -28,7 +28,7 @@ describe('Array Calculations & Statistics', () => {
         const part_variance_biased = result.variance_biased.reverse().slice(0, 5);
 
         const expected_avg = [91208.313, 85100.454, 88537.149, 84374.28, 85677.543];
-        const expected_variance = [1024803322.8804907, 892005824.9523604, 965593357.8452102, 876829977.664, 904158891.6052902];
+        const expected_variance = [1024803322.8804907, 892005824.9523604, 965593357.8452101, 876829977.664, 904158891.6052902];
         const expected_variance_biased = [922322990.5924416, 802805242.4571244, 869034022.0606892, 789146979.8976, 813743002.4447612];
 
         expect(part_avg).toEqual(expected_avg);
@@ -62,7 +62,7 @@ describe('Array Calculations & Statistics', () => {
         const part_variance_biased = result.variance_biased.reverse().slice(0, 5);
 
         const expected_avg = [91208.313, 85100.454, 88537.149, 84374.28, 85677.543];
-        const expected_variance = [1024803322.8804907, 892005824.9523604, 965593357.8452102, 876829977.664, 904158891.6052902];
+        const expected_variance = [1024803322.8804907, 892005824.9523604, 965593357.8452101, 876829977.664, 904158891.6052902];
         const expected_variance_biased = [922322990.5924416, 802805242.4571244, 869034022.0606892, 789146979.8976, 813743002.4447612];
 
         expect(part_avg).toEqual(expected_avg);

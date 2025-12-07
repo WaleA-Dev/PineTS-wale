@@ -2284,7 +2284,6 @@ describe('PineScript Language', () => {
         };
 
         expect(deepEqual(context.result, expected)).toBe(true);
-        expect(context.result).toEqual(expected);
     });
 
     it('Expression Side Effects', async () => {

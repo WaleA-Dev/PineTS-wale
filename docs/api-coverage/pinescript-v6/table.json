@@ -1,0 +1,31 @@
+{
+    "Cell Operations": {
+        "table.cell()": false,
+        "table.cell_set_bgcolor()": false,
+        "table.cell_set_height()": false,
+        "table.cell_set_text()": false,
+        "table.cell_set_text_color()": false,
+        "table.cell_set_text_font_family()": false,
+        "table.cell_set_text_formatting()": false,
+        "table.cell_set_text_halign()": false,
+        "table.cell_set_text_size()": false,
+        "table.cell_set_text_valign()": false,
+        "table.cell_set_tooltip()": false,
+        "table.cell_set_width()": false,
+        "table.merge_cells()": false
+    },
+    "Management": {
+        "table.all": false,
+        "table.clear()": false,
+        "table.delete()": false,
+        "table.new()": false
+    },
+    "Table Settings": {
+        "table.set_bgcolor()": false,
+        "table.set_border_color()": false,
+        "table.set_border_width()": false,
+        "table.set_frame_color()": false,
+        "table.set_frame_width()": false,
+        "table.set_position()": false
+    }
+}

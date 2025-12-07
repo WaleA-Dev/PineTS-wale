@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2025 Alaa-eddine KADDOURI
 
-import { IProvider } from './marketData/IProvider';
+import { IProvider, ISymbolInfo } from './marketData/IProvider';
 import { PineArray } from './namespaces/array/array.index';
 import { Core } from './namespaces/Core';
 import { Input } from './namespaces/input/input.index';
@@ -42,6 +42,8 @@ export class Context {
         plot: (...args: any[]) => any;
         nz: (...args: any[]) => any;
         bar_index: number;
+        syminfo: ISymbolInfo;
+        barstate: TBarState;
     };
 
     // Track deprecation warnings to avoid spam
@@ -115,6 +117,19 @@ export class Context {
             color: coreFunctions.color,
             plot: coreFunctions.plot,
             nz: coreFunctions.nz,
+            syminfo: null,
+
+            //FIXME : this is a temporary solution to get the barstate values,
+            //we need to implement a better way to handle realtime states
+            barstate: {
+                isnew: this.idx === 0,
+                islast: this.idx === this.data.close.data.length - 1,
+                isfirst: this.idx === 0,
+                ishistory: this.idx < this.data.close.data.length - 1,
+                isrealtime: this.idx === this.data.close.data.length - 1,
+                isconfirmed: this.idx === this.data.close.data.length - 1,
+                islastconfirmedhistory: this.idx === this.data.close.data.length - 1,
+            },
             get bar_index() {
                 return _this.idx;
             },
@@ -144,10 +159,10 @@ export class Context {
             } else {
                 // Flat 1D array = time-series data (forward-ordered)
                 // Extract the element at the right position
-                value = this.precision(src[src.length - 1 + idx]);
+                value = src[src.length - 1 + idx];
             }
         } else {
-            value = this.precision(src);
+            value = src;
         }
 
         // If target doesn't exist, create new Series
@@ -211,9 +226,11 @@ export class Context {
      * @param decimals - the number of decimals to precision to
      * @returns the precision number
      */
-    precision(n: number, decimals: number = 10) {
-        if (typeof n !== 'number' || isNaN(n)) return n;
-        return Number(n.toFixed(decimals));
+    precision(value: number, decimals: number = 10) {
+        const epsilon = 10 ** decimals;
+        return typeof value === 'number' ? Math.round(value * epsilon) / epsilon : value;
+        //if (typeof n !== 'number' || isNaN(n)) return n;
+        //return Number(n.toFixed(decimals));
     }
 
     /**

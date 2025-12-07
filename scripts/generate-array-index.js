@@ -36,17 +36,17 @@ async function generateIndex() {
         const staticMethods = ['new', 'new_bool', 'new_float', 'new_int', 'new_string', 'from', 'param'];
 
         // --- Generate PineArrayObject.ts ---
-        const objectMethods = methods.filter(m => !staticMethods.includes(m.classProp));
-        
-        const objectImports = objectMethods.map(m => 
-            `import { ${m.export} as ${m.export}_factory } from './methods/${m.file}';`
-        ).join('\n');
+        const objectMethods = methods.filter((m) => !staticMethods.includes(m.classProp));
 
-        const objectMethodDefs = objectMethods.map(m => {
-            return `    ${m.classProp}(...args: any[]) {
+        const objectImports = objectMethods.map((m) => `import { ${m.export} as ${m.export}_factory } from './methods/${m.file}';`).join('\n');
+
+        const objectMethodDefs = objectMethods
+            .map((m) => {
+                return `    ${m.classProp}(...args: any[]) {
         return (${m.export}_factory(this.context) as any)(this, ...args);
     }`;
-        }).join('\n\n');
+            })
+            .join('\n\n');
 
         const objectClassCode = `// SPDX-License-Identifier: AGPL-3.0-only
 // This file is auto-generated. Do not edit manually.
@@ -71,39 +71,44 @@ ${objectMethodDefs}
 
         // Generate imports
         const getterImports = getters.length > 0 ? getters.map((name) => `import { ${name} } from './getters/${name}';`).join('\n') : '';
-        
+
         // Imports for index file
         let indexImports = `import { PineArrayObject } from './PineArrayObject';`;
-        
+
         // Import static method factories
         const staticMethodImports = methods
-            .filter(m => staticMethods.includes(m.classProp))
-            .map(m => `import { ${m.export} } from './methods/${m.file}';`)
+            .filter((m) => staticMethods.includes(m.classProp))
+            .map((m) => `import { ${m.export} } from './methods/${m.file}';`)
             .join('\n');
-        
+
         indexImports += '\n' + staticMethodImports;
 
         // Generate getters object (for type definitions mostly, or we just inline)
         // In the previous version, getters were added via Object.defineProperty
-        
-        const getterInstall = getters.length > 0 ? `    // Install getters
+
+        const getterInstall =
+            getters.length > 0
+                ? `    // Install getters
     const getters = {
-${getters.map(g => `      ${g}: ${g}`).join(',\n')}
+${getters.map((g) => `      ${g}: ${g}`).join(',\n')}
     };
     Object.entries(getters).forEach(([name, factory]) => {
       Object.defineProperty(this, name, {
         get: factory(context),
         enumerable: true
       });
-    });` : '';
+    });`
+                : '';
 
         // Generate methods installation
-        const methodInstall = methods.map(m => {
-            if (staticMethods.includes(m.classProp)) {
-                return `    this.${m.classProp} = ${m.export}(context);`;
-            }
-            return `    this.${m.classProp} = (id: PineArrayObject, ...args: any[]) => id.${m.classProp}(...args);`;
-        }).join('\n');
+        const methodInstall = methods
+            .map((m) => {
+                if (staticMethods.includes(m.classProp)) {
+                    return `    this.${m.classProp} = ${m.export}(context);`;
+                }
+                return `    this.${m.classProp} = (id: PineArrayObject, ...args: any[]) => id.${m.classProp}(...args);`;
+            })
+            .join('\n');
 
         // Generate type declarations
         // For 'new', we can use the return type of new_fn factory result.
@@ -119,13 +124,13 @@ ${getters.map(g => `      ${g}: ${g}`).join(',\n')}
         // The previous file had explicit type decls.
         // "readonly name: ReturnType<ReturnType<typeof getters.name>>;"
         // "name: ReturnType<typeof methods.name>;"
-        
+
         // If we want to keep types, we need to import the factories.
         // But we are changing implementation to delegation.
         // delegating `(id, ...args) => id.method(...args)` has the same signature as the factory result roughly.
-        
+
         // Let's stick to a simpler version first.
-        
+
         const classCode = `// SPDX-License-Identifier: AGPL-3.0-only
 // This file is auto-generated. Do not edit manually.
 // Run: npm run generate:array-index
@@ -152,7 +157,7 @@ export default PineArray;
         if (getters.length > 0) {
             console.log(`   - ${getters.length} getters: ${getters.join(', ')}`);
         }
-        console.log(`   - ${methods.length} methods: ${methods.map(m => m.classProp).join(', ')}`);
+        console.log(`   - ${methods.length} methods: ${methods.map((m) => m.classProp).join(', ')}`);
     } catch (error) {
         console.error('Error generating Array index:', error);
         process.exit(1);

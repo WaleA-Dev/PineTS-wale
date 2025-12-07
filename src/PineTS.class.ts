@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2025 Alaa-eddine KADDOURI
 import { transpile } from '@pinets/transpiler/index';
-import { IProvider } from './marketData/IProvider';
+import { IProvider, ISymbolInfo } from './marketData/IProvider';
 import { Context } from './Context.class';
 import { Series } from './Series';
 
@@ -52,6 +52,8 @@ export class PineTS {
         this._isSecondaryContext = true;
     }
 
+    private _syminfo: ISymbolInfo;
+
     constructor(
         private source: IProvider | any[],
         private tickerId?: string,
@@ -89,8 +91,23 @@ export class PineTS {
                 this.openTime = _openTime;
                 this.closeTime = _closeTime;
 
-                this._ready = true;
-                resolve(true);
+                if (source && (source as IProvider).getSymbolInfo) {
+                    const symbolInfo = (source as IProvider)
+                        .getSymbolInfo(tickerId)
+                        .then((symbolInfo) => {
+                            this._syminfo = symbolInfo;
+                            this._ready = true;
+                            resolve(true);
+                        })
+                        .catch((error) => {
+                            console.warn('Failed to get symbol info, using default values:', error);
+                            this._ready = true;
+                            resolve(true);
+                        });
+                } else {
+                    this._ready = true;
+                    resolve(true);
+                }
             });
         });
     }
@@ -421,6 +438,8 @@ export class PineTS {
             sDate: this.sDate,
             eDate: this.eDate,
         });
+
+        context.pine.syminfo = this._syminfo;
 
         context.pineTSCode = pineTSCode;
         context.isSecondaryContext = isSecondary; // Set secondary context flag

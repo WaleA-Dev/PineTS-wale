@@ -12,7 +12,7 @@
         "test": "cross-env TEST_ENV=true vitest --reporter verbose",
         "test:coverage": "cross-env TEST_ENV=true vitest run --coverage",
         "test:coverage:badge": "cross-env TEST_ENV=true vitest run --coverage --exclude tests/_local/**",
-        "badge": "npm run test:coverage:badge && node scripts/generate-coverage-badge.js",
+        "generate:badges": "npm run test:coverage:badge && node scripts/generate-badges.js",
         "generate:ta-index": "node scripts/generate-ta-index.js",
         "generate:math-index": "node scripts/generate-math-index.js",
         "generate:array-index": "node scripts/generate-array-index.js",

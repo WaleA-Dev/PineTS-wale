@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { PineArrayObject } from '../PineArrayObject';
-import { isValueOfType, precision } from '../utils';
+import { isValueOfType } from '../utils';
+import { Context } from '../../../Context.class';
 
-export function push(context: any) {
+export function push(context: Context) {
     return (id: PineArrayObject, value: any) => {
         if (!isValueOfType(value, id.type)) {
             throw new Error(
@@ -12,6 +13,6 @@ export function push(context: any) {
                 }' is expected.`
             );
         }
-        id.array.push(precision(value));
+        id.array.push(context.precision(value));
     };
 }

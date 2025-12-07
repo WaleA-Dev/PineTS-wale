@@ -50,3 +50,25 @@ type IndicatorOptions = {
     dynamic_requests?: boolean;
     behind_chart?: boolean;
 };
+
+type TSessionInfo = {
+    isfirstbar: boolean;
+    isfirstbar_regular: boolean;
+    islastbar: boolean;
+    islastbar_regular: boolean;
+    ismarket: boolean;
+    ispostmarket: boolean;
+    ispremarket: boolean;
+    extended: boolean;
+    regular: boolean;
+};
+
+type TBarState = {
+    isnew: boolean;
+    islast: boolean;
+    isfirst: boolean;
+    ishistory: boolean;
+    isrealtime: boolean;
+    isconfirmed: boolean;
+    islastconfirmedhistory: boolean;
+};

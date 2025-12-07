@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { PineArrayObject } from '../PineArrayObject';
+import { Context } from '../../../Context.class';
 
-export function variance(context: any) {
+export function variance(context: Context) {
     return (id: PineArrayObject, biased: boolean = true): number => {
         // Inline Naive Avg to match legacy behavior for variance calculation
         let sum = 0;
@@ -30,6 +31,6 @@ export function variance(context: any) {
         const divisor = biased ? count : count - 1;
         if (divisor <= 0) return NaN;
 
-        return sumSqDiff / divisor;
+        return context.precision(sumSqDiff / divisor);
     };
 }

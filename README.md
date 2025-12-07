@@ -4,6 +4,46 @@
 [![Documentation](https://img.shields.io/badge/docs-github--pages-blue?style=flat-square)](https://quantforgeorg.github.io/PineTS/)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/QuantForge?style=flat-square&logo=reddit)](https://www.reddit.com/r/QuantForge/)
 
+---
+
+## Pine Script API Coverage
+
+### Calculation and Data
+
+[![math](./.github/badges/api-math.svg)](./.github/badges/api-math.svg)
+[![array](./.github/badges/api-array.svg)](./.github/badges/api-array.svg)
+[![ta](./.github/badges/api-ta.svg)](./.github/badges/api-ta.svg)
+[![syminfo](./.github/badges/api-syminfo.svg)](./.github/badges/api-syminfo.svg)
+[![matrix](./.github/badges/api-matrix.svg)](./.github/badges/api-matrix.svg)
+[![map](./.github/badges/api-map.svg)](./.github/badges/api-map.svg)
+[![str](./.github/badges/api-str.svg)](./.github/badges/api-str.svg)
+[![request](./.github/badges/api-request.svg)](./.github/badges/api-request.svg)
+[![strategy](./.github/badges/api-strategy.svg)](./.github/badges/api-strategy.svg)
+[![timeframe](./.github/badges/api-timeframe.svg)](./.github/badges/api-timeframe.svg)
+[![session](./.github/badges/api-session.svg)](./.github/badges/api-session.svg)
+[![ticker](./.github/badges/api-ticker.svg)](./.github/badges/api-ticker.svg)
+[![barstate](./.github/badges/api-barstate.svg)](./.github/badges/api-barstate.svg)
+[![input](./.github/badges/api-input.svg)](./.github/badges/api-input.svg)
+[![types](./.github/badges/api-types.svg)](./.github/badges/api-types.svg)
+
+### Plots and Visual Drawing
+
+[![label](./.github/badges/api-label.svg)](./.github/badges/api-label.svg)
+[![line](./.github/badges/api-line.svg)](./.github/badges/api-line.svg)
+[![box](./.github/badges/api-box.svg)](./.github/badges/api-box.svg)
+[![polyline](./.github/badges/api-polyline.svg)](./.github/badges/api-polyline.svg)
+[![table](./.github/badges/api-table.svg)](./.github/badges/api-table.svg)
+[![linefill](./.github/badges/api-linefill.svg)](./.github/badges/api-linefill.svg)
+
+### Chart Display and styling
+
+[![color](./.github/badges/api-color.svg)](./.github/badges/api-color.svg)
+[![chart](./.github/badges/api-chart.svg)](./.github/badges/api-chart.svg)
+[![log](./.github/badges/api-log.svg)](./.github/badges/api-log.svg)
+[![builtin](./.github/badges/api-builtin.svg)](./.github/badges/api-builtin.svg)
+
+---
+
 This project aims to provide a Javascript/Typescript port for Tradingview's Pine Script.
 The current version does not run Pine Script directly, instead it runs a close Javascript equivalent called PineTS.
 

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { PineArrayObject } from '../PineArrayObject';
+import { Context } from '../../../Context.class';
 
-export function percentile_linear_interpolation(context: any) {
+export function percentile_linear_interpolation(context: Context) {
     return (id: PineArrayObject, percentage: number): number => {
         const array = id.array;
         if (array.length === 0) return NaN;
@@ -26,12 +27,12 @@ export function percentile_linear_interpolation(context: any) {
         const k = (percentage / 100) * validValues.length - 0.5;
 
         // Handle boundaries
-        if (k <= 0) return validValues[0];
-        if (k >= validValues.length - 1) return validValues[validValues.length - 1];
+        if (k <= 0) return context.precision(validValues[0]);
+        if (k >= validValues.length - 1) return context.precision(validValues[validValues.length - 1]);
 
         const i = Math.floor(k);
         const f = k - i;
 
-        return validValues[i] * (1 - f) + validValues[i + 1] * f;
+        return context.precision(validValues[i] * (1 - f) + validValues[i + 1] * f);
     };
 }

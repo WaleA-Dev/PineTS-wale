@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { PineArrayObject } from '../PineArrayObject';
+import { Context } from '../../../Context.class';
 
-export function stdev(context: any) {
+export function stdev(context: Context) {
     return (id: PineArrayObject, biased: boolean = true): number => {
         const array = id.array;
         const n_total = array.length;
@@ -40,6 +41,6 @@ export function stdev(context: any) {
 
         if (!biased && count === 1) return 0;
 
-        return Math.sqrt(variance);
+        return context.precision(Math.sqrt(variance));
     };
 }
