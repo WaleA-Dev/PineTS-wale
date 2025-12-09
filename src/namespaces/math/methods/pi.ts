@@ -9,4 +9,3 @@ export function pi(context: any) {
         return Math.PI;
     };
 }
-

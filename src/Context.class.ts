@@ -3,6 +3,7 @@
 
 import { IProvider, ISymbolInfo } from './marketData/IProvider';
 import { PineArray } from './namespaces/array/array.index';
+import { Barstate } from './namespaces/Barstate';
 import { Core } from './namespaces/Core';
 import { Input } from './namespaces/input/input.index';
 import PineMath from './namespaces/math/math.index';
@@ -43,7 +44,7 @@ export class Context {
         nz: (...args: any[]) => any;
         bar_index: number;
         syminfo: ISymbolInfo;
-        barstate: TBarState;
+        barstate: Barstate;
     };
 
     // Track deprecation warnings to avoid spam
@@ -66,6 +67,7 @@ export class Context {
     public limit: number;
     public sDate: number;
     public eDate: number;
+    public fullContext: Context;
 
     public pineTSCode: Function | String;
 
@@ -77,6 +79,7 @@ export class Context {
         limit,
         sDate,
         eDate,
+        fullContext,
     }: {
         marketData: any;
         source: IProvider | any[];
@@ -85,6 +88,7 @@ export class Context {
         limit?: number;
         sDate?: number;
         eDate?: number;
+        fullContext?: Context;
     }) {
         this.marketData = marketData;
         this.source = source;
@@ -93,7 +97,7 @@ export class Context {
         this.limit = limit;
         this.sDate = sDate;
         this.eDate = eDate;
-
+        this.fullContext = fullContext || this;
         // Initialize core functions
         const core = new Core(this);
         const coreFunctions = {
@@ -121,15 +125,7 @@ export class Context {
 
             //FIXME : this is a temporary solution to get the barstate values,
             //we need to implement a better way to handle realtime states
-            barstate: {
-                isnew: this.idx === 0,
-                islast: this.idx === this.data.close.data.length - 1,
-                isfirst: this.idx === 0,
-                ishistory: this.idx < this.data.close.data.length - 1,
-                isrealtime: this.idx === this.data.close.data.length - 1,
-                isconfirmed: this.idx === this.data.close.data.length - 1,
-                islastconfirmedhistory: this.idx === this.data.close.data.length - 1,
-            },
+            barstate: new Barstate(this),
             get bar_index() {
                 return _this.idx;
             },

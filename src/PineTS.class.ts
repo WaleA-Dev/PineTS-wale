@@ -239,13 +239,17 @@ export class PineTS {
             }
 
             // #4: Always recalculate last candle + new ones
-            // Remove last result (will be recalculated with fresh data)
+            // Remove last result (will be recalculated with fresh data)            
             this._removeLastResult(context);
 
             // Step back one position to reprocess last candle
             processedUpToIdx = this.data.length - (newCandles + 1);
 
             // Next iteration of loop will process from updated position (#1)
+
+            //barstate.isnew becomes false on live bars
+            context.pine.barstate.setLive();
+
         }
     }
 
@@ -278,6 +282,7 @@ export class PineTS {
             limit: this.limit,
             sDate: this.sDate,
             eDate: this.eDate,
+            fullContext,
         });
 
         pageContext.pineTSCode = fullContext.pineTSCode;

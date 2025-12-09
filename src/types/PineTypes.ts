@@ -63,12 +63,3 @@ type TSessionInfo = {
     regular: boolean;
 };
 
-type TBarState = {
-    isnew: boolean;
-    islast: boolean;
-    isfirst: boolean;
-    ishistory: boolean;
-    isrealtime: boolean;
-    isconfirmed: boolean;
-    islastconfirmedhistory: boolean;
-};

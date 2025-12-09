@@ -152,11 +152,16 @@ export class BinanceProvider implements IProvider {
     async getMarketData(tickerId: string, timeframe: string, limit?: number, sDate?: number, eDate?: number): Promise<any> {
         try {
             // Check cache first
+            // Skip cache if eDate is undefined (live request) to ensure we get fresh data
+            const shouldCache = eDate !== undefined;
             const cacheParams = { tickerId, timeframe, limit, sDate, eDate };
-            const cachedData = this.cacheManager.get(cacheParams);
-            if (cachedData) {
-                //console.log('cache hit', tickerId, timeframe, limit, sDate, eDate);
-                return cachedData;
+
+            if (shouldCache) {
+                const cachedData = this.cacheManager.get(cacheParams);
+                if (cachedData) {
+                    //console.log('cache hit', tickerId, timeframe, limit, sDate, eDate);
+                    return cachedData;
+                }
             }
 
             const interval = timeframe_to_binance[timeframe.toUpperCase()];
@@ -217,7 +222,9 @@ export class BinanceProvider implements IProvider {
             });
 
             // Cache the results
-            this.cacheManager.set(cacheParams, data);
+            if (shouldCache) {
+                this.cacheManager.set(cacheParams, data);
+            }
 
             return data;
         } catch (error) {

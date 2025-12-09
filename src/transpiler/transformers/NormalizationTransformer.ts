@@ -64,6 +64,8 @@ export function normalizeNativeImports(ast: any): void {
         'table',
         'map',
         'matrix',
+        'syminfo',
+        'barstate',
     ]);
 
     const contextCoreVars = new Set(['na', 'nz', 'plot', 'plotchar', 'color']);

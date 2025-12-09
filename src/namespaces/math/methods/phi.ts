@@ -10,5 +10,3 @@ export function phi(context: any) {
         return 1.618033988749895;
     };
 }
-
-

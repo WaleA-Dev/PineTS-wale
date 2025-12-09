@@ -563,4 +563,101 @@ describe('Request ', () => {
 
         expect(plotdata_str.trim()).toEqual(expected_plot.trim());
     });
+
+    
+
+    it('request.security_lower_tf with data', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2019-05-06').getTime());
+
+        const { result, plots } = await pineTS.run(async (context) => {
+            const { close, open } = context.data;
+            const { plot, plotchar, request } = context.pine;
+
+            const res = await request.security_lower_tf('BTCUSDC', 'D', close);
+
+            plotchar(res, '_plot');
+
+            return {
+                res,
+            };
+        });
+
+        let _plotdata = plots['_plot']?.data;
+        const startDate = new Date('2018-12-10').getTime();
+        const endDate = new Date('2019-02-01').getTime();
+
+        let plotdata_str = '';
+        for (let i = 0; i < _plotdata.length; i++) {
+            const time = _plotdata[i].time;
+            if (time < startDate || time > endDate) {
+                continue;
+            }
+
+            const str_time = new Date(time).toISOString().slice(0, -1) + '-00:00';
+            const res = `[${_plotdata[i].value.join(', ')}]`;
+            plotdata_str += `[${str_time}]: ${res}\n`;
+        }
+
+        const expected_plot = `[2018-12-10T00:00:00.000-00:00]: [3183.47, 3199.27]
+[2018-12-17T00:00:00.000-00:00]: [3494.65, 3670.11, 3676.32, 4074.68, 3842.2, 3981.71, 3953.49]
+[2018-12-24T00:00:00.000-00:00]: [4032.5, 3780, 3814.07, 3591.91, 3885.33, 3730.62, 3821.66]
+[2018-12-31T00:00:00.000-00:00]: [3692, 3827.72, 3887.77, 3783.23, 3817.75, 3805.01, 4039.13]
+[2019-01-07T00:00:00.000-00:00]: [4008.23, 3989.01, 3996.75, 3626.85, 3631.15, 3616.15, 3509.21]
+[2019-01-14T00:00:00.000-00:00]: [3668.88, 3584.22, 3610.24, 3648.46, 3610.08, 3682.09, 3535.79]
+[2019-01-21T00:00:00.000-00:00]: [3526.19, 3576, 3552, 3569.25, 3562.19, 3552.93, 3531.36]
+[2019-01-28T00:00:00.000-00:00]: [3427.21, 3395.47, 3436.51, 3409.39, 3432.26, 3465.05, 3413.46]`;
+
+        console.log('expected_plot', expected_plot);
+        console.log('plotdata_str', plotdata_str);
+        expect(plotdata_str.trim()).toEqual(expected_plot.trim());
+    });    
+
+
+
+
+    it('request.security_lower_tf with expression', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2019-05-06').getTime());
+
+        const { result, plots } = await pineTS.run(async (context) => {
+            const { close, open } = context.data;
+            const { plot, plotchar, request, ta } = context.pine;
+
+            const res = await request.security_lower_tf('BTCUSDC', 'D', ta.sma(close, 6));
+
+            plotchar(res, '_plot');
+
+            return {
+                res,
+            };
+        });
+
+        let _plotdata = plots['_plot']?.data;
+        const startDate = new Date('2018-12-10').getTime();
+        const endDate = new Date('2019-02-01').getTime();
+
+        let plotdata_str = '';
+        for (let i = 0; i < _plotdata.length; i++) {
+            const time = _plotdata[i].time;
+            if (time < startDate || time > endDate) {
+                continue;
+            }
+
+            const str_time = new Date(time).toISOString().slice(0, -1) + '-00:00';
+            const res = `[${_plotdata[i].value.join(', ')}]`;
+            plotdata_str += `[${str_time}]: ${res}\n`;
+        }
+
+        const expected_plot = `[2018-12-10T00:00:00.000-00:00]: [NaN, NaN]
+[2018-12-17T00:00:00.000-00:00]: [NaN, NaN, NaN, 3549.75, 3659.5383333333, 3789.945, 3866.4183333333]
+[2018-12-24T00:00:00.000-00:00]: [3926.8166666667, 3944.0966666667, 3900.6616666667, 3858.9466666667, 3842.8833333333, 3805.7383333333, 3770.5983333333]
+[2018-12-31T00:00:00.000-00:00]: [3755.9316666667, 3758.2066666667, 3807.5166666667, 3790.5, 3805.0216666667, 3802.2466666667, 3860.1016666667]
+[2019-01-07T00:00:00.000-00:00]: [3890.1866666667, 3907.06, 3942.6466666667, 3910.83, 3881.8533333333, 3811.3566666667, 3728.1866666667]
+[2019-01-14T00:00:00.000-00:00]: [3674.8316666667, 3606.0766666667, 3603.3083333333, 3606.1933333333, 3605.1816666667, 3633.995, 3611.8133333333]
+[2019-01-21T00:00:00.000-00:00]: [3602.1416666667, 3596.435, 3580.3583333333, 3573.5533333333, 3553.57, 3556.4266666667, 3557.2883333333]
+[2019-01-28T00:00:00.000-00:00]: [3532.49, 3506.4016666667, 3484.2783333333, 3458.8116666667, 3438.7, 3427.6483333333, 3425.3566666667]`;
+
+        console.log('expected_plot', expected_plot);
+        console.log('plotdata_str', plotdata_str);
+        expect(plotdata_str.trim()).toEqual(expected_plot.trim());
+    });       
 });

@@ -9,5 +9,3 @@ export function e(context: any) {
         return Math.E;
     };
 }
-
-

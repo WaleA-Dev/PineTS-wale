@@ -10,4 +10,3 @@ export function rphi(context: any) {
         return 0.6180339887498948;
     };
 }
-

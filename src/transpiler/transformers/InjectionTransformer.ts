@@ -133,6 +133,8 @@ export function injectImplicitImports(ast: any): void {
         'table',
         'map',
         'matrix',
+        'syminfo',
+        'barstate',
     ];
 
     // 4. Identify missing variables

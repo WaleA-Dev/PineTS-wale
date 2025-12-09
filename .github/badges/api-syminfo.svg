@@ -1,14 +1,14 @@
 <svg width="136.7" height="20" viewBox="0 0 1367 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="syminfo: 40/42 (95%)">
   <title>syminfo: 40/42 (95%)</title>
-  <linearGradient id="rHXLo" x2="0" y2="100%">
+  <linearGradient id="aRYOS" x2="0" y2="100%">
     <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
-  <mask id="aPqZD"><rect width="1367" height="200" rx="30" fill="#FFF"/></mask>
-  <g mask="url(#aPqZD)">
+  <mask id="upgxk"><rect width="1367" height="200" rx="30" fill="#FFF"/></mask>
+  <g mask="url(#upgxk)">
     <rect width="538" height="200" fill="#555"/>
     <rect width="829" height="200" fill="#3C1" x="538"/>
-    <rect width="1367" height="200" fill="url(#rHXLo)"/>
+    <rect width="1367" height="200" fill="url(#aRYOS)"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
     <text x="60" y="148" textLength="438" fill="#000" opacity="0.25">syminfo</text>

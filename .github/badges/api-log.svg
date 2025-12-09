@@ -1,14 +1,14 @@
 <svg width="88.5" height="20" viewBox="0 0 885 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="log: 0/3 (0%)">
   <title>log: 0/3 (0%)</title>
-  <linearGradient id="iewYi" x2="0" y2="100%">
+  <linearGradient id="ANRMP" x2="0" y2="100%">
     <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
-  <mask id="sQJeW"><rect width="885" height="200" rx="30" fill="#FFF"/></mask>
-  <g mask="url(#sQJeW)">
+  <mask id="EpyWm"><rect width="885" height="200" rx="30" fill="#FFF"/></mask>
+  <g mask="url(#EpyWm)">
     <rect width="266" height="200" fill="#555"/>
     <rect width="619" height="200" fill="#E43" x="266"/>
-    <rect width="885" height="200" fill="url(#iewYi)"/>
+    <rect width="885" height="200" fill="url(#ANRMP)"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
     <text x="60" y="148" textLength="166" fill="#000" opacity="0.25">log</text>
