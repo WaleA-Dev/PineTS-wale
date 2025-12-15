@@ -1,5 +1,35 @@
 # Change Log
 
+## [0.6.0] - 2025-12-15 - Array, Map, Matrix namespaces & API enhancements
+
+### Added
+
+-   **Array namespace enhancements**:
+    -   Implementation of array strong typing
+    -   Array binary search functions
+    -   Additional array methods: `sum`, `avg`, `min`, `max`, `median`, `mode`, `stdev`, `variance`, `covariance`, `standardize`, `range`, `abs`, `percentrank`, `percentile_linear_interpolation`, `percentile_nearest_rank`
+-   **Map namespace**: Full support for `map` namespace operations
+-   **Matrix namespace**: Full support for `matrix` namespace operations
+-   **Timeframe namespace**: Complete implementation of timeframe-related functions
+-   **Request namespace**: Added `request.security_lower_tf` function
+-   **Syminfo namespace**: Fully implemented in Binance provider
+-   Better API coverage tracking with badges
+-   Progress on `math` methods implementations
+
+### Changed
+
+-   Updated `input.*` namespace to fully support dynamic Pine Script parameters
+
+### Fixed
+
+-   Map and Matrix initialization issues
+-   Array precision handling
+-   Array methods fixes to match exact PineScript logic: `slice`, `every`, `median`, `mode`, `percentile_nearest_rank`, `percentrank`, `some`, `sort_indices`, `sort`
+-   Array method fixes: `fill`, `new_float`, `push`, `set`, `unshift`
+-   Transpiler return statement for native data
+-   Binance provider cache handling
+-   Transpiler: passing native series to JSON objects
+
 ## [0.5.0] - 2025-12-04 - Extensive TA implementation & Transpiler enhancements
 
 ### Added
