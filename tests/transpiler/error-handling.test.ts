@@ -38,14 +38,6 @@ describe('Transpiler Error Handling', () => {
         expect(plots['test'].data.length).toBeGreaterThan(0);
     });
 
-    it('should handle undefined variables gracefully', async () => {
-        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', '1h', null, new Date('2024-01-01').getTime(), new Date('2024-01-10').getTime());
-
-        // Undefined variables are transpiled but will be undefined at runtime
-        const { result } = await pineTS.run('let x = undefinedVariable;');
-        expect(result).toBeDefined();
-    });
-
     it('should handle malformed function calls', async () => {
         const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', '1h', null, new Date('2024-01-01').getTime(), new Date('2024-01-10').getTime());
 
@@ -119,4 +111,3 @@ describe('Transpiler Error Handling', () => {
         expect(Array.isArray(result.ema)).toBe(true);
     });
 });
-

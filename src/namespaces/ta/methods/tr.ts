@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { Series } from '../../../Series';
+import { Context } from '../../../Context.class';
 
-export function tr(context: any) {
+export function tr(context: Context) {
     return (handle_na?: boolean, _callId?: string) => {
         // True Range calculation
         // TR = max(high - low, abs(high - close[1]), abs(low - close[1]))
@@ -24,10 +25,10 @@ export function tr(context: any) {
 
         if (isNaN(close1)) {
             // If handle_na is true, return high - low, otherwise return NaN
-            return handleNa ? high0 - low0 : NaN;
+            return handleNa ? context.precision(high0 - low0) : NaN;
         }
 
         const val = Math.max(high0 - low0, Math.abs(high0 - close1), Math.abs(low0 - close1));
-        return val;
+        return context.precision(val);
     };
 }

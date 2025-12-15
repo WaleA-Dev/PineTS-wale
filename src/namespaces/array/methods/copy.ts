@@ -4,7 +4,6 @@ import { PineArrayObject } from '../PineArrayObject';
 
 export function copy(context: any) {
     return (id: PineArrayObject): PineArrayObject => {
-        return new PineArrayObject([...id.array]);
+        return new PineArrayObject([...id.array], id.type, context);
     };
 }
-

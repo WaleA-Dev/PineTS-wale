@@ -1,0 +1,53 @@
+{
+    "Styles": {
+        "label.style_arrowdown": false,
+        "label.style_arrowup": false,
+        "label.style_circle": false,
+        "label.style_cross": false,
+        "label.style_diamond": false,
+        "label.style_flag": false,
+        "label.style_label_center": false,
+        "label.style_label_down": false,
+        "label.style_label_left": false,
+        "label.style_label_lower_left": false,
+        "label.style_label_lower_right": false,
+        "label.style_label_right": false,
+        "label.style_label_up": false,
+        "label.style_label_upper_left": false,
+        "label.style_label_upper_right": false,
+        "label.style_none": false,
+        "label.style_square": false,
+        "label.style_text_outline": false,
+        "label.style_triangledown": false,
+        "label.style_triangleup": false,
+        "label.style_xcross": false
+    },
+    "Management": {
+        "label.all": false,
+        "label.copy()": false,
+        "label.delete()": false,
+        "label.new()": false
+    },
+    "Getters": {
+        "label.get_text()": false,
+        "label.get_x()": false,
+        "label.get_y()": false
+    },
+    "Setters": {
+        "label.set_color()": false,
+        "label.set_point()": false,
+        "label.set_size()": false,
+        "label.set_style()": false,
+        "label.set_text()": false,
+        "label.set_text_font_family()": false,
+        "label.set_text_formatting()": false,
+        "label.set_textalign()": false,
+        "label.set_textcolor()": false,
+        "label.set_tooltip()": false,
+        "label.set_x()": false,
+        "label.set_xloc()": false,
+        "label.set_xy()": false,
+        "label.set_y()": false,
+        "label.set_yloc()": false
+    }
+}

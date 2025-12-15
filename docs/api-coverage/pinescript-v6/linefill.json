@@ -1,0 +1,10 @@
+{
+  "Other": {
+    "linefill.all": false,
+    "linefill.delete()": false,
+    "linefill.get_line1()": false,
+    "linefill.get_line2()": false,
+    "linefill.new()": false,
+    "linefill.set_color()": false
+  }
+}

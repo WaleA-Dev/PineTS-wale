@@ -4,14 +4,54 @@
 [![Documentation](https://img.shields.io/badge/docs-github--pages-blue?style=flat-square)](https://quantforgeorg.github.io/PineTS/)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/QuantForge?style=flat-square&logo=reddit)](https://www.reddit.com/r/QuantForge/)
 
+---
+
 This project aims to provide a Javascript/Typescript port for Tradingview's Pine Script.
 The current version does not run Pine Script directly, instead it runs a close Javascript equivalent called PineTS.
 
 PineTS makes it possible to migrate Pine Script v5+ indicators to Javascript/Typescript, in order to run them in a Javascript environment.
 
-## Disclaimer
+> _Disclaimer : PineTS is an independent project and is not affiliated with, endorsed by, or associated with TradingView or Pine Script™. All trademarks and registered trademarks mentioned belong to their respective owners._
 
-PineTS is an independent project and is not affiliated with, endorsed by, or associated with TradingView or Pine Script™. All trademarks and registered trademarks mentioned belong to their respective owners.
+---
+
+## Pine Script API Coverage
+
+### Data
+
+[![syminfo](./.github/badges/api-syminfo.svg)](./.github/badges/api-syminfo.svg)
+[![session](./.github/badges/api-session.svg)](./.github/badges/api-session.svg)
+[![timeframe](./.github/badges/api-timeframe.svg)](./.github/badges/api-timeframe.svg)
+[![barstate](./.github/badges/api-barstate.svg)](./.github/badges/api-barstate.svg)
+[![ticker](./.github/badges/api-ticker.svg)](./.github/badges/api-ticker.svg)
+[![builtin](./.github/badges/api-builtin.svg)](./.github/badges/api-builtin.svg)
+
+### Calculation
+
+[![ta](./.github/badges/api-ta.svg)](./.github/badges/api-ta.svg)
+[![math](./.github/badges/api-math.svg)](./.github/badges/api-math.svg)
+[![array](./.github/badges/api-array.svg)](./.github/badges/api-array.svg)
+[![map](./.github/badges/api-map.svg)](./.github/badges/api-map.svg)
+[![matrix](./.github/badges/api-matrix.svg)](./.github/badges/api-matrix.svg)
+[![request](./.github/badges/api-request.svg)](./.github/badges/api-request.svg)
+[![types](./.github/badges/api-types.svg)](./.github/badges/api-types.svg)
+[![strategy](./.github/badges/api-strategy.svg)](./.github/badges/api-strategy.svg)
+[![input](./.github/badges/api-input.svg)](./.github/badges/api-input.svg)
+
+### Drawing and Logging
+
+[![str](./.github/badges/api-str.svg)](./.github/badges/api-str.svg)
+[![color](./.github/badges/api-color.svg)](./.github/badges/api-color.svg)
+[![chart](./.github/badges/api-chart.svg)](./.github/badges/api-chart.svg)
+[![log](./.github/badges/api-log.svg)](./.github/badges/api-log.svg)
+[![label](./.github/badges/api-label.svg)](./.github/badges/api-label.svg)
+[![line](./.github/badges/api-line.svg)](./.github/badges/api-line.svg)
+[![polyline](./.github/badges/api-polyline.svg)](./.github/badges/api-polyline.svg)
+[![box](./.github/badges/api-box.svg)](./.github/badges/api-box.svg)
+[![table](./.github/badges/api-table.svg)](./.github/badges/api-table.svg)
+[![linefill](./.github/badges/api-linefill.svg)](./.github/badges/api-linefill.svg)
+
+---
 
 ## Overview
 

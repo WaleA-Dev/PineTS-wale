@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2025 Alaa-eddine KADDOURI
 import { transpile } from '@pinets/transpiler/index';
-import { IProvider } from './marketData/IProvider';
+import { IProvider, ISymbolInfo } from './marketData/IProvider';
 import { Context } from './Context.class';
 import { Series } from './Series';
 
@@ -20,6 +20,7 @@ export class PineTS {
     public hl2: any = [];
     public hlc3: any = [];
     public ohlc4: any = [];
+    public hlcc4: any = [];
     public openTime: any = [];
     public closeTime: any = [];
     //#endregion
@@ -52,6 +53,8 @@ export class PineTS {
         this._isSecondaryContext = true;
     }
 
+    private _syminfo: ISymbolInfo;
+
     constructor(
         private source: IProvider | any[],
         private tickerId?: string,
@@ -75,6 +78,7 @@ export class PineTS {
                 const _hlc3 = marketData.map((d) => (d.high + d.low + d.close) / 3);
                 const _hl2 = marketData.map((d) => (d.high + d.low) / 2);
                 const _ohlc4 = marketData.map((d) => (d.high + d.low + d.open + d.close) / 4);
+                const _hlcc4 = marketData.map((d) => (d.high + d.low + d.close + d.close) / 4);
                 const _openTime = marketData.map((d) => d.openTime);
                 const _closeTime = marketData.map((d) => d.closeTime);
 
@@ -86,11 +90,27 @@ export class PineTS {
                 this.hl2 = _hl2;
                 this.hlc3 = _hlc3;
                 this.ohlc4 = _ohlc4;
+                this.hlcc4 = _hlcc4;
                 this.openTime = _openTime;
                 this.closeTime = _closeTime;
 
-                this._ready = true;
-                resolve(true);
+                if (source && (source as IProvider).getSymbolInfo) {
+                    const symbolInfo = (source as IProvider)
+                        .getSymbolInfo(tickerId)
+                        .then((symbolInfo) => {
+                            this._syminfo = symbolInfo;
+                            this._ready = true;
+                            resolve(true);
+                        })
+                        .catch((error) => {
+                            console.warn('Failed to get symbol info, using default values:', error);
+                            this._ready = true;
+                            resolve(true);
+                        });
+                } else {
+                    this._ready = true;
+                    resolve(true);
+                }
             });
         });
     }
@@ -229,6 +249,9 @@ export class PineTS {
             processedUpToIdx = this.data.length - (newCandles + 1);
 
             // Next iteration of loop will process from updated position (#1)
+
+            //barstate.isnew becomes false on live bars
+            context.pine.barstate.setLive();
         }
     }
 
@@ -261,6 +284,7 @@ export class PineTS {
             limit: this.limit,
             sDate: this.sDate,
             eDate: this.eDate,
+            fullContext,
         });
 
         pageContext.pineTSCode = fullContext.pineTSCode;
@@ -355,6 +379,7 @@ export class PineTS {
         this.hl2[index] = (candle.high + candle.low) / 2;
         this.hlc3[index] = (candle.high + candle.low + candle.close) / 3;
         this.ohlc4[index] = (candle.high + candle.low + candle.open + candle.close) / 4;
+        this.hlcc4[index] = (candle.high + candle.low + candle.close + candle.close) / 4;
         this.openTime[index] = candle.openTime;
         this.closeTime[index] = candle.closeTime;
     }
@@ -373,6 +398,7 @@ export class PineTS {
         this.hl2.push((candle.high + candle.low) / 2);
         this.hlc3.push((candle.high + candle.low + candle.close) / 3);
         this.ohlc4.push((candle.high + candle.low + candle.open + candle.close) / 4);
+        this.hlcc4.push((candle.high + candle.low + candle.close + candle.close) / 4);
         this.openTime.push(candle.openTime);
         this.closeTime.push(candle.closeTime);
     }
@@ -401,6 +427,7 @@ export class PineTS {
         context.data.hl2.data.pop();
         context.data.hlc3.data.pop();
         context.data.ohlc4.data.pop();
+        context.data.hlcc4.data.pop();
         context.data.openTime.data.pop();
         if (context.data.closeTime) {
             context.data.closeTime.data.pop();
@@ -422,6 +449,8 @@ export class PineTS {
             eDate: this.eDate,
         });
 
+        context.pine.syminfo = this._syminfo;
+
         context.pineTSCode = pineTSCode;
         context.isSecondaryContext = isSecondary; // Set secondary context flag
         context.data.close = new Series([]);
@@ -432,6 +461,7 @@ export class PineTS {
         context.data.hl2 = new Series([]);
         context.data.hlc3 = new Series([]);
         context.data.ohlc4 = new Series([]);
+        context.data.hlcc4 = new Series([]);
         context.data.openTime = new Series([]);
         context.data.closeTime = new Series([]);
 
@@ -465,6 +495,7 @@ export class PineTS {
             context.data.hl2.data.push(this.hl2[i]);
             context.data.hlc3.data.push(this.hlc3[i]);
             context.data.ohlc4.data.push(this.ohlc4[i]);
+            context.data.hlcc4.data.push(this.hlcc4[i]);
             context.data.openTime.data.push(this.openTime[i]);
             context.data.closeTime.data.push(this.closeTime[i]);
 

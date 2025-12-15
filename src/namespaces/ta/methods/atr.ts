@@ -2,8 +2,10 @@
 
 import { Series } from '../../../Series';
 
-export function atr(context: any) {
-    return (_period: any, _callId?: string) => {
+export function atr(context: any): //
+//PineScript signature
+(length: number) => Series {
+    return (_period: number, _callId?: string) => {
         const period = Series.from(_period).get(0);
 
         // Incremental ATR calculation
@@ -56,4 +58,3 @@ export function atr(context: any) {
         return context.precision(atr);
     };
 }
-

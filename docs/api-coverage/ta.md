@@ -6,8 +6,6 @@ parent: API Coverage
 
 ## Technical Analysis
 
-All functions listed below are verified to exist in Pine Script v5.
-
 ### Moving Averages
 
 | Function      | Status | Description                              |

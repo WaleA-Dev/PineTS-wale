@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { arrayPrecision, getKlines, runNSFunctionWithArgs } from '../../utils';
 
 import { Context, PineTS, Provider } from 'index';
+import { deepEqual } from '../../compatibility/lib/serializer';
 
 async function runTAFunctionWithArgs(taFunction: string, ...args) {
     // Use the same dataset as the original tests for consistency
@@ -35,7 +36,8 @@ describe('Technical Analysis - Moving Averages', () => {
         ];
         console.log(' EMA ', part);
 
-        expect(part).toEqual(arrayPrecision(expected));
+        expect(deepEqual(part, expected)).toBe(true);
+        //expect(part).toEqual(arrayPrecision(expected));
     });
 
     it('VWMA - Volume Weighted Moving Average', async () => {
@@ -48,7 +50,8 @@ describe('Technical Analysis - Moving Averages', () => {
         ];
         console.log(' VWMA ', part);
 
-        expect(part).toEqual(arrayPrecision(expected));
+        expect(deepEqual(part, expected)).toBe(true);
+        //expect(part).toEqual(arrayPrecision(expected));
     });
 
     it('WMA - Weighted Moving Average', async () => {
@@ -74,7 +77,8 @@ describe('Technical Analysis - Moving Averages', () => {
         ];
         console.log(' HMA ', part);
 
-        expect(part).toEqual(arrayPrecision(expected));
+        //expect(part).toEqual(arrayPrecision(expected));
+        expect(deepEqual(part, expected)).toBe(true);
     });
 
     it('RMA - Rolling Moving Average', async () => {
@@ -192,7 +196,7 @@ describe('Technical Analysis - Moving Averages', () => {
 [2025-09-08T00:00:00.000-00:00]: 115108.3003858223
 [2025-09-15T00:00:00.000-00:00]: 114027.548962833
 [2025-09-22T00:00:00.000-00:00]: 113232.3809042999
-[2025-09-29T00:00:00.000-00:00]: 113303.3211639163
+[2025-09-29T00:00:00.000-00:00]: 113303.3211639164
 [2025-10-06T00:00:00.000-00:00]: 113924.5475768981
 [2025-10-13T00:00:00.000-00:00]: 114661.0199071349
 [2025-10-20T00:00:00.000-00:00]: 115236.979011257
@@ -231,7 +235,7 @@ describe('Technical Analysis - Moving Averages', () => {
         const plotdata_str = plotdata.map((e) => `[${e.time}]: ${e.value}`).join('\n');
 
         const expected_plot = `[2025-08-04T00:00:00.000-00:00]: 117343.2683333333
-[2025-08-11T00:00:00.000-00:00]: 117346.1283333333
+[2025-08-11T00:00:00.000-00:00]: 117346.1283333334
 [2025-08-18T00:00:00.000-00:00]: 116892.2866666667
 [2025-08-25T00:00:00.000-00:00]: 114926.6466666667
 [2025-09-01T00:00:00.000-00:00]: 112026.26

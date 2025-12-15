@@ -4,16 +4,19 @@
 
 import { param } from './methods/param';
 import { security } from './methods/security';
+import { security_lower_tf } from './methods/security_lower_tf';
 
 const methods = {
   param,
-  security
+  security,
+  security_lower_tf
 };
 
 export class PineRequest {
   private _cache = {};
   param: ReturnType<typeof methods.param>;
   security: ReturnType<typeof methods.security>;
+  security_lower_tf: ReturnType<typeof methods.security_lower_tf>;
 
   constructor(private context: any) {
     // Install methods

@@ -1,14 +1,21 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2025 Alaa-eddine KADDOURI
 
-import { IProvider } from './marketData/IProvider';
+import { IProvider, ISymbolInfo } from './marketData/IProvider';
 import { PineArray } from './namespaces/array/array.index';
+import { PineMap } from './namespaces/map/map.index';
+import { PineMatrix } from './namespaces/matrix/matrix.index';
+import { Barstate } from './namespaces/Barstate';
 import { Core } from './namespaces/Core';
 import { Input } from './namespaces/input/input.index';
 import PineMath from './namespaces/math/math.index';
 import { PineRequest } from './namespaces/request/request.index';
 import TechnicalAnalysis from './namespaces/ta/ta.index';
 import { Series } from './Series';
+import { Log } from './namespaces/Log';
+import { Str } from './namespaces/Str';
+import types from './namespaces/Types';
+import { Timeframe } from './namespaces/Timeframe';
 
 export class Context {
     public data: any = {
@@ -20,6 +27,7 @@ export class Context {
         hl2: new Series([]),
         hlc3: new Series([]),
         ohlc4: new Series([]),
+        hlcc4: new Series([]),
     };
     public cache: any = {};
     public taState: any = {}; // State for incremental TA calculations
@@ -36,12 +44,20 @@ export class Context {
         math: PineMath;
         request: PineRequest;
         array: PineArray;
+        map: PineMap;
+        matrix: PineMatrix;
         na: () => any;
         plotchar: (...args: any[]) => any;
         color: any;
         plot: (...args: any[]) => any;
         nz: (...args: any[]) => any;
         bar_index: number;
+        syminfo: ISymbolInfo;
+        barstate: Barstate;
+        log: Log;
+        str: Str;
+        timeframe: Timeframe;
+        [key: string]: any;
     };
 
     // Track deprecation warnings to avoid spam
@@ -64,6 +80,7 @@ export class Context {
     public limit: number;
     public sDate: number;
     public eDate: number;
+    public fullContext: Context;
 
     public pineTSCode: Function | String;
 
@@ -75,6 +92,7 @@ export class Context {
         limit,
         sDate,
         eDate,
+        fullContext,
     }: {
         marketData: any;
         source: IProvider | any[];
@@ -83,6 +101,7 @@ export class Context {
         limit?: number;
         sDate?: number;
         eDate?: number;
+        fullContext?: Context;
     }) {
         this.marketData = marketData;
         this.source = source;
@@ -91,7 +110,7 @@ export class Context {
         this.limit = limit;
         this.sDate = sDate;
         this.eDate = eDate;
-
+        this.fullContext = fullContext || this;
         // Initialize core functions
         const core = new Core(this);
         const coreFunctions = {
@@ -110,14 +129,33 @@ export class Context {
             math: new PineMath(this),
             request: new PineRequest(this),
             array: new PineArray(this),
+            map: new PineMap(this),
+            matrix: new PineMatrix(this),
             na: coreFunctions.na,
             plotchar: coreFunctions.plotchar,
             color: coreFunctions.color,
             plot: coreFunctions.plot,
             nz: coreFunctions.nz,
+            syminfo: null,
+            timeframe: new Timeframe(this),
+            //FIXME : this is a temporary solution to get the barstate values,
+            //we need to implement a better way to handle realtime states
+            barstate: new Barstate(this),
             get bar_index() {
                 return _this.idx;
             },
+            get last_bar_index() {
+                return _this.data.close.length - 1;
+            },
+            get last_bar_time() {
+                return _this.data.openTime.get(_this.data.openTime.length - 1);
+            },
+            get timenow() {
+                return new Date().getTime();
+            },
+            log: new Log(this),
+            str: new Str(this),
+            ...types,
         };
     }
 
@@ -144,10 +182,10 @@ export class Context {
             } else {
                 // Flat 1D array = time-series data (forward-ordered)
                 // Extract the element at the right position
-                value = this.precision(src[src.length - 1 + idx]);
+                value = src[src.length - 1 + idx];
             }
         } else {
-            value = this.precision(src);
+            value = src;
         }
 
         // If target doesn't exist, create new Series
@@ -211,9 +249,11 @@ export class Context {
      * @param decimals - the number of decimals to precision to
      * @returns the precision number
      */
-    precision(n: number, decimals: number = 10) {
-        if (typeof n !== 'number' || isNaN(n)) return n;
-        return Number(n.toFixed(decimals));
+    precision(value: number, decimals: number = 10) {
+        const epsilon = 10 ** decimals;
+        return typeof value === 'number' ? Math.round(value * epsilon) / epsilon : value;
+        //if (typeof n !== 'number' || isNaN(n)) return n;
+        //return Number(n.toFixed(decimals));
     }
 
     /**

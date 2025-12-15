@@ -14,8 +14,8 @@ parent: API Coverage
 | `request.economic()`          |        |
 | `request.financial()`         |        |
 | `request.quandl()`            |        |
-| `request.security()`          | ⏳     |
-| `request.security_lower_tf()` |        |
+| `request.security()`          | ✅     |
+| `request.security_lower_tf()` | ✅     |
 | `request.seed()`              |        |
 | `request.splits()`            |        |
 
