@@ -50,6 +50,68 @@ describe('Transpiler', () => {
         expect(result).toBe(expected_code);
     });
 
+    it('Native Data', async () => {
+        const fakeContext = {};
+        const transformer = transpile.bind(fakeContext);
+
+        const source = (context) => {
+            const { close, open, high, low, hlc3, volume } = context.data;
+            const { plotchar, color, plot, na, nz } = context.core;
+
+            const ta = context.ta;
+            const math = context.math;
+
+            let lowest_signaled_price = nz(open, na);
+            let n_a = na;
+            if (na(n_a)) {
+                n_a = close;
+            }
+
+            return {
+                open,
+                close,
+                high,
+                low,
+                hlc3,
+                volume,
+                lowest_signaled_price,
+                n_a,
+            };
+        };
+
+        let transpiled = transformer(source);
+
+        console.log(transpiled.toString());
+        const result = transpiled.toString().trim();
+
+        /* prettier-ignore */
+        const expected_code = `$ => {
+  const {close, open, high, low, hlc3, volume} = $.data;
+  const {plotchar, color, plot, na, nz} = $.core;
+  const ta = $.ta;
+  const math = $.math;
+  const p0 = $.param(open, undefined, 'p0');
+  $.let.glb1_lowest_signaled_price = $.init($.let.glb1_lowest_signaled_price, nz(p0, NaN));
+  $.let.glb1_n_a = $.init($.let.glb1_n_a, NaN);
+  const p1 = $.param($.let.glb1_n_a, undefined, 'p1');
+  if (na(p1)) {
+    $.set($.let.glb1_n_a, $.get(close, 0));
+  }
+  return {
+    open,
+    close: close,
+    high: high,
+    low: low,
+    hlc3,
+    volume,
+    lowest_signaled_price: $.let.glb1_lowest_signaled_price,
+    n_a: $.let.glb1_n_a
+  };
+}`;
+
+        expect(result).toBe(expected_code);
+    });
+
     it('Unwrapped PineTS Code', async () => {
         const fakeContext = {};
         const transformer = transpile.bind(fakeContext);
@@ -84,6 +146,69 @@ if (na(n_a)) {
   if (na(p1)) {
     $.set($.let.glb1_n_a, $.get(close, 0));
   }
+}`;
+
+        expect(result).toBe(expected_code);
+    });
+
+    it('Inputs', async () => {
+        const fakeContext = {};
+        const transformer = transpile.bind(fakeContext);
+
+        // we expect the transpiler to wrap the code in a context function and add missing namespaces
+        const source = `
+let _int = input.int({title: 'Fast Length', defval: 12});
+
+let _string = input.string({title: 'String Input', defval: "Hello"});
+let _float = input.float(10.0, "float input", {minval: 0.0, maxval: 100.0, step: 0.1});
+
+let src_close = input({ title: 'Close Source', defval: close });
+
+let src_open = input.any({ title: 'Open Source', defval: open });
+      `;
+
+        let transpiled = transformer(source);
+
+        console.log(transpiled.toString());
+        const result = transpiled.toString().trim();
+
+        /* prettier-ignore */
+        const expected_code = `$ => {
+  const {open, close} = $.data;
+  const {input} = $.pine;
+  const p0 = input.param({
+    title: 'Fast Length',
+    defval: 12
+  }, undefined, 'p0');
+  const temp_1 = input.int(p0);
+  $.let.glb1__int = $.init($.let.glb1__int, temp_1);
+  const p1 = input.param({
+    title: 'String Input',
+    defval: "Hello"
+  }, undefined, 'p1');
+  const temp_2 = input.string(p1);
+  $.let.glb1__string = $.init($.let.glb1__string, temp_2);
+  const p2 = input.param(10.0, undefined, 'p2');
+  const p3 = input.param("float input", undefined, 'p3');
+  const p4 = input.param({
+    minval: 0.0,
+    maxval: 100.0,
+    step: 0.1
+  }, undefined, 'p4');
+  const temp_3 = input.float(p2, p3, p4);
+  $.let.glb1__float = $.init($.let.glb1__float, temp_3);
+  const p5 = input.param({
+    title: 'Close Source',
+    defval: close
+  }, undefined, 'p5');
+  const temp_4 = input.any(p5);
+  $.let.glb1_src_close = $.init($.let.glb1_src_close, temp_4);
+  const p6 = input.param({
+    title: 'Open Source',
+    defval: open
+  }, undefined, 'p6');
+  const temp_5 = input.any(p6);
+  $.let.glb1_src_open = $.init($.let.glb1_src_open, temp_5);
 }`;
 
         expect(result).toBe(expected_code);
@@ -404,7 +529,7 @@ if (na(n_a)) {
   const {close, open} = $.data;
   const {plot} = $.core;
   $.const.glb1_res = $.init($.const.glb1_res, open);
-  const p0 = $.param($.get(close, 0) && $.get(open, 0) ? 1 : $.get($.const.glb1_res, 0), undefined, 'p0');
+  const p0 = $.param(close && open ? 1 : $.get($.const.glb1_res, 0), undefined, 'p0');
   const p1 = $.param("plot1", undefined, 'p1');
   const p2 = $.param({
     color: "white"
@@ -773,6 +898,96 @@ if (na(n_a)) {
   const p10 = $.param(close, undefined, 'p10');
   const p11 = $.param(14, undefined, 'p11');
   $.set($.let.glb1_ra, get_average(p10, p11));
+}`;
+
+        expect(result).toBe(expected_code);
+    });
+
+    it('array method with series + inject missing data series', async () => {
+        const fakeContext = {};
+        const transformer = transpile.bind(fakeContext);
+
+        const source = (context) => {
+            const { open, close } = context.data;
+            const { array } = context.pine;
+
+            let a = array.new_float(5);
+            a.fill(close[1] - open);
+            let res = a;
+            let i = a.indexof(high);
+        };
+
+        let transpiled = transformer(source);
+
+        console.log(transpiled.toString());
+        const result = transpiled.toString().trim();
+
+        /* prettier-ignore */
+        const expected_code = `$ => {
+  const {high} = $.data;
+  const {open, close} = $.data;
+  const {array} = $.pine;
+  const p0 = array.param(5, undefined, 'p0');
+  const temp_1 = array.new_float(p0);
+  $.let.glb1_a = $.init($.let.glb1_a, temp_1);
+  $.get($.let.glb1_a, 0).fill($.get(close, 1) - $.get(open, 0));
+  $.let.glb1_res = $.init($.let.glb1_res, $.get($.let.glb1_a, 0));
+  $.let.glb1_i = $.init($.let.glb1_i, $.get($.let.glb1_a, 0).indexof($.get(high, 0)));
+}`;
+
+        expect(result).toBe(expected_code);
+    });
+
+    it('tuples', async () => {
+        const fakeContext = {};
+        const transformer = transpile.bind(fakeContext);
+
+        const source = (context) => {
+            const { close, open } = context.data;
+            const { plot, plotchar, request, ta } = context.pine;
+
+            function foo() {
+                const oo = open;
+                const cc = close;
+                return [oo, cc];
+            }
+
+            const [res, data] = foo();
+
+            plotchar(res, '_plotchar');
+
+            return {
+                res,
+                data,
+            };
+        };
+
+        let transpiled = transformer(source);
+
+        console.log(transpiled.toString());
+        const result = transpiled.toString().trim();
+
+        /* prettier-ignore */
+        const expected_code = `$ => {
+  const {close, open} = $.data;
+  const {plot, plotchar, request, ta} = $.pine;
+  function foo() {
+    $.const.fn1_oo = $.init($.const.fn1_oo, open);
+    $.const.fn1_cc = $.init($.const.fn1_cc, close);
+    return $.precision([[$.get($.const.fn1_oo, 0), $.get($.const.fn1_cc, 0)]]);
+  }
+  {
+    $.const.glb1_temp_1 = $.init($.const.glb1_temp_1, foo());
+    $.const.glb1_res = $.init($.const.glb1_res, $.get($.const.glb1_temp_1, 0)[0]);
+    $.const.glb1_data = $.init($.const.glb1_data, $.get($.const.glb1_temp_1, 0)[1]);
+  }
+  const p0 = $.param($.const.glb1_res, undefined, 'p0');
+  const p1 = $.param("_plotchar", undefined, 'p1');
+  plotchar(p0, p1);
+  return {
+    res: $.const.glb1_res,
+    data: $.const.glb1_data
+  };
 }`;
 
         expect(result).toBe(expected_code);

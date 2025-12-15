@@ -2340,7 +2340,7 @@
     this.generator = !!generator;
   };
 
-  var types = {
+  var types$2 = {
     b_stat: new TokContext("{", false),
     b_expr: new TokContext("{", true),
     b_tmpl: new TokContext("${", false),
@@ -2356,7 +2356,7 @@
   var pp$6 = Parser.prototype;
 
   pp$6.initialContext = function() {
-    return [types.b_stat]
+    return [types$2.b_stat]
   };
 
   pp$6.curContext = function() {
@@ -2365,9 +2365,9 @@
 
   pp$6.braceIsBlock = function(prevType) {
     var parent = this.curContext();
-    if (parent === types.f_expr || parent === types.f_stat)
+    if (parent === types$2.f_expr || parent === types$2.f_stat)
       { return true }
-    if (prevType === types$1.colon && (parent === types.b_stat || parent === types.b_expr))
+    if (prevType === types$1.colon && (parent === types$2.b_stat || parent === types$2.b_expr))
       { return !parent.isExpr }
 
     // The check for `tt.name && exprAllowed` detects whether we are
@@ -2378,7 +2378,7 @@
     if (prevType === types$1._else || prevType === types$1.semi || prevType === types$1.eof || prevType === types$1.parenR || prevType === types$1.arrow)
       { return true }
     if (prevType === types$1.braceL)
-      { return parent === types.b_stat }
+      { return parent === types$2.b_stat }
     if (prevType === types$1._var || prevType === types$1._const || prevType === types$1.name)
       { return false }
     return !this.exprAllowed
@@ -2419,25 +2419,25 @@
       return
     }
     var out = this.context.pop();
-    if (out === types.b_stat && this.curContext().token === "function") {
+    if (out === types$2.b_stat && this.curContext().token === "function") {
       out = this.context.pop();
     }
     this.exprAllowed = !out.isExpr;
   };
 
   types$1.braceL.updateContext = function(prevType) {
-    this.context.push(this.braceIsBlock(prevType) ? types.b_stat : types.b_expr);
+    this.context.push(this.braceIsBlock(prevType) ? types$2.b_stat : types$2.b_expr);
     this.exprAllowed = true;
   };
 
   types$1.dollarBraceL.updateContext = function() {
-    this.context.push(types.b_tmpl);
+    this.context.push(types$2.b_tmpl);
     this.exprAllowed = true;
   };
 
   types$1.parenL.updateContext = function(prevType) {
     var statementParens = prevType === types$1._if || prevType === types$1._for || prevType === types$1._with || prevType === types$1._while;
-    this.context.push(statementParens ? types.p_stat : types.p_expr);
+    this.context.push(statementParens ? types$2.p_stat : types$2.p_expr);
     this.exprAllowed = true;
   };
 
@@ -2447,12 +2447,12 @@
 
   types$1._function.updateContext = types$1._class.updateContext = function(prevType) {
     if (prevType.beforeExpr && prevType !== types$1._else &&
-        !(prevType === types$1.semi && this.curContext() !== types.p_stat) &&
+        !(prevType === types$1.semi && this.curContext() !== types$2.p_stat) &&
         !(prevType === types$1._return && lineBreak.test(this.input.slice(this.lastTokEnd, this.start))) &&
-        !((prevType === types$1.colon || prevType === types$1.braceL) && this.curContext() === types.b_stat))
-      { this.context.push(types.f_expr); }
+        !((prevType === types$1.colon || prevType === types$1.braceL) && this.curContext() === types$2.b_stat))
+      { this.context.push(types$2.f_expr); }
     else
-      { this.context.push(types.f_stat); }
+      { this.context.push(types$2.f_stat); }
     this.exprAllowed = false;
   };
 
@@ -2462,20 +2462,20 @@
   };
 
   types$1.backQuote.updateContext = function() {
-    if (this.curContext() === types.q_tmpl)
+    if (this.curContext() === types$2.q_tmpl)
       { this.context.pop(); }
     else
-      { this.context.push(types.q_tmpl); }
+      { this.context.push(types$2.q_tmpl); }
     this.exprAllowed = false;
   };
 
   types$1.star.updateContext = function(prevType) {
     if (prevType === types$1._function) {
       var index = this.context.length - 1;
-      if (this.context[index] === types.f_expr)
-        { this.context[index] = types.f_expr_gen; }
+      if (this.context[index] === types$2.f_expr)
+        { this.context[index] = types$2.f_expr_gen; }
       else
-        { this.context[index] = types.f_gen; }
+        { this.context[index] = types$2.f_gen; }
     }
     this.exprAllowed = true;
   };
@@ -2925,7 +2925,7 @@
       var startPos = this.start, startLoc = this.startLoc, containsEsc = this.containsEsc;
       var id = this.parseIdent(false);
       if (this.options.ecmaVersion >= 8 && !containsEsc && id.name === "async" && !this.canInsertSemicolon() && this.eat(types$1._function)) {
-        this.overrideContext(types.f_expr);
+        this.overrideContext(types$2.f_expr);
         return this.parseFunction(this.startNodeAt(startPos, startLoc), 0, false, true, forInit)
       }
       if (canBeArrow && !this.canInsertSemicolon()) {
@@ -2974,7 +2974,7 @@
       return this.finishNode(node, "ArrayExpression")
 
     case types$1.braceL:
-      this.overrideContext(types.b_expr);
+      this.overrideContext(types$2.b_expr);
       return this.parseObj(false, refDestructuringErrors)
 
     case types$1._function:
@@ -6130,7 +6130,7 @@
     tokTypes: types$1,
     keywordTypes: keywords,
     TokContext: TokContext,
-    tokContexts: types,
+    tokContexts: types$2,
     isIdentifierChar: isIdentifierChar,
     isIdentifierStart: isIdentifierStart,
     Token: Token,
@@ -7376,9 +7376,9 @@
     return state.output
   }
 
-  var __defProp$9 = Object.defineProperty;
-  var __defNormalProp$9 = (obj, key, value) => key in obj ? __defProp$9(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-  var __publicField$9 = (obj, key, value) => __defNormalProp$9(obj, typeof key !== "symbol" ? key + "" : key, value);
+  var __defProp$c = Object.defineProperty;
+  var __defNormalProp$c = (obj, key, value) => key in obj ? __defProp$c(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField$c = (obj, key, value) => __defNormalProp$c(obj, typeof key !== "symbol" ? key + "" : key, value);
   const JS_GLOBAL_LITERALS = /* @__PURE__ */ new Set([
     "Infinity",
     "NaN",
@@ -7419,23 +7419,23 @@
   ]);
   class ScopeManager {
     constructor() {
-      __publicField$9(this, "scopes", []);
-      __publicField$9(this, "scopeTypes", []);
-      __publicField$9(this, "scopeCounts", /* @__PURE__ */ new Map());
-      __publicField$9(this, "contextBoundVars", /* @__PURE__ */ new Set());
-      __publicField$9(this, "arrayPatternElements", /* @__PURE__ */ new Set());
-      __publicField$9(this, "rootParams", /* @__PURE__ */ new Set());
-      __publicField$9(this, "localSeriesVars", /* @__PURE__ */ new Set());
-      __publicField$9(this, "varKinds", /* @__PURE__ */ new Map());
-      __publicField$9(this, "loopVars", /* @__PURE__ */ new Set());
-      __publicField$9(this, "loopVarNames", /* @__PURE__ */ new Map());
+      __publicField$c(this, "scopes", []);
+      __publicField$c(this, "scopeTypes", []);
+      __publicField$c(this, "scopeCounts", /* @__PURE__ */ new Map());
+      __publicField$c(this, "contextBoundVars", /* @__PURE__ */ new Set());
+      __publicField$c(this, "arrayPatternElements", /* @__PURE__ */ new Set());
+      __publicField$c(this, "rootParams", /* @__PURE__ */ new Set());
+      __publicField$c(this, "localSeriesVars", /* @__PURE__ */ new Set());
+      __publicField$c(this, "varKinds", /* @__PURE__ */ new Map());
+      __publicField$c(this, "loopVars", /* @__PURE__ */ new Set());
+      __publicField$c(this, "loopVarNames", /* @__PURE__ */ new Map());
       // Map original names to transformed names
-      __publicField$9(this, "paramIdCounter", 0);
-      __publicField$9(this, "cacheIdCounter", 0);
-      __publicField$9(this, "tempVarCounter", 0);
-      __publicField$9(this, "taCallIdCounter", 0);
-      __publicField$9(this, "hoistingStack", []);
-      __publicField$9(this, "suppressHoisting", false);
+      __publicField$c(this, "paramIdCounter", 0);
+      __publicField$c(this, "cacheIdCounter", 0);
+      __publicField$c(this, "tempVarCounter", 0);
+      __publicField$c(this, "taCallIdCounter", 0);
+      __publicField$c(this, "hoistingStack", []);
+      __publicField$c(this, "suppressHoisting", false);
       this.pushScope("glb");
     }
     get nextParamIdArg() {
@@ -8002,6 +8002,43 @@
     }
   };
 
+  const CONTEXT_DATA_VARS = ["open", "high", "low", "close", "volume", "hl2", "hlc3", "ohlc4", "openTime", "closeTime"];
+  const CONTEXT_PINE_VARS = [
+    "input",
+    "ta",
+    "math",
+    "request",
+    "array",
+    "na",
+    "plotchar",
+    "color",
+    "plot",
+    "nz",
+    "strategy",
+    "library",
+    "str",
+    "box",
+    "line",
+    "label",
+    "table",
+    "map",
+    "matrix",
+    "log",
+    "map",
+    //market info
+    "timeframe",
+    "syminfo",
+    "barstate",
+    //builtin variables
+    "bar_index",
+    "last_bar_index",
+    "last_bar_time",
+    // Pine Script enum types
+    "order",
+    "currency"
+  ];
+  const CONTEXT_CORE_VARS = ["na", "nz", "plot", "plotchar", "color"];
+
   function injectImplicitImports(ast) {
     let mainBody = null;
     let contextParamName = CONTEXT_NAME;
@@ -8067,28 +8104,8 @@
         addDeclared(stmt.id);
       }
     });
-    const contextDataVars = ["open", "high", "low", "close", "volume", "hl2", "hlc3", "ohlc4", "openTime", "closeTime"];
-    const contextPineVars = [
-      "input",
-      "ta",
-      "math",
-      "request",
-      "array",
-      "na",
-      "plotchar",
-      "color",
-      "plot",
-      "nz",
-      "strategy",
-      "library",
-      "str",
-      "box",
-      "line",
-      "label",
-      "table",
-      "map",
-      "matrix"
-    ];
+    const contextDataVars = CONTEXT_DATA_VARS;
+    const contextPineVars = CONTEXT_PINE_VARS;
     const missingDataVars = contextDataVars.filter((v) => !declaredVars.has(v));
     const missingPineVars = contextPineVars.filter((v) => !declaredVars.has(v));
     const neededDataVars = missingDataVars.filter((v) => usedIdentifiers.has(v));
@@ -8169,29 +8186,9 @@
       }
     }
     if (!mainBody) return;
-    const contextDataVars = /* @__PURE__ */ new Set(["open", "high", "low", "close", "volume", "hl2", "hlc3", "ohlc4", "openTime", "closeTime"]);
-    const contextPineVars = /* @__PURE__ */ new Set([
-      "input",
-      "ta",
-      "math",
-      "request",
-      "array",
-      "na",
-      "plotchar",
-      "color",
-      "plot",
-      "nz",
-      "strategy",
-      "library",
-      "str",
-      "box",
-      "line",
-      "label",
-      "table",
-      "map",
-      "matrix"
-    ]);
-    const contextCoreVars = /* @__PURE__ */ new Set(["na", "nz", "plot", "plotchar", "color"]);
+    const contextDataVars = new Set(CONTEXT_DATA_VARS);
+    const contextPineVars = new Set(CONTEXT_PINE_VARS);
+    const contextCoreVars = new Set(CONTEXT_CORE_VARS);
     const renames = /* @__PURE__ */ new Map();
     mainBody.forEach((stmt) => {
       if (stmt.type === "VariableDeclaration") {
@@ -8502,12 +8499,6 @@ ${code}
       if (scopeManager.isLoopVariable(node.name)) {
         return;
       }
-      if (scopeManager.isContextBound(node.name) && !scopeManager.isRootParam(node.name)) {
-        return;
-      }
-      const isNamespaceMember = node.parent && node.parent.type === "MemberExpression" && node.parent.object === node && scopeManager.isContextBound(node.name);
-      const isParamCall = node.parent && node.parent.type === "CallExpression" && node.parent.callee && node.parent.callee.type === "MemberExpression" && node.parent.callee.property.name === "param";
-      node.parent && node.parent.type === "AssignmentExpression" && node.parent.left === node;
       let isSeriesFunctionArg = false;
       if (node.parent && node.parent.type === "CallExpression" && node.parent.arguments.includes(node)) {
         const callee = node.parent.callee;
@@ -8518,13 +8509,21 @@ ${code}
             isSeriesFunctionArg = true;
           }
         } else {
-          isSeriesFunctionArg = true;
+          const KNOWN_NAMESPACES = ["ta", "math", "request", "array", "input"];
+          const isNamespaceCall = callee.type === "MemberExpression" && callee.object && callee.object.type === "Identifier" && KNOWN_NAMESPACES.includes(callee.object.name);
+          if (callee.type === "MemberExpression" && !isNamespaceCall) {
+            isSeriesFunctionArg = false;
+          } else {
+            isSeriesFunctionArg = true;
+          }
         }
       }
-      const isArrayAccess = node.parent && node.parent.type === "MemberExpression" && node.parent.computed;
-      const isArrayIndexInNamespaceCall = node.parent && node.parent.type === "MemberExpression" && node.parent.computed && node.parent.property === node && node.parent.parent && node.parent.parent.type === "CallExpression" && node.parent.parent.callee && node.parent.parent.callee.type === "MemberExpression" && scopeManager.isContextBound(node.parent.parent.callee.object.name);
+      const isNamespaceMember = node.parent && node.parent.type === "MemberExpression" && node.parent.object === node && scopeManager.isContextBound(node.name);
+      const isParamCall = node.parent && node.parent.type === "CallExpression" && node.parent.callee && node.parent.callee.type === "MemberExpression" && node.parent.callee.property.name === "param";
+      node.parent && node.parent.type === "AssignmentExpression" && node.parent.left === node;
       const isFunctionCall = node.parent && node.parent.type === "CallExpression" && node.parent.callee === node;
       const hasArrayAccess = node.parent && node.parent.type === "MemberExpression" && node.parent.computed && node.parent.object === node;
+      const isArrayIndexInNamespaceCall = node.parent && node.parent.type === "MemberExpression" && node.parent.computed && node.parent.property === node && node.parent.parent && node.parent.parent.type === "CallExpression" && node.parent.parent.callee && node.parent.parent.callee.type === "MemberExpression" && scopeManager.isContextBound(node.parent.parent.callee.object.name);
       if (isNamespaceMember || isParamCall || isSeriesFunctionArg || isArrayIndexInNamespaceCall || isFunctionCall) {
         if (isFunctionCall) {
           return;
@@ -8532,13 +8531,23 @@ ${code}
         if (scopeManager.isLocalSeriesVar(node.name)) {
           return;
         }
+        if (scopeManager.isContextBound(node.name) && !scopeManager.isRootParam(node.name)) {
+          return;
+        }
         const [scopedName2, kind2] = scopeManager.getVariable(node.name);
         const memberExpr2 = ASTFactory.createContextVariableReference(kind2, scopedName2);
         Object.assign(node, memberExpr2);
         return;
       }
+      const isContextBoundVar = scopeManager.isContextBound(node.name) && !scopeManager.isRootParam(node.name);
+      if (isContextBoundVar) {
+        const isFunctionArg = node.parent && node.parent.type === "CallExpression" && node.parent.arguments.includes(node);
+        if (!isFunctionArg) {
+          return;
+        }
+      }
       if (scopeManager.isLocalSeriesVar(node.name)) {
-        if (!hasArrayAccess && !isArrayAccess) {
+        if (!hasArrayAccess) {
           const memberExpr2 = ASTFactory.createIdentifier(node.name);
           const accessExpr = ASTFactory.createGetCall(memberExpr2, 0);
           Object.assign(node, accessExpr);
@@ -8546,8 +8555,16 @@ ${code}
         return;
       }
       const [scopedName, kind] = scopeManager.getVariable(node.name);
-      const memberExpr = ASTFactory.createContextVariableReference(kind, scopedName);
-      if (!hasArrayAccess && !isArrayAccess) {
+      let memberExpr;
+      if (isContextBoundVar) {
+        memberExpr = ASTFactory.createIdentifier(node.name);
+      } else {
+        if (scopedName === node.name && !scopeManager.isContextBound(node.name)) {
+          return;
+        }
+        memberExpr = ASTFactory.createContextVariableReference(kind, scopedName);
+      }
+      if (!hasArrayAccess) {
         const accessExpr = ASTFactory.createGetCall(memberExpr, 0);
         Object.assign(node, accessExpr);
       } else {
@@ -8603,6 +8620,9 @@ ${code}
       if (memberNode.start) getCall.start = memberNode.start;
       if (memberNode.end) getCall.end = memberNode.end;
       Object.assign(memberNode, getCall);
+      delete memberNode.object;
+      delete memberNode.property;
+      delete memberNode.computed;
     }
   }
   function transformIdentifierForParam(node, scopeManager) {
@@ -8755,15 +8775,30 @@ ${code}
           }
         },
         ConditionalExpression(node2, state, c) {
+          const newState = { ...state, parent: node2 };
           if (node2.test) {
-            c(node2.test, { parent: node2, inNamespaceCall: state.inNamespaceCall });
+            c(node2.test, newState);
           }
           if (node2.consequent) {
-            c(node2.consequent, { parent: node2, inNamespaceCall: state.inNamespaceCall });
+            c(node2.consequent, newState);
           }
           if (node2.alternate) {
-            c(node2.alternate, { parent: node2, inNamespaceCall: state.inNamespaceCall });
+            c(node2.alternate, newState);
           }
+        },
+        BinaryExpression(node2, state, c) {
+          const newState = { ...state, parent: node2 };
+          c(node2.left, newState);
+          c(node2.right, newState);
+        },
+        LogicalExpression(node2, state, c) {
+          const newState = { ...state, parent: node2 };
+          c(node2.left, newState);
+          c(node2.right, newState);
+        },
+        UnaryExpression(node2, state, c) {
+          const newState = { ...state, parent: node2 };
+          c(node2.argument, newState);
         },
         CallExpression(node2, state, c) {
           const isNamespaceCall = node2.callee && node2.callee.type === "MemberExpression" && node2.callee.object && node2.callee.object.type === "Identifier" && scopeManager.isContextBound(node2.callee.object.name);
@@ -8957,6 +8992,11 @@ ${code}
       });
       node._transformed = true;
     }
+    if (!isNamespaceCall && node.callee && node.callee.type === "MemberExpression") {
+      if (node.callee.object.type === "Identifier") {
+        transformIdentifier(node.callee.object, scopeManager);
+      }
+    }
     node.arguments.forEach((arg) => {
       recursive(
         arg,
@@ -8977,6 +9017,20 @@ ${code}
                 }
               }
             }
+          },
+          BinaryExpression(node2, state, c) {
+            const newState = { ...state, parent: node2 };
+            c(node2.left, newState);
+            c(node2.right, newState);
+          },
+          LogicalExpression(node2, state, c) {
+            const newState = { ...state, parent: node2 };
+            c(node2.left, newState);
+            c(node2.right, newState);
+          },
+          UnaryExpression(node2, state, c) {
+            const newState = { ...state, parent: node2 };
+            c(node2.argument, newState);
           },
           CallExpression(node2, state, c) {
             if (!node2._transformed) {
@@ -9119,7 +9173,8 @@ ${code}
       }
       const newName = scopeManager.addVariable(decl.id.name, varNode.kind);
       const kind = varNode.kind;
-      if (decl.init && !isArrowFunction) {
+      const isArrayPatternVar = scopeManager.isArrayPatternElement(decl.id.name);
+      if (decl.init && !isArrowFunction && !isArrayPatternVar) {
         if (decl.init.type === "CallExpression" && decl.init.callee.type === "MemberExpression" && decl.init.callee.object && decl.init.callee.object.type === "Identifier" && scopeManager.isContextBound(decl.init.callee.object.name)) {
           transformCallExpression(decl.init, scopeManager);
         } else {
@@ -9180,7 +9235,6 @@ ${code}
         }
       }
       const targetVarRef = ASTFactory.createContextVariableReference(kind, newName);
-      const isArrayPatternVar = scopeManager.isArrayPatternElement(decl.id.name);
       const isArrayInit = !isArrayPatternVar && decl.init && decl.init.type === "MemberExpression" && decl.init.computed && decl.init.property && (decl.init.property.type === "Literal" || decl.init.property.type === "MemberExpression");
       if (decl.init?.property?.type === "MemberExpression") {
         if (!decl.init.property._indexTransformed) {
@@ -9193,10 +9247,7 @@ ${code}
         if (isArrowFunction || isArrayPatternVar) {
           rightSide = decl.init;
         } else if (kind === "var") {
-          rightSide = ASTFactory.createInitVarCall(
-            targetVarRef,
-            decl.init
-          );
+          rightSide = ASTFactory.createInitVarCall(targetVarRef, decl.init);
         } else {
           rightSide = ASTFactory.createInitCall(
             targetVarRef,
@@ -9209,7 +9260,9 @@ ${code}
       }
       const assignmentExpr = ASTFactory.createExpressionStatement(ASTFactory.createAssignmentExpression(targetVarRef, rightSide));
       if (isArrayPatternVar) {
-        const tempVarRef = assignmentExpr.expression.right.object;
+        const tempVarName = decl.init.object.name;
+        const [scopedTempName, tempKind] = scopeManager.getVariable(tempVarName);
+        const tempVarRef = ASTFactory.createContextVariableReference(tempKind, scopedTempName);
         const arrayIndex = decl.init.property.value;
         const getCall = ASTFactory.createGetCall(tempVarRef, 0);
         const arrayAccess = {
@@ -9406,6 +9459,9 @@ ${code}
       } else if (node.argument.type === "ObjectExpression") {
         node.argument.properties = node.argument.properties.map((prop) => {
           if (prop.shorthand) {
+            if (scopeManager.isContextBound(prop.value.name)) {
+              return prop;
+            }
             const [scopedName, kind] = scopeManager.getVariable(prop.value.name);
             return {
               type: "Property",
@@ -9418,9 +9474,7 @@ ${code}
             };
           }
           if (prop.value && prop.value.type === "Identifier") {
-            if (scopeManager.isContextBound(prop.value.name) && !scopeManager.isRootParam(prop.value.name)) {
-              prop.value = ASTFactory.createGetCall(prop.value, 0);
-            } else if (!scopeManager.isContextBound(prop.value.name)) {
+            if (scopeManager.isContextBound(prop.value.name) && !scopeManager.isRootParam(prop.value.name)) ; else if (!scopeManager.isContextBound(prop.value.name)) {
               const [scopedName, kind] = scopeManager.getVariable(prop.value.name);
               prop.value = ASTFactory.createContextVariableReference(kind, scopedName);
             }
@@ -9605,72 +9659,207 @@ ${code}
     return _wraperFunction(this);
   }
 
-  class PineArrayObject {
-    constructor(array) {
-      this.array = array;
-    }
-    toString() {
-      return "PineArrayObject:" + this.array.toString();
-    }
-  }
-
   function abs$1(context) {
     return (id) => {
-      return new PineArrayObject(id.array.map((val) => Math.abs(val)));
+      return new PineArrayObject(
+        id.array.map((val) => Math.abs(val)),
+        id.type,
+        context
+      );
     };
   }
 
-  function avg$1(context) {
+  function avg$2(context) {
     return (id) => {
-      return context.array.sum(id) / id.array.length;
+      let mean = 0;
+      let count = 0;
+      for (const item of id.array) {
+        const val = Number(item);
+        if (!isNaN(val)) {
+          count++;
+          mean += (val - mean) / count;
+        }
+      }
+      if (count === 0) return NaN;
+      return context.precision(mean);
     };
   }
 
-  function clear(context) {
+  function binary_search(context) {
+    return (id, value) => {
+      const array = id.array;
+      let low = 0;
+      let high = array.length - 1;
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        const midVal = array[mid];
+        if (midVal === value) {
+          return mid;
+        }
+        if (midVal < value) {
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
+      }
+      return -1;
+    };
+  }
+
+  function binary_search_leftmost(context) {
+    return (id, value) => {
+      const array = id.array;
+      let low = 0;
+      let high = array.length;
+      while (low < high) {
+        const mid = Math.floor((low + high) / 2);
+        if (array[mid] < value) {
+          low = mid + 1;
+        } else {
+          high = mid;
+        }
+      }
+      if (low < array.length && array[low] === value) {
+        return low;
+      }
+      return low - 1;
+    };
+  }
+
+  function binary_search_rightmost(context) {
+    return (id, value) => {
+      const array = id.array;
+      let low = 0;
+      let high = array.length;
+      while (low < high) {
+        const mid = Math.floor((low + high) / 2);
+        if (array[mid] <= value) {
+          low = mid + 1;
+        } else {
+          high = mid;
+        }
+      }
+      if (low > 0 && array[low - 1] === value) {
+        return low - 1;
+      }
+      return low;
+    };
+  }
+
+  function clear$1(context) {
     return (id) => {
       id.array.length = 0;
     };
   }
 
-  function concat(context) {
+  function concat$1(context) {
     return (id, other) => {
       id.array.push(...other.array);
       return id;
     };
   }
 
-  function copy(context) {
+  function copy$2(context) {
     return (id) => {
-      return new PineArrayObject([...id.array]);
+      return new PineArrayObject([...id.array], id.type, context);
     };
   }
 
   function covariance(context) {
     return (arr1, arr2, biased = true) => {
-      if (arr1.array.length !== arr2.array.length || arr1.array.length < 2) return NaN;
-      const divisor = biased ? arr1.array.length : arr1.array.length - 1;
-      const mean1 = context.array.avg(arr1);
-      const mean2 = context.array.avg(arr2);
-      let sum = 0;
-      for (let i = 0; i < arr1.array.length; i++) {
-        sum += (arr1.array[i] - mean1) * (arr2.array[i] - mean2);
+      const a1 = arr1.array;
+      const a2 = arr2.array;
+      if (a1.length !== a2.length) return NaN;
+      let sum1 = 0;
+      let sum2 = 0;
+      let count = 0;
+      const validIndices = [];
+      for (let i = 0; i < a1.length; i++) {
+        const v1 = Number(a1[i]);
+        const v2 = Number(a2[i]);
+        if (!isNaN(v1) && v1 !== null && v1 !== void 0 && !isNaN(v2) && v2 !== null && v2 !== void 0) {
+          sum1 += v1;
+          sum2 += v2;
+          count++;
+          validIndices.push(i);
+        }
       }
-      return sum / divisor;
+      if (count === 0) return NaN;
+      const mean1 = sum1 / count;
+      const mean2 = sum2 / count;
+      let sumProd = 0;
+      for (const i of validIndices) {
+        const v1 = Number(a1[i]);
+        const v2 = Number(a2[i]);
+        sumProd += (v1 - mean1) * (v2 - mean2);
+      }
+      const divisor = biased ? count : count - 1;
+      if (divisor <= 0) return NaN;
+      return context.precision(sumProd / divisor);
     };
   }
 
   function every(context) {
-    return (id, callback) => {
-      return id.array.every(callback);
+    return (id) => {
+      return id.array.every((value) => !isNaN(value) && value);
     };
   }
 
-  function fill(context) {
+  function inferArrayType(values) {
+    if (values.every((value) => typeof value === "number")) {
+      if (values.every((value) => (value | 0) === value)) {
+        return PineArrayType.int;
+      } else {
+        return PineArrayType.float;
+      }
+    } else if (values.every((value) => typeof value === "string")) {
+      return PineArrayType.string;
+    } else if (values.every((value) => typeof value === "boolean")) {
+      return PineArrayType.bool;
+    } else {
+      throw new Error("Cannot infer type from values");
+    }
+  }
+  function inferValueType(value) {
+    if (typeof value === "number") {
+      if ((value | 0) === value) {
+        return PineArrayType.int;
+      } else {
+        return PineArrayType.float;
+      }
+    } else if (typeof value === "string") {
+      return PineArrayType.string;
+    } else if (typeof value === "boolean") {
+      return PineArrayType.bool;
+    } else {
+      throw new Error("Cannot infer type from value");
+    }
+  }
+  function isValueOfType(value, type) {
+    switch (type) {
+      case PineArrayType.int:
+        return typeof value === "number" && (value | 0) === value || isNaN(value);
+      case PineArrayType.float:
+        return typeof value === "number" || isNaN(value);
+      case PineArrayType.string:
+        return typeof value === "string";
+      case PineArrayType.bool:
+        return typeof value === "boolean";
+    }
+    return false;
+  }
+
+  function fill$1(context) {
     return (id, value, start = 0, end) => {
       const length = id.array.length;
       const adjustedEnd = end !== void 0 ? Math.min(end, length) : length;
       for (let i = start; i < adjustedEnd; i++) {
-        id.array[i] = value;
+        if (!isValueOfType(value, id.type)) {
+          throw new Error(
+            `Cannot call 'array.fill' with argument 'value'='${value}'. An argument of 'literal ${typeof value}' type was used but a '${id.type}' is expected.`
+          );
+        }
+        id.array[i] = context.precision(value);
       }
     };
   }
@@ -9681,13 +9870,7 @@ ${code}
     };
   }
 
-  function from(context) {
-    return (...values) => {
-      return new PineArrayObject([...values]);
-    };
-  }
-
-  function get(context) {
+  function get$2(context) {
     return (id, index) => {
       return id.array[index];
     };
@@ -9707,6 +9890,11 @@ ${code}
 
   function insert(context) {
     return (id, index, value) => {
+      if (!isValueOfType(value, id.type)) {
+        throw new Error(
+          `Cannot call 'array.insert' with argument 'value'='${value}'. An argument of 'literal ${typeof value}' type was used but a '${id.type}' is expected.`
+        );
+      }
       id.array.splice(index, 0, value);
     };
   }
@@ -9729,47 +9917,698 @@ ${code}
     };
   }
 
-  function max$1(context) {
+  function max$2(context) {
     return (id, nth = 0) => {
       const sorted = [...id.array].sort((a, b) => b - a);
       return sorted[nth] ?? context.NA;
     };
   }
 
-  function min$1(context) {
+  function median$2(context) {
+    return (id) => {
+      if (id.array.length === 0) return NaN;
+      const sorted = [...id.array].sort((a, b) => {
+        if (typeof a === "number" && typeof b === "number") {
+          return a - b;
+        }
+        return 0;
+      });
+      const mid = Math.floor(sorted.length / 2);
+      if (sorted.length % 2 !== 0) {
+        return sorted[mid];
+      }
+      return (sorted[mid - 1] + sorted[mid]) / 2;
+    };
+  }
+
+  function min$2(context) {
     return (id, nth = 0) => {
       const sorted = [...id.array].sort((a, b) => a - b);
       return sorted[nth] ?? context.NA;
     };
   }
 
-  function new_fn(context) {
+  function mode$2(context) {
+    return (id) => {
+      if (id.array.length === 0) return NaN;
+      const counts = /* @__PURE__ */ new Map();
+      let maxFreq = 0;
+      for (const val of id.array) {
+        const count = (counts.get(val) || 0) + 1;
+        counts.set(val, count);
+        if (count > maxFreq) {
+          maxFreq = count;
+        }
+      }
+      const modes = [];
+      for (const [val, count] of counts) {
+        if (count === maxFreq) {
+          modes.push(val);
+        }
+      }
+      modes.sort((a, b) => {
+        if (typeof a === "number" && typeof b === "number") {
+          return a - b;
+        }
+        if (typeof a === "string" && typeof b === "string") {
+          return a < b ? -1 : a > b ? 1 : 0;
+        }
+        return 0;
+      });
+      return modes[0];
+    };
+  }
+
+  function percentile_linear_interpolation$1(context) {
+    return (id, percentage) => {
+      const array = id.array;
+      if (array.length === 0) return NaN;
+      const validValues = [];
+      for (const item of array) {
+        const val = Number(item);
+        if (isNaN(val) || val === null || val === void 0) {
+          return NaN;
+        }
+        validValues.push(val);
+      }
+      validValues.sort((a, b) => a - b);
+      if (percentage < 0) percentage = 0;
+      if (percentage > 100) percentage = 100;
+      const k = percentage / 100 * validValues.length - 0.5;
+      if (k <= 0) return context.precision(validValues[0]);
+      if (k >= validValues.length - 1) return context.precision(validValues[validValues.length - 1]);
+      const i = Math.floor(k);
+      const f = k - i;
+      return context.precision(validValues[i] * (1 - f) + validValues[i + 1] * f);
+    };
+  }
+
+  function percentile_nearest_rank$1(context) {
+    return (id, percentage) => {
+      const array = id.array;
+      if (array.length === 0) return NaN;
+      const validValues = [];
+      for (const item of array) {
+        const val = Number(item);
+        if (!isNaN(val) && val !== null && val !== void 0) {
+          validValues.push(val);
+        }
+      }
+      if (validValues.length === 0) return NaN;
+      validValues.sort((a, b) => a - b);
+      if (percentage < 0) percentage = 0;
+      if (percentage > 100) percentage = 100;
+      const totalCount = array.length;
+      const rank = Math.ceil(percentage / 100 * totalCount);
+      if (rank <= 0) {
+        return validValues[0];
+      }
+      if (rank > validValues.length) return NaN;
+      return validValues[rank - 1];
+    };
+  }
+
+  function percentrank$1(context) {
+    return (id, index) => {
+      if (id.array.length === 0) return NaN;
+      const idx = Math.floor(index);
+      if (idx < 0 || idx >= id.array.length) return NaN;
+      const value = Number(id.array[idx]);
+      if (isNaN(value) || value === null || value === void 0) return NaN;
+      let lessThan = 0;
+      for (const item of id.array) {
+        const val = Number(item);
+        if (!isNaN(val) && val !== null && val !== void 0) {
+          if (val < value) {
+            lessThan++;
+          }
+        }
+      }
+      const divisor = id.array.length - 1;
+      if (divisor <= 0) return NaN;
+      return lessThan / divisor * 100;
+    };
+  }
+
+  function pop(context) {
+    return (id) => {
+      return id.array.pop();
+    };
+  }
+
+  function push(context) {
+    return (id, value) => {
+      if (!isValueOfType(value, id.type)) {
+        throw new Error(
+          `Cannot call 'array.push' with argument 'value'='${value}'. An argument of 'literal ${typeof value}' type was used but a '${id.type}' is expected.`
+        );
+      }
+      id.array.push(context.precision(value));
+    };
+  }
+
+  function range$1(context) {
+    return (id) => {
+      return context.precision(context.pine.array.max(id) - context.pine.array.min(id));
+    };
+  }
+
+  function remove$1(context) {
+    return (id, index) => {
+      if (index >= 0 && index < id.array.length) {
+        return id.array.splice(index, 1)[0];
+      }
+      return context.NA;
+    };
+  }
+
+  function reverse$1(context) {
+    return (id) => {
+      id.array.reverse();
+    };
+  }
+
+  function set$1(context) {
+    return (id, index, value) => {
+      if (!isValueOfType(value, id.type)) {
+        throw new Error(
+          `Cannot call 'array.set' with argument 'value'='${value}'. An argument of 'literal ${typeof value}' type was used but a '${id.type}' is expected.`
+        );
+      }
+      id.array[index] = context.precision(value);
+    };
+  }
+
+  function shift(context) {
+    return (id) => {
+      return id.array.shift();
+    };
+  }
+
+  function size$1(context) {
+    return (id) => {
+      return id.array.length;
+    };
+  }
+
+  function slice(context) {
+    return (id, start, end) => {
+      const adjustedEnd = end !== void 0 ? end : void 0;
+      return new PineArrayObject(id.array.slice(start, adjustedEnd), id.type, context);
+    };
+  }
+
+  function some(context) {
+    return (id) => {
+      return id.array.some((value) => !isNaN(value) && value);
+    };
+  }
+
+  var order = /* @__PURE__ */ ((order2) => {
+    order2[order2["ascending"] = 1] = "ascending";
+    order2[order2["descending"] = 0] = "descending";
+    return order2;
+  })(order || {});
+  var currency = /* @__PURE__ */ ((currency2) => {
+    currency2["AED"] = "AED";
+    currency2["ARS"] = "ARS";
+    currency2["AUD"] = "AUD";
+    currency2["BDT"] = "BDT";
+    currency2["BHD"] = "BHD";
+    currency2["BRL"] = "BRL";
+    currency2["BTC"] = "BTC";
+    currency2["CAD"] = "CAD";
+    currency2["CHF"] = "CHF";
+    currency2["CLP"] = "CLP";
+    currency2["CNY"] = "CNY";
+    currency2["COP"] = "COP";
+    currency2["CZK"] = "CZK";
+    currency2["DKK"] = "DKK";
+    currency2["EGP"] = "EGP";
+    currency2["ETH"] = "ETH";
+    currency2["EUR"] = "EUR";
+    currency2["GBP"] = "GBP";
+    currency2["HKD"] = "HKD";
+    currency2["HUF"] = "HUF";
+    currency2["IDR"] = "IDR";
+    currency2["ILS"] = "ILS";
+    currency2["INR"] = "INR";
+    currency2["ISK"] = "ISK";
+    currency2["JPY"] = "JPY";
+    currency2["KES"] = "KES";
+    currency2["KRW"] = "KRW";
+    currency2["KWD"] = "KWD";
+    currency2["LKR"] = "LKR";
+    currency2["MAD"] = "MAD";
+    currency2["MXN"] = "MXN";
+    currency2["MYR"] = "MYR";
+    currency2["NGN"] = "NGN";
+    currency2["NOK"] = "NOK";
+    currency2["NONE"] = "NONE";
+    currency2["NZD"] = "NZD";
+    currency2["PEN"] = "PEN";
+    currency2["PHP"] = "PHP";
+    currency2["PKR"] = "PKR";
+    currency2["PLN"] = "PLN";
+    currency2["QAR"] = "QAR";
+    currency2["RON"] = "RON";
+    currency2["RSD"] = "RSD";
+    currency2["RUB"] = "RUB";
+    currency2["SAR"] = "SAR";
+    currency2["SEK"] = "SEK";
+    currency2["SGD"] = "SGD";
+    currency2["THB"] = "THB";
+    currency2["TND"] = "TND";
+    currency2["TRY"] = "TRY";
+    currency2["TWD"] = "TWD";
+    currency2["USD"] = "USD";
+    currency2["USDT"] = "USDT";
+    currency2["VES"] = "VES";
+    currency2["VND"] = "VND";
+    currency2["ZAR"] = "ZAR";
+    return currency2;
+  })(currency || {});
+  var dayofweek = /* @__PURE__ */ ((dayofweek2) => {
+    dayofweek2[dayofweek2["sunday"] = 1] = "sunday";
+    dayofweek2[dayofweek2["monday"] = 2] = "monday";
+    dayofweek2[dayofweek2["tuesday"] = 3] = "tuesday";
+    dayofweek2[dayofweek2["wednesday"] = 4] = "wednesday";
+    dayofweek2[dayofweek2["thursday"] = 5] = "thursday";
+    dayofweek2[dayofweek2["friday"] = 6] = "friday";
+    dayofweek2[dayofweek2["saturday"] = 7] = "saturday";
+    return dayofweek2;
+  })(dayofweek || {});
+  const types = {
+    order,
+    currency,
+    dayofweek
+  };
+
+  function sort$1(context) {
+    return (id, _order = order.ascending) => {
+      id.array.sort((a, b) => {
+        let _a = isNaN(a) ? Infinity : a;
+        let _b = isNaN(b) ? Infinity : b;
+        return _order === order.ascending ? _a - _b : _b - _a;
+      });
+    };
+  }
+
+  function sort_indices(context) {
+    return (id, _order = order.ascending) => {
+      const indices = id.array.map((_, index) => index);
+      indices.sort((a, b) => {
+        const valA = isNaN(id.array[a]) ? Infinity : id.array[a];
+        const valB = isNaN(id.array[b]) ? Infinity : id.array[b];
+        return _order === order.ascending ? valA - valB : valB - valA;
+      });
+      return new PineArrayObject(indices, PineArrayType.int, context);
+    };
+  }
+
+  function standardize(context) {
+    return (id) => {
+      const mean = context.array.avg(id);
+      const stdev = context.array.stdev(id);
+      if (isNaN(stdev)) {
+        return new PineArrayObject(
+          id.array.map(() => NaN),
+          PineArrayType.int,
+          context
+        );
+      }
+      if (stdev === 0) {
+        return new PineArrayObject(
+          id.array.map(() => 1),
+          PineArrayType.int,
+          context
+        );
+      }
+      return new PineArrayObject(
+        id.array.map((x) => (x - mean) / stdev),
+        PineArrayType.int,
+        context
+      );
+    };
+  }
+
+  function stdev$1(context) {
+    return (id, biased = true) => {
+      const array = id.array;
+      const n_total = array.length;
+      if (n_total === 0) return NaN;
+      let sum = 0;
+      let sumSq = 0;
+      let count = 0;
+      for (let i = 0; i < n_total; i++) {
+        const val = Number(array[i]);
+        if (!isNaN(val) && val !== null && val !== void 0) {
+          sum += val;
+          sumSq += val * val;
+          count++;
+        }
+      }
+      if (count === 0) return NaN;
+      const mean = sum / count;
+      const meanSq = sumSq / count;
+      let variance = meanSq - mean * mean;
+      if (variance < 0) return NaN;
+      if (!biased && count > 1) {
+        variance = variance * count / (count - 1);
+      }
+      if (!biased && count === 1) return 0;
+      return context.precision(Math.sqrt(variance));
+    };
+  }
+
+  function sum$2(context) {
+    return (id) => {
+      return context.precision(
+        id.array.reduce((a, b) => {
+          const val = Number(b);
+          return isNaN(val) ? a : a + val;
+        }, 0)
+      );
+    };
+  }
+
+  function unshift(context) {
+    return (id, value) => {
+      if (!isValueOfType(value, id.type)) {
+        throw new Error(
+          `Cannot call 'array.unshift' with argument 'value'='${value}'. An argument of 'literal ${typeof value}' type was used but a '${id.type}' is expected.`
+        );
+      }
+      id.array.unshift(context.precision(value));
+    };
+  }
+
+  function variance$1(context) {
+    return (id, biased = true) => {
+      let sum = 0;
+      let count = 0;
+      for (const item of id.array) {
+        const val = Number(item);
+        if (!isNaN(val) && val !== null && val !== void 0) {
+          sum += val;
+          count++;
+        }
+      }
+      if (count === 0) return NaN;
+      const mean = sum / count;
+      let sumSqDiff = 0;
+      for (const item of id.array) {
+        const val = Number(item);
+        if (!isNaN(val) && val !== null && val !== void 0) {
+          sumSqDiff += (val - mean) * (val - mean);
+        }
+      }
+      const divisor = biased ? count : count - 1;
+      if (divisor <= 0) return NaN;
+      return context.precision(sumSqDiff / divisor);
+    };
+  }
+
+  var __defProp$b = Object.defineProperty;
+  var __defNormalProp$b = (obj, key, value) => key in obj ? __defProp$b(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField$b = (obj, key, value) => __defNormalProp$b(obj, typeof key !== "symbol" ? key + "" : key, value);
+  var PineArrayType = /* @__PURE__ */ ((PineArrayType2) => {
+    PineArrayType2["any"] = "";
+    PineArrayType2["box"] = "box";
+    PineArrayType2["bool"] = "bool";
+    PineArrayType2["color"] = "color";
+    PineArrayType2["float"] = "float";
+    PineArrayType2["int"] = "int";
+    PineArrayType2["label"] = "label";
+    PineArrayType2["line"] = "line";
+    PineArrayType2["linefill"] = "linefill";
+    PineArrayType2["string"] = "string";
+    PineArrayType2["table"] = "table";
+    return PineArrayType2;
+  })(PineArrayType || {});
+  class PineArrayObject {
+    constructor(array, type, context) {
+      this.array = array;
+      this.type = type;
+      this.context = context;
+      __publicField$b(this, "_abs");
+      __publicField$b(this, "_avg");
+      __publicField$b(this, "_binary_search");
+      __publicField$b(this, "_binary_search_leftmost");
+      __publicField$b(this, "_binary_search_rightmost");
+      __publicField$b(this, "_clear");
+      __publicField$b(this, "_concat");
+      __publicField$b(this, "_copy");
+      __publicField$b(this, "_covariance");
+      __publicField$b(this, "_every");
+      __publicField$b(this, "_fill");
+      __publicField$b(this, "_first");
+      __publicField$b(this, "_get");
+      __publicField$b(this, "_includes");
+      __publicField$b(this, "_indexof");
+      __publicField$b(this, "_insert");
+      __publicField$b(this, "_join");
+      __publicField$b(this, "_last");
+      __publicField$b(this, "_lastindexof");
+      __publicField$b(this, "_max");
+      __publicField$b(this, "_median");
+      __publicField$b(this, "_min");
+      __publicField$b(this, "_mode");
+      __publicField$b(this, "_percentile_linear_interpolation");
+      __publicField$b(this, "_percentile_nearest_rank");
+      __publicField$b(this, "_percentrank");
+      __publicField$b(this, "_pop");
+      __publicField$b(this, "_push");
+      __publicField$b(this, "_range");
+      __publicField$b(this, "_remove");
+      __publicField$b(this, "_reverse");
+      __publicField$b(this, "_set");
+      __publicField$b(this, "_shift");
+      __publicField$b(this, "_size");
+      __publicField$b(this, "_slice");
+      __publicField$b(this, "_some");
+      __publicField$b(this, "_sort");
+      __publicField$b(this, "_sort_indices");
+      __publicField$b(this, "_standardize");
+      __publicField$b(this, "_stdev");
+      __publicField$b(this, "_sum");
+      __publicField$b(this, "_unshift");
+      __publicField$b(this, "_variance");
+      this._abs = abs$1(this.context);
+      this._avg = avg$2(this.context);
+      this._binary_search = binary_search(this.context);
+      this._binary_search_leftmost = binary_search_leftmost(this.context);
+      this._binary_search_rightmost = binary_search_rightmost(this.context);
+      this._clear = clear$1(this.context);
+      this._concat = concat$1(this.context);
+      this._copy = copy$2(this.context);
+      this._covariance = covariance(this.context);
+      this._every = every(this.context);
+      this._fill = fill$1(this.context);
+      this._first = first(this.context);
+      this._get = get$2(this.context);
+      this._includes = includes(this.context);
+      this._indexof = indexof(this.context);
+      this._insert = insert(this.context);
+      this._join = join(this.context);
+      this._last = last(this.context);
+      this._lastindexof = lastindexof(this.context);
+      this._max = max$2(this.context);
+      this._median = median$2(this.context);
+      this._min = min$2(this.context);
+      this._mode = mode$2(this.context);
+      this._percentile_linear_interpolation = percentile_linear_interpolation$1(this.context);
+      this._percentile_nearest_rank = percentile_nearest_rank$1(this.context);
+      this._percentrank = percentrank$1(this.context);
+      this._pop = pop(this.context);
+      this._push = push(this.context);
+      this._range = range$1(this.context);
+      this._remove = remove$1(this.context);
+      this._reverse = reverse$1(this.context);
+      this._set = set$1(this.context);
+      this._shift = shift(this.context);
+      this._size = size$1(this.context);
+      this._slice = slice(this.context);
+      this._some = some(this.context);
+      this._sort = sort$1(this.context);
+      this._sort_indices = sort_indices(this.context);
+      this._standardize = standardize(this.context);
+      this._stdev = stdev$1(this.context);
+      this._sum = sum$2(this.context);
+      this._unshift = unshift(this.context);
+      this._variance = variance$1(this.context);
+    }
+    toString() {
+      return "[" + this.array.toString().replace(/,/g, ", ") + "]";
+    }
+    abs(...args) {
+      return this._abs(this, ...args);
+    }
+    avg(...args) {
+      return this._avg(this, ...args);
+    }
+    binary_search(...args) {
+      return this._binary_search(this, ...args);
+    }
+    binary_search_leftmost(...args) {
+      return this._binary_search_leftmost(this, ...args);
+    }
+    binary_search_rightmost(...args) {
+      return this._binary_search_rightmost(this, ...args);
+    }
+    clear(...args) {
+      return this._clear(this, ...args);
+    }
+    concat(...args) {
+      return this._concat(this, ...args);
+    }
+    copy(...args) {
+      return this._copy(this, ...args);
+    }
+    covariance(...args) {
+      return this._covariance(this, ...args);
+    }
+    every(...args) {
+      return this._every(this, ...args);
+    }
+    fill(...args) {
+      return this._fill(this, ...args);
+    }
+    first(...args) {
+      return this._first(this, ...args);
+    }
+    get(...args) {
+      return this._get(this, ...args);
+    }
+    includes(...args) {
+      return this._includes(this, ...args);
+    }
+    indexof(...args) {
+      return this._indexof(this, ...args);
+    }
+    insert(...args) {
+      return this._insert(this, ...args);
+    }
+    join(...args) {
+      return this._join(this, ...args);
+    }
+    last(...args) {
+      return this._last(this, ...args);
+    }
+    lastindexof(...args) {
+      return this._lastindexof(this, ...args);
+    }
+    max(...args) {
+      return this._max(this, ...args);
+    }
+    median(...args) {
+      return this._median(this, ...args);
+    }
+    min(...args) {
+      return this._min(this, ...args);
+    }
+    mode(...args) {
+      return this._mode(this, ...args);
+    }
+    percentile_linear_interpolation(...args) {
+      return this._percentile_linear_interpolation(this, ...args);
+    }
+    percentile_nearest_rank(...args) {
+      return this._percentile_nearest_rank(this, ...args);
+    }
+    percentrank(...args) {
+      return this._percentrank(this, ...args);
+    }
+    pop(...args) {
+      return this._pop(this, ...args);
+    }
+    push(...args) {
+      return this._push(this, ...args);
+    }
+    range(...args) {
+      return this._range(this, ...args);
+    }
+    remove(...args) {
+      return this._remove(this, ...args);
+    }
+    reverse(...args) {
+      return this._reverse(this, ...args);
+    }
+    set(...args) {
+      return this._set(this, ...args);
+    }
+    shift(...args) {
+      return this._shift(this, ...args);
+    }
+    size(...args) {
+      return this._size(this, ...args);
+    }
+    slice(...args) {
+      return this._slice(this, ...args);
+    }
+    some(...args) {
+      return this._some(this, ...args);
+    }
+    sort(...args) {
+      return this._sort(this, ...args);
+    }
+    sort_indices(...args) {
+      return this._sort_indices(this, ...args);
+    }
+    standardize(...args) {
+      return this._standardize(this, ...args);
+    }
+    stdev(...args) {
+      return this._stdev(this, ...args);
+    }
+    sum(...args) {
+      return this._sum(this, ...args);
+    }
+    unshift(...args) {
+      return this._unshift(this, ...args);
+    }
+    variance(...args) {
+      return this._variance(this, ...args);
+    }
+  }
+
+  function from(context) {
+    return (...values) => {
+      return new PineArrayObject([...values], inferArrayType(values), context);
+    };
+  }
+
+  function new_fn$2(context) {
     return (size, initial_value) => {
-      return new PineArrayObject(Array(size).fill(initial_value));
+      return new PineArrayObject(
+        Array(size).fill(context.precision(initial_value || 0)),
+        inferValueType(initial_value || 0),
+        context
+      );
     };
   }
 
   function new_bool(context) {
     return (size, initial_value = false) => {
-      return new PineArrayObject(Array(size).fill(initial_value));
+      return new PineArrayObject(Array(size).fill(initial_value), PineArrayType.bool, context);
     };
   }
 
   function new_float(context) {
     return (size, initial_value = NaN) => {
-      return new PineArrayObject(Array(size).fill(initial_value));
+      return new PineArrayObject(Array(size).fill(context.precision(initial_value)), PineArrayType.float, context);
     };
   }
 
   function new_int(context) {
     return (size, initial_value = 0) => {
-      return new PineArrayObject(Array(size).fill(Math.round(initial_value)));
+      return new PineArrayObject(Array(size).fill(context.precision(initial_value)), PineArrayType.int, context);
     };
   }
 
   function new_string(context) {
     return (size, initial_value = "") => {
-      return new PineArrayObject(Array(size).fill(initial_value));
+      return new PineArrayObject(Array(size).fill(initial_value), PineArrayType.string, context);
     };
   }
 
@@ -9804,231 +10643,1483 @@ ${code}
     }
   }
 
+  function param$6(context) {
+    return (source, index = 0) => {
+      return Series.from(source).get(index);
+    };
+  }
+
+  class PineArray {
+    constructor(context) {
+      this.context = context;
+      this.abs = (id, ...args) => id.abs(...args);
+      this.avg = (id, ...args) => id.avg(...args);
+      this.binary_search = (id, ...args) => id.binary_search(...args);
+      this.binary_search_leftmost = (id, ...args) => id.binary_search_leftmost(...args);
+      this.binary_search_rightmost = (id, ...args) => id.binary_search_rightmost(...args);
+      this.clear = (id, ...args) => id.clear(...args);
+      this.concat = (id, ...args) => id.concat(...args);
+      this.copy = (id, ...args) => id.copy(...args);
+      this.covariance = (id, ...args) => id.covariance(...args);
+      this.every = (id, ...args) => id.every(...args);
+      this.fill = (id, ...args) => id.fill(...args);
+      this.first = (id, ...args) => id.first(...args);
+      this.from = from(context);
+      this.get = (id, ...args) => id.get(...args);
+      this.includes = (id, ...args) => id.includes(...args);
+      this.indexof = (id, ...args) => id.indexof(...args);
+      this.insert = (id, ...args) => id.insert(...args);
+      this.join = (id, ...args) => id.join(...args);
+      this.last = (id, ...args) => id.last(...args);
+      this.lastindexof = (id, ...args) => id.lastindexof(...args);
+      this.max = (id, ...args) => id.max(...args);
+      this.median = (id, ...args) => id.median(...args);
+      this.min = (id, ...args) => id.min(...args);
+      this.mode = (id, ...args) => id.mode(...args);
+      this.new = new_fn$2(context);
+      this.new_bool = new_bool(context);
+      this.new_float = new_float(context);
+      this.new_int = new_int(context);
+      this.new_string = new_string(context);
+      this.param = param$6();
+      this.percentile_linear_interpolation = (id, ...args) => id.percentile_linear_interpolation(...args);
+      this.percentile_nearest_rank = (id, ...args) => id.percentile_nearest_rank(...args);
+      this.percentrank = (id, ...args) => id.percentrank(...args);
+      this.pop = (id, ...args) => id.pop(...args);
+      this.push = (id, ...args) => id.push(...args);
+      this.range = (id, ...args) => id.range(...args);
+      this.remove = (id, ...args) => id.remove(...args);
+      this.reverse = (id, ...args) => id.reverse(...args);
+      this.set = (id, ...args) => id.set(...args);
+      this.shift = (id, ...args) => id.shift(...args);
+      this.size = (id, ...args) => id.size(...args);
+      this.slice = (id, ...args) => id.slice(...args);
+      this.some = (id, ...args) => id.some(...args);
+      this.sort = (id, ...args) => id.sort(...args);
+      this.sort_indices = (id, ...args) => id.sort_indices(...args);
+      this.standardize = (id, ...args) => id.standardize(...args);
+      this.stdev = (id, ...args) => id.stdev(...args);
+      this.sum = (id, ...args) => id.sum(...args);
+      this.unshift = (id, ...args) => id.unshift(...args);
+      this.variance = (id, ...args) => id.variance(...args);
+    }
+  }
+
+  function clear(context) {
+    return (id) => {
+      id.map.clear();
+    };
+  }
+
+  function contains(context) {
+    return (id, key) => {
+      return id.map.has(key);
+    };
+  }
+
+  function copy$1(context) {
+    return (id) => {
+      const newMap = new PineMapObject(id.keyType, id.valueType, context);
+      newMap.map = new Map(id.map);
+      return newMap;
+    };
+  }
+
+  function get$1(context) {
+    return (id, key) => {
+      const val = id.map.get(key);
+      return val === void 0 ? NaN : val;
+    };
+  }
+
+  function keys(context) {
+    return (id) => {
+      const keysArray = Array.from(id.map.keys());
+      return new PineArrayObject(keysArray, id.keyType, context);
+    };
+  }
+
+  function put(context) {
+    return (id, key, value) => {
+      const prev = id.map.get(key);
+      id.map.set(key, value);
+      return prev === void 0 ? NaN : prev;
+    };
+  }
+
+  function put_all(context) {
+    return (id, id2) => {
+      for (const [key, value] of id2.map) {
+        id.map.set(key, value);
+      }
+    };
+  }
+
+  function remove(context) {
+    return (id, key) => {
+      const val = id.map.get(key);
+      const existed = id.map.delete(key);
+      return existed ? val : NaN;
+    };
+  }
+
+  function size(context) {
+    return (id) => {
+      return id.map.size;
+    };
+  }
+
+  function values(context) {
+    return (id) => {
+      const valuesArray = Array.from(id.map.values());
+      return new PineArrayObject(valuesArray, id.valueType, context);
+    };
+  }
+
+  var __defProp$a = Object.defineProperty;
+  var __defNormalProp$a = (obj, key, value) => key in obj ? __defProp$a(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField$a = (obj, key, value) => __defNormalProp$a(obj, typeof key !== "symbol" ? key + "" : key, value);
+  class PineMapObject {
+    constructor(keyType, valueType, context) {
+      this.keyType = keyType;
+      this.valueType = valueType;
+      this.context = context;
+      __publicField$a(this, "map");
+      __publicField$a(this, "_clear");
+      __publicField$a(this, "_contains");
+      __publicField$a(this, "_copy");
+      __publicField$a(this, "_get");
+      __publicField$a(this, "_keys");
+      __publicField$a(this, "_put");
+      __publicField$a(this, "_put_all");
+      __publicField$a(this, "_remove");
+      __publicField$a(this, "_size");
+      __publicField$a(this, "_values");
+      this.map = /* @__PURE__ */ new Map();
+      this._clear = clear(this.context);
+      this._contains = contains(this.context);
+      this._copy = copy$1(this.context);
+      this._get = get$1(this.context);
+      this._keys = keys(this.context);
+      this._put = put(this.context);
+      this._put_all = put_all(this.context);
+      this._remove = remove(this.context);
+      this._size = size(this.context);
+      this._values = values(this.context);
+    }
+    toString() {
+      return `PineMapObject<${this.keyType}, ${this.valueType}>(${this.map.size})`;
+    }
+    clear(...args) {
+      return this._clear(this, ...args);
+    }
+    contains(...args) {
+      return this._contains(this, ...args);
+    }
+    copy(...args) {
+      return this._copy(this, ...args);
+    }
+    get(...args) {
+      return this._get(this, ...args);
+    }
+    keys(...args) {
+      return this._keys(this, ...args);
+    }
+    put(...args) {
+      return this._put(this, ...args);
+    }
+    put_all(...args) {
+      return this._put_all(this, ...args);
+    }
+    remove(...args) {
+      return this._remove(this, ...args);
+    }
+    size(...args) {
+      return this._size(this, ...args);
+    }
+    values(...args) {
+      return this._values(this, ...args);
+    }
+  }
+
+  function new_fn$1(context) {
+    return (keyType, valueType) => {
+      return new PineMapObject(keyType, valueType, context);
+    };
+  }
+
+  function param$5(context) {
+    return (source, index = 0) => {
+      return Series.from(source).get(index);
+    };
+  }
+
+  class PineMap {
+    constructor(context) {
+      this.context = context;
+      this.clear = (id, ...args) => id.clear(...args);
+      this.contains = (id, ...args) => id.contains(...args);
+      this.copy = (id, ...args) => id.copy(...args);
+      this.get = (id, ...args) => id.get(...args);
+      this.keys = (id, ...args) => id.keys(...args);
+      this.new = new_fn$1(context);
+      this.param = param$5();
+      this.put = (id, ...args) => id.put(...args);
+      this.put_all = (id, ...args) => id.put_all(...args);
+      this.remove = (id, ...args) => id.remove(...args);
+      this.size = (id, ...args) => id.size(...args);
+      this.values = (id, ...args) => id.values(...args);
+    }
+  }
+
+  function add_col(context) {
+    return (id, column_index, values) => {
+      const rows = id.matrix.length;
+      let colValues = [];
+      if (values) {
+        if (values instanceof PineArrayObject) {
+          colValues = values.array;
+        } else if (Array.isArray(values)) {
+          colValues = values;
+        } else {
+          colValues = [values];
+        }
+      }
+      if (rows === 0) {
+        for (let i = 0; i < colValues.length; i++) {
+          let val = colValues[i];
+          if (val instanceof Series) val = val.get(0);
+          id.matrix.push([val]);
+        }
+        return;
+      }
+      const cols = id.matrix[0].length;
+      const index = column_index !== void 0 ? column_index : cols;
+      for (let i = 0; i < rows; i++) {
+        let val = i < colValues.length ? colValues[i] : NaN;
+        if (val instanceof Series) val = val.get(0);
+        id.matrix[i].splice(index, 0, val);
+      }
+    };
+  }
+
+  function add_row(context) {
+    return (id, row_index, values) => {
+      const rows = id.matrix.length;
+      let rowValues = [];
+      if (values) {
+        if (values instanceof PineArrayObject) {
+          rowValues = values.array;
+        } else if (Array.isArray(values)) {
+          rowValues = values;
+        } else {
+          if (values instanceof Series) {
+            const val = values.get(0);
+            if (Array.isArray(val)) {
+              rowValues = val;
+            } else {
+              rowValues = [val];
+            }
+          } else {
+            rowValues = [values];
+          }
+        }
+      }
+      const cols = rows > 0 ? id.matrix[0].length : rowValues.length;
+      const index = row_index !== void 0 ? row_index : rows;
+      const newRow = [];
+      for (let i = 0; i < cols; i++) {
+        if (i < rowValues.length) {
+          let val = rowValues[i];
+          if (val instanceof Series) {
+            val = val.get(0);
+          }
+          newRow.push(val);
+        } else {
+          newRow.push(NaN);
+        }
+      }
+      id.matrix.splice(index, 0, newRow);
+    };
+  }
+
+  function avg$1(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return NaN;
+      const cols = id.matrix[0].length;
+      if (cols === 0) return NaN;
+      let sum = 0;
+      let count = 0;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const val = id.matrix[i][j];
+          if (!isNaN(val)) {
+            sum += val;
+            count++;
+          }
+        }
+      }
+      if (count === 0) return NaN;
+      return sum / count;
+    };
+  }
+
+  function col(context) {
+    return (id, column) => {
+      const rows = id.matrix.length;
+      const result = [];
+      for (let i = 0; i < rows; i++) {
+        result.push(id.matrix[i][column]);
+      }
+      return new PineArrayObject(result, id.type, context);
+    };
+  }
+
+  function columns(context) {
+    return (id) => {
+      if (id.matrix.length === 0) return 0;
+      return id.matrix[0].length;
+    };
+  }
+
+  function concat(context) {
+    return (id, id2) => {
+      const rows1 = id.matrix.length;
+      const rows2 = id2.matrix.length;
+      if (rows1 === 0) {
+        for (let i = 0; i < rows2; i++) {
+          id.matrix.push([...id2.matrix[i]]);
+        }
+        return;
+      }
+      const cols1 = id.matrix[0].length;
+      const cols2 = rows2 > 0 ? id2.matrix[0].length : 0;
+      if (cols1 !== cols2 && rows2 > 0) {
+        console.error(`matrix.concat: Column count mismatch ${cols1} vs ${cols2}`);
+        return;
+      }
+      for (let i = 0; i < rows2; i++) {
+        id.matrix.push([...id2.matrix[i]]);
+      }
+    };
+  }
+
+  function copy(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      const cols = rows > 0 ? id.matrix[0].length : 0;
+      const newMatrix = new PineMatrixObject(id.type, rows, cols, NaN, context);
+      newMatrix.matrix = id.matrix.map((row) => [...row]);
+      return newMatrix;
+    };
+  }
+
+  function determinant(matrix) {
+    const n = matrix.length;
+    if (n === 0) return 0;
+    if (n === 1) return matrix[0][0];
+    if (n === 2) return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+    const mat = matrix.map((row) => [...row]);
+    let det2 = 1;
+    for (let i = 0; i < n; i++) {
+      let pivot = i;
+      while (pivot < n && mat[pivot][i] === 0) pivot++;
+      if (pivot === n) return 0;
+      if (pivot !== i) {
+        [mat[i], mat[pivot]] = [mat[pivot], mat[i]];
+        det2 *= -1;
+      }
+      det2 *= mat[i][i];
+      for (let j = i + 1; j < n; j++) {
+        const factor = mat[j][i] / mat[i][i];
+        for (let k = i; k < n; k++) {
+          mat[j][k] -= factor * mat[i][k];
+        }
+      }
+    }
+    return det2;
+  }
+  function det(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      const cols = rows > 0 ? id.matrix[0].length : 0;
+      if (rows !== cols) return NaN;
+      return determinant(id.matrix);
+    };
+  }
+
+  function diff(context) {
+    return (id, id2) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return new PineMatrixObject(id.type, 0, 0, NaN, context);
+      const cols = id.matrix[0].length;
+      const newMatrix = new PineMatrixObject(id.type, rows, cols, NaN, context);
+      if (id2 instanceof PineMatrixObject) {
+        for (let i = 0; i < rows; i++) {
+          for (let j = 0; j < cols; j++) {
+            const v1 = id.matrix[i][j];
+            const v2 = id2.matrix[i] && id2.matrix[i][j] !== void 0 ? id2.matrix[i][j] : NaN;
+            newMatrix.matrix[i][j] = v1 - v2;
+          }
+        }
+      } else {
+        const scalar = id2;
+        for (let i = 0; i < rows; i++) {
+          for (let j = 0; j < cols; j++) {
+            newMatrix.matrix[i][j] = id.matrix[i][j] - scalar;
+          }
+        }
+      }
+      return newMatrix;
+    };
+  }
+
+  function calculateEigenvalues(matrix) {
+    const n = matrix.length;
+    if (n !== 2) return Array(n).fill(NaN);
+    const a = matrix[0][0];
+    const b = matrix[0][1];
+    const c = matrix[1][0];
+    const d = matrix[1][1];
+    const trace = a + d;
+    const det = a * d - b * c;
+    const delta = trace * trace - 4 * det;
+    if (delta < 0) return [NaN, NaN];
+    const l1 = (trace + Math.sqrt(delta)) / 2;
+    const l2 = (trace - Math.sqrt(delta)) / 2;
+    return [l1, l2];
+  }
+  function eigenvalues(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      const cols = rows > 0 ? id.matrix[0].length : 0;
+      if (rows !== cols) return new PineArrayObject([], id.type, context);
+      const vals = calculateEigenvalues(id.matrix);
+      return new PineArrayObject(vals, id.type, context);
+    };
+  }
+
+  function eigenvectors(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      const cols = rows > 0 ? id.matrix[0].length : 0;
+      if (rows !== cols) return new PineMatrixObject(id.type, 0, 0, NaN, context);
+      const newMatrix = new PineMatrixObject(id.type, rows, cols, 0, context);
+      for (let i = 0; i < rows; i++) newMatrix.matrix[i][i] = 1;
+      return newMatrix;
+    };
+  }
+
+  function elements_count(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return 0;
+      return rows * id.matrix[0].length;
+    };
+  }
+
+  function fill(context) {
+    return (id, value, from_row, to_row, from_col, to_col) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return;
+      const cols = id.matrix[0].length;
+      const r1 = from_row !== void 0 ? from_row : 0;
+      const r2 = to_row !== void 0 ? to_row : rows;
+      const c1 = from_col !== void 0 ? from_col : 0;
+      const c2 = to_col !== void 0 ? to_col : cols;
+      for (let i = r1; i < r2; i++) {
+        if (i >= rows) break;
+        for (let j = c1; j < c2; j++) {
+          if (j >= cols) break;
+          id.matrix[i][j] = value;
+        }
+      }
+    };
+  }
+
+  function get(context) {
+    return (id, row, col) => {
+      if (!id.matrix[row]) return NaN;
+      const val = id.matrix[row][col];
+      return val === void 0 ? NaN : val;
+    };
+  }
+
+  function inverse(matrix) {
+    const n = matrix.length;
+    if (n !== 2) return matrix.map((r) => r.map(() => NaN));
+    const det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+    if (det === 0)
+      return [
+        [NaN, NaN],
+        [NaN, NaN]
+      ];
+    return [
+      [matrix[1][1] / det, -matrix[0][1] / det],
+      [-matrix[1][0] / det, matrix[0][0] / det]
+    ];
+  }
+  function inv(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      const cols = rows > 0 ? id.matrix[0].length : 0;
+      if (rows !== cols) return new PineMatrixObject(id.type, rows, cols, NaN, context);
+      const invMat = inverse(id.matrix);
+      const newMatrix = new PineMatrixObject(id.type, rows, cols, NaN, context);
+      newMatrix.matrix = invMat;
+      return newMatrix;
+    };
+  }
+
+  function is_antidiagonal(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return false;
+      const cols = id.matrix[0].length;
+      if (rows !== cols) return false;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (i + j !== rows - 1) {
+            if (id.matrix[i][j] !== 0) return false;
+          }
+        }
+      }
+      return true;
+    };
+  }
+
+  function is_antisymmetric(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return false;
+      const cols = id.matrix[0].length;
+      if (rows !== cols) return false;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (id.matrix[j][i] !== -id.matrix[i][j]) return false;
+        }
+      }
+      return true;
+    };
+  }
+
+  function is_binary(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return false;
+      const cols = id.matrix[0].length;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const val = id.matrix[i][j];
+          if (val !== 0 && val !== 1) return false;
+        }
+      }
+      return true;
+    };
+  }
+
+  function is_diagonal(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return false;
+      const cols = id.matrix[0].length;
+      if (rows !== cols) return false;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (i !== j) {
+            if (id.matrix[i][j] !== 0) return false;
+          }
+        }
+      }
+      return true;
+    };
+  }
+
+  function is_identity(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return false;
+      const cols = id.matrix[0].length;
+      if (rows !== cols) return false;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (i === j) {
+            if (id.matrix[i][j] !== 1) return false;
+          } else {
+            if (id.matrix[i][j] !== 0) return false;
+          }
+        }
+      }
+      return true;
+    };
+  }
+
+  function is_square(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return false;
+      const cols = id.matrix[0].length;
+      return rows === cols;
+    };
+  }
+
+  function is_stochastic(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return false;
+      const cols = id.matrix[0].length;
+      for (let i = 0; i < rows; i++) {
+        let sum = 0;
+        for (let j = 0; j < cols; j++) {
+          const val = id.matrix[i][j];
+          if (val < 0) return false;
+          sum += val;
+        }
+        if (Math.abs(sum - 1) > 1e-10) return false;
+      }
+      return true;
+    };
+  }
+
+  function is_symmetric(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return false;
+      const cols = id.matrix[0].length;
+      if (rows !== cols) return false;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < i; j++) {
+          if (id.matrix[i][j] !== id.matrix[j][i]) return false;
+        }
+      }
+      return true;
+    };
+  }
+
+  function is_triangular(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return false;
+      const cols = id.matrix[0].length;
+      if (rows !== cols) return false;
+      let isUpper = true;
+      let isLower = true;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (i > j && id.matrix[i][j] !== 0) isUpper = false;
+          if (i < j && id.matrix[i][j] !== 0) isLower = false;
+        }
+      }
+      return isUpper || isLower;
+    };
+  }
+
+  function is_zero(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return true;
+      const cols = id.matrix[0].length;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (id.matrix[i][j] !== 0) return false;
+        }
+      }
+      return true;
+    };
+  }
+
+  function kron(context) {
+    return (id, id2) => {
+      const r1 = id.matrix.length;
+      const c1 = r1 > 0 ? id.matrix[0].length : 0;
+      const r2 = id2.matrix.length;
+      const c2 = r2 > 0 ? id2.matrix[0].length : 0;
+      const rows = r1 * r2;
+      const cols = c1 * c2;
+      const newMatrix = new PineMatrixObject(id.type, rows, cols, NaN, context);
+      for (let i = 0; i < r1; i++) {
+        for (let j = 0; j < c1; j++) {
+          const val1 = id.matrix[i][j];
+          for (let k = 0; k < r2; k++) {
+            for (let l = 0; l < c2; l++) {
+              const val2 = id2.matrix[k][l];
+              newMatrix.matrix[i * r2 + k][j * c2 + l] = val1 * val2;
+            }
+          }
+        }
+      }
+      return newMatrix;
+    };
+  }
+
+  function max$1(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return NaN;
+      const cols = id.matrix[0].length;
+      let maxVal = -Infinity;
+      let found = false;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const val = id.matrix[i][j];
+          if (!isNaN(val)) {
+            if (val > maxVal) maxVal = val;
+            found = true;
+          }
+        }
+      }
+      return found ? maxVal : NaN;
+    };
+  }
+
+  function median$1(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return NaN;
+      const cols = id.matrix[0].length;
+      const values = [];
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const val = id.matrix[i][j];
+          if (!isNaN(val)) {
+            values.push(val);
+          }
+        }
+      }
+      if (values.length === 0) return NaN;
+      values.sort((a, b) => a - b);
+      const mid = Math.floor(values.length / 2);
+      if (values.length % 2 !== 0) {
+        return values[mid];
+      } else {
+        return (values[mid - 1] + values[mid]) / 2;
+      }
+    };
+  }
+
+  function min$1(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return NaN;
+      const cols = id.matrix[0].length;
+      let minVal = Infinity;
+      let found = false;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const val = id.matrix[i][j];
+          if (!isNaN(val)) {
+            if (val < minVal) minVal = val;
+            found = true;
+          }
+        }
+      }
+      return found ? minVal : NaN;
+    };
+  }
+
+  function mode$1(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return NaN;
+      const cols = id.matrix[0].length;
+      const counts = /* @__PURE__ */ new Map();
+      let maxCount = 0;
+      let modeVal = NaN;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const val = id.matrix[i][j];
+          if (!isNaN(val)) {
+            const count = (counts.get(val) || 0) + 1;
+            counts.set(val, count);
+            if (count > maxCount) {
+              maxCount = count;
+              modeVal = val;
+            } else if (count === maxCount) {
+              if (val < modeVal) modeVal = val;
+            }
+          }
+        }
+      }
+      return modeVal;
+    };
+  }
+
+  function mult(context) {
+    return (id, id2) => {
+      const rows1 = id.matrix.length;
+      const cols1 = rows1 > 0 ? id.matrix[0].length : 0;
+      if (id2 instanceof PineMatrixObject) {
+        const rows2 = id2.matrix.length;
+        const cols2 = rows2 > 0 ? id2.matrix[0].length : 0;
+        if (cols1 !== rows2) {
+          return new PineMatrixObject(id.type, 0, 0, NaN, context);
+        }
+        const newMatrix = new PineMatrixObject(id.type, rows1, cols2, 0, context);
+        for (let i = 0; i < rows1; i++) {
+          for (let j = 0; j < cols2; j++) {
+            let sum = 0;
+            for (let k = 0; k < cols1; k++) {
+              sum += id.matrix[i][k] * id2.matrix[k][j];
+            }
+            newMatrix.matrix[i][j] = sum;
+          }
+        }
+        return newMatrix;
+      } else if (id2 instanceof PineArrayObject || Array.isArray(id2.array || id2)) {
+        const vec = id2.array || id2;
+        if (cols1 !== vec.length) {
+          return new PineMatrixObject(id.type, 0, 0, NaN, context);
+        }
+        const newMatrix = new PineMatrixObject(id.type, rows1, 1, 0, context);
+        for (let i = 0; i < rows1; i++) {
+          let sum = 0;
+          for (let j = 0; j < cols1; j++) {
+            sum += id.matrix[i][j] * vec[j];
+          }
+          newMatrix.matrix[i][0] = sum;
+        }
+        return newMatrix;
+      } else {
+        const scalar = id2;
+        const newMatrix = new PineMatrixObject(id.type, rows1, cols1, NaN, context);
+        for (let i = 0; i < rows1; i++) {
+          for (let j = 0; j < cols1; j++) {
+            newMatrix.matrix[i][j] = id.matrix[i][j] * scalar;
+          }
+        }
+        return newMatrix;
+      }
+    };
+  }
+
+  function pinv(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      const cols = rows > 0 ? id.matrix[0].length : 0;
+      if (rows === cols) {
+        return new PineMatrixObject(id.type, rows, cols, NaN, context);
+      }
+      return new PineMatrixObject(id.type, cols, rows, NaN, context);
+    };
+  }
+
+  function pow$1(context) {
+    return (id, power) => {
+      const rows = id.matrix.length;
+      const cols = rows > 0 ? id.matrix[0].length : 0;
+      if (rows !== cols) {
+        return new PineMatrixObject(id.type, 0, 0, NaN, context);
+      }
+      let result = new PineMatrixObject(id.type, rows, cols, 0, context);
+      for (let i = 0; i < rows; i++) result.matrix[i][i] = 1;
+      let base = new PineMatrixObject(id.type, rows, cols, NaN, context);
+      for (let i = 0; i < rows; i++) base.matrix[i] = [...id.matrix[i]];
+      let p = Math.floor(power);
+      if (p < 0) return new PineMatrixObject(id.type, rows, cols, NaN, context);
+      while (p > 0) {
+        if (p % 2 === 1) {
+          const temp = new PineMatrixObject(id.type, rows, cols, 0, context);
+          for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+              let sum = 0;
+              for (let k = 0; k < rows; k++) {
+                sum += result.matrix[i][k] * base.matrix[k][j];
+              }
+              temp.matrix[i][j] = sum;
+            }
+          }
+          result = temp;
+        }
+        const tempBase = new PineMatrixObject(id.type, rows, cols, 0, context);
+        for (let i = 0; i < rows; i++) {
+          for (let j = 0; j < cols; j++) {
+            let sum = 0;
+            for (let k = 0; k < rows; k++) {
+              sum += base.matrix[i][k] * base.matrix[k][j];
+            }
+            tempBase.matrix[i][j] = sum;
+          }
+        }
+        base = tempBase;
+        p = Math.floor(p / 2);
+      }
+      return result;
+    };
+  }
+
+  function rank(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return 0;
+      const cols = id.matrix[0].length;
+      const mat = id.matrix.map((r2) => [...r2]);
+      let r = 0;
+      for (let c = 0; c < cols && r < rows; c++) {
+        let pivot = r;
+        while (pivot < rows && Math.abs(mat[pivot][c]) < 1e-10) pivot++;
+        if (pivot < rows) {
+          [mat[r], mat[pivot]] = [mat[pivot], mat[r]];
+          const val = mat[r][c];
+          for (let j = c; j < cols; j++) mat[r][j] /= val;
+          for (let i = 0; i < rows; i++) {
+            if (i !== r) {
+              const factor = mat[i][c];
+              for (let j = c; j < cols; j++) mat[i][j] -= factor * mat[r][j];
+            }
+          }
+          r++;
+        }
+      }
+      return r;
+    };
+  }
+
+  function remove_col(context) {
+    return (id, column_index) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return new PineArrayObject([], id.type, context);
+      const removedValues = [];
+      for (let i = 0; i < rows; i++) {
+        const removed = id.matrix[i].splice(column_index, 1);
+        removedValues.push(removed[0]);
+      }
+      return new PineArrayObject(removedValues, id.type, context);
+    };
+  }
+
+  function remove_row(context) {
+    return (id, row_index) => {
+      const removed = id.matrix.splice(row_index, 1);
+      return new PineArrayObject(removed[0] || [], id.type, context);
+    };
+  }
+
+  function reshape(context) {
+    return (id, rows, cols) => {
+      const currentRows = id.matrix.length;
+      const currentCols = currentRows > 0 ? id.matrix[0].length : 0;
+      const newSize = rows * cols;
+      const elements = [];
+      for (let i = 0; i < currentRows; i++) {
+        for (let j = 0; j < currentCols; j++) {
+          elements.push(id.matrix[i][j]);
+        }
+      }
+      while (elements.length < newSize) elements.push(NaN);
+      if (elements.length > newSize) elements.length = newSize;
+      const newMatrix = [];
+      let k = 0;
+      for (let i = 0; i < rows; i++) {
+        const row = [];
+        for (let j = 0; j < cols; j++) {
+          row.push(elements[k++]);
+        }
+        newMatrix.push(row);
+      }
+      id.matrix = newMatrix;
+    };
+  }
+
+  function reverse(context) {
+    return (id) => {
+      id.matrix.reverse();
+      for (const row of id.matrix) {
+        row.reverse();
+      }
+    };
+  }
+
+  function row(context) {
+    return (id, row2) => {
+      if (!id.matrix[row2]) return new PineArrayObject([], id.type, context);
+      return new PineArrayObject([...id.matrix[row2]], id.type, context);
+    };
+  }
+
+  function rows(context) {
+    return (id) => {
+      return id.matrix.length;
+    };
+  }
+
+  function set(context) {
+    return (id, row, col, value) => {
+      if (!id.matrix[row]) return;
+      id.matrix[row][col] = value;
+    };
+  }
+
+  function sort(context) {
+    return (id, column = 0, order = "asc") => {
+      const rows = id.matrix.length;
+      if (rows === 0) return;
+      id.matrix.sort((a, b) => {
+        const valA = a[column];
+        const valB = b[column];
+        if (valA < valB) return order === "asc" ? -1 : 1;
+        if (valA > valB) return order === "asc" ? 1 : -1;
+        return 0;
+      });
+    };
+  }
+
+  function submatrix(context) {
+    return (id, from_row, to_row, from_col, to_col) => {
+      const rows = to_row - from_row;
+      const cols = to_col - from_col;
+      const newMatrix = new PineMatrixObject(id.type, rows, cols, NaN, context);
+      for (let i = 0; i < rows; i++) {
+        const sourceRow = from_row + i;
+        if (sourceRow >= id.matrix.length) break;
+        for (let j = 0; j < cols; j++) {
+          const sourceCol = from_col + j;
+          if (sourceCol >= id.matrix[sourceRow].length) break;
+          newMatrix.matrix[i][j] = id.matrix[sourceRow][sourceCol];
+        }
+      }
+      return newMatrix;
+    };
+  }
+
+  function sum$1(context) {
+    return (id, id2) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return new PineMatrixObject(id.type, 0, 0, NaN, context);
+      const cols = id.matrix[0].length;
+      const newMatrix = new PineMatrixObject(id.type, rows, cols, NaN, context);
+      if (id2 instanceof PineMatrixObject) {
+        for (let i = 0; i < rows; i++) {
+          for (let j = 0; j < cols; j++) {
+            const v1 = id.matrix[i][j];
+            const v2 = id2.matrix[i] && id2.matrix[i][j] !== void 0 ? id2.matrix[i][j] : NaN;
+            newMatrix.matrix[i][j] = v1 + v2;
+          }
+        }
+      } else {
+        const scalar = id2;
+        for (let i = 0; i < rows; i++) {
+          for (let j = 0; j < cols; j++) {
+            newMatrix.matrix[i][j] = id.matrix[i][j] + scalar;
+          }
+        }
+      }
+      return newMatrix;
+    };
+  }
+
+  function swap_columns(context) {
+    return (id, col1, col2) => {
+      const rows = id.matrix.length;
+      for (let i = 0; i < rows; i++) {
+        const temp = id.matrix[i][col1];
+        id.matrix[i][col1] = id.matrix[i][col2];
+        id.matrix[i][col2] = temp;
+      }
+    };
+  }
+
+  function swap_rows(context) {
+    return (id, row1, row2) => {
+      const temp = id.matrix[row1];
+      id.matrix[row1] = id.matrix[row2];
+      id.matrix[row2] = temp;
+    };
+  }
+
+  function trace(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return 0;
+      const cols = id.matrix[0].length;
+      const n = Math.min(rows, cols);
+      let sum = 0;
+      for (let i = 0; i < n; i++) {
+        sum += id.matrix[i][i];
+      }
+      return sum;
+    };
+  }
+
+  function transpose(context) {
+    return (id) => {
+      const rows = id.matrix.length;
+      if (rows === 0) return new PineMatrixObject(id.type, 0, 0, NaN, context);
+      const cols = id.matrix[0].length;
+      const newMatrix = new PineMatrixObject(id.type, cols, rows, NaN, context);
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          newMatrix.matrix[j][i] = id.matrix[i][j];
+        }
+      }
+      return newMatrix;
+    };
+  }
+
+  var __defProp$9 = Object.defineProperty;
+  var __defNormalProp$9 = (obj, key, value) => key in obj ? __defProp$9(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField$9 = (obj, key, value) => __defNormalProp$9(obj, typeof key !== "symbol" ? key + "" : key, value);
+  class PineMatrixObject {
+    constructor(type, rows$1 = 0, cols = 0, initialValue = NaN, context) {
+      this.type = type;
+      this.context = context;
+      __publicField$9(this, "matrix");
+      __publicField$9(this, "_add_col");
+      __publicField$9(this, "_add_row");
+      __publicField$9(this, "_avg");
+      __publicField$9(this, "_col");
+      __publicField$9(this, "_columns");
+      __publicField$9(this, "_concat");
+      __publicField$9(this, "_copy");
+      __publicField$9(this, "_det");
+      __publicField$9(this, "_diff");
+      __publicField$9(this, "_eigenvalues");
+      __publicField$9(this, "_eigenvectors");
+      __publicField$9(this, "_elements_count");
+      __publicField$9(this, "_fill");
+      __publicField$9(this, "_get");
+      __publicField$9(this, "_inv");
+      __publicField$9(this, "_is_antidiagonal");
+      __publicField$9(this, "_is_antisymmetric");
+      __publicField$9(this, "_is_binary");
+      __publicField$9(this, "_is_diagonal");
+      __publicField$9(this, "_is_identity");
+      __publicField$9(this, "_is_square");
+      __publicField$9(this, "_is_stochastic");
+      __publicField$9(this, "_is_symmetric");
+      __publicField$9(this, "_is_triangular");
+      __publicField$9(this, "_is_zero");
+      __publicField$9(this, "_kron");
+      __publicField$9(this, "_max");
+      __publicField$9(this, "_median");
+      __publicField$9(this, "_min");
+      __publicField$9(this, "_mode");
+      __publicField$9(this, "_mult");
+      __publicField$9(this, "_pinv");
+      __publicField$9(this, "_pow");
+      __publicField$9(this, "_rank");
+      __publicField$9(this, "_remove_col");
+      __publicField$9(this, "_remove_row");
+      __publicField$9(this, "_reshape");
+      __publicField$9(this, "_reverse");
+      __publicField$9(this, "_row");
+      __publicField$9(this, "_rows");
+      __publicField$9(this, "_set");
+      __publicField$9(this, "_sort");
+      __publicField$9(this, "_submatrix");
+      __publicField$9(this, "_sum");
+      __publicField$9(this, "_swap_columns");
+      __publicField$9(this, "_swap_rows");
+      __publicField$9(this, "_trace");
+      __publicField$9(this, "_transpose");
+      this.matrix = [];
+      if (rows$1 > 0 && cols > 0) {
+        for (let i = 0; i < rows$1; i++) {
+          this.matrix.push(Array(cols).fill(initialValue));
+        }
+      }
+      this._add_col = add_col(this.context);
+      this._add_row = add_row(this.context);
+      this._avg = avg$1(this.context);
+      this._col = col(this.context);
+      this._columns = columns(this.context);
+      this._concat = concat(this.context);
+      this._copy = copy(this.context);
+      this._det = det(this.context);
+      this._diff = diff(this.context);
+      this._eigenvalues = eigenvalues(this.context);
+      this._eigenvectors = eigenvectors(this.context);
+      this._elements_count = elements_count(this.context);
+      this._fill = fill(this.context);
+      this._get = get(this.context);
+      this._inv = inv(this.context);
+      this._is_antidiagonal = is_antidiagonal(this.context);
+      this._is_antisymmetric = is_antisymmetric(this.context);
+      this._is_binary = is_binary(this.context);
+      this._is_diagonal = is_diagonal(this.context);
+      this._is_identity = is_identity(this.context);
+      this._is_square = is_square(this.context);
+      this._is_stochastic = is_stochastic(this.context);
+      this._is_symmetric = is_symmetric(this.context);
+      this._is_triangular = is_triangular(this.context);
+      this._is_zero = is_zero(this.context);
+      this._kron = kron(this.context);
+      this._max = max$1(this.context);
+      this._median = median$1(this.context);
+      this._min = min$1(this.context);
+      this._mode = mode$1(this.context);
+      this._mult = mult(this.context);
+      this._pinv = pinv(this.context);
+      this._pow = pow$1(this.context);
+      this._rank = rank(this.context);
+      this._remove_col = remove_col(this.context);
+      this._remove_row = remove_row(this.context);
+      this._reshape = reshape(this.context);
+      this._reverse = reverse(this.context);
+      this._row = row(this.context);
+      this._rows = rows(this.context);
+      this._set = set(this.context);
+      this._sort = sort(this.context);
+      this._submatrix = submatrix(this.context);
+      this._sum = sum$1(this.context);
+      this._swap_columns = swap_columns(this.context);
+      this._swap_rows = swap_rows(this.context);
+      this._trace = trace(this.context);
+      this._transpose = transpose(this.context);
+    }
+    toString() {
+      let result = "";
+      for (let i = 0; i < this.matrix.length; i++) {
+        result += result === "" ? "" : "\n";
+        result += "[" + this.matrix[i].join(", ") + "]";
+      }
+      return result;
+    }
+    add_col(...args) {
+      return this._add_col(this, ...args);
+    }
+    add_row(...args) {
+      return this._add_row(this, ...args);
+    }
+    avg(...args) {
+      return this._avg(this, ...args);
+    }
+    col(...args) {
+      return this._col(this, ...args);
+    }
+    columns(...args) {
+      return this._columns(this, ...args);
+    }
+    concat(...args) {
+      return this._concat(this, ...args);
+    }
+    copy(...args) {
+      return this._copy(this, ...args);
+    }
+    det(...args) {
+      return this._det(this, ...args);
+    }
+    diff(...args) {
+      return this._diff(this, ...args);
+    }
+    eigenvalues(...args) {
+      return this._eigenvalues(this, ...args);
+    }
+    eigenvectors(...args) {
+      return this._eigenvectors(this, ...args);
+    }
+    elements_count(...args) {
+      return this._elements_count(this, ...args);
+    }
+    fill(...args) {
+      return this._fill(this, ...args);
+    }
+    get(...args) {
+      return this._get(this, ...args);
+    }
+    inv(...args) {
+      return this._inv(this, ...args);
+    }
+    is_antidiagonal(...args) {
+      return this._is_antidiagonal(this, ...args);
+    }
+    is_antisymmetric(...args) {
+      return this._is_antisymmetric(this, ...args);
+    }
+    is_binary(...args) {
+      return this._is_binary(this, ...args);
+    }
+    is_diagonal(...args) {
+      return this._is_diagonal(this, ...args);
+    }
+    is_identity(...args) {
+      return this._is_identity(this, ...args);
+    }
+    is_square(...args) {
+      return this._is_square(this, ...args);
+    }
+    is_stochastic(...args) {
+      return this._is_stochastic(this, ...args);
+    }
+    is_symmetric(...args) {
+      return this._is_symmetric(this, ...args);
+    }
+    is_triangular(...args) {
+      return this._is_triangular(this, ...args);
+    }
+    is_zero(...args) {
+      return this._is_zero(this, ...args);
+    }
+    kron(...args) {
+      return this._kron(this, ...args);
+    }
+    max(...args) {
+      return this._max(this, ...args);
+    }
+    median(...args) {
+      return this._median(this, ...args);
+    }
+    min(...args) {
+      return this._min(this, ...args);
+    }
+    mode(...args) {
+      return this._mode(this, ...args);
+    }
+    mult(...args) {
+      return this._mult(this, ...args);
+    }
+    pinv(...args) {
+      return this._pinv(this, ...args);
+    }
+    pow(...args) {
+      return this._pow(this, ...args);
+    }
+    rank(...args) {
+      return this._rank(this, ...args);
+    }
+    remove_col(...args) {
+      return this._remove_col(this, ...args);
+    }
+    remove_row(...args) {
+      return this._remove_row(this, ...args);
+    }
+    reshape(...args) {
+      return this._reshape(this, ...args);
+    }
+    reverse(...args) {
+      return this._reverse(this, ...args);
+    }
+    row(...args) {
+      return this._row(this, ...args);
+    }
+    rows(...args) {
+      return this._rows(this, ...args);
+    }
+    set(...args) {
+      return this._set(this, ...args);
+    }
+    sort(...args) {
+      return this._sort(this, ...args);
+    }
+    submatrix(...args) {
+      return this._submatrix(this, ...args);
+    }
+    sum(...args) {
+      return this._sum(this, ...args);
+    }
+    swap_columns(...args) {
+      return this._swap_columns(this, ...args);
+    }
+    swap_rows(...args) {
+      return this._swap_rows(this, ...args);
+    }
+    trace(...args) {
+      return this._trace(this, ...args);
+    }
+    transpose(...args) {
+      return this._transpose(this, ...args);
+    }
+  }
+
+  function new_fn(context) {
+    return (type, rows, cols, initial_value) => {
+      return new PineMatrixObject(type, rows, cols, initial_value, context);
+    };
+  }
+
   function param$4(context) {
     return (source, index = 0) => {
       return Series.from(source).get(index);
     };
   }
 
-  function pop(context) {
-    return (id) => {
-      return id.array.pop();
-    };
-  }
-
-  function push(context) {
-    return (id, value) => {
-      id.array.push(value);
-    };
-  }
-
-  function range$1(context) {
-    return (id) => {
-      return context.array.max(id) - context.array.min(id);
-    };
-  }
-
-  function remove(context) {
-    return (id, index) => {
-      if (index >= 0 && index < id.array.length) {
-        return id.array.splice(index, 1)[0];
-      }
-      return context.NA;
-    };
-  }
-
-  function reverse(context) {
-    return (id) => {
-      id.array.reverse();
-    };
-  }
-
-  function set(context) {
-    return (id, index, value) => {
-      id.array[index] = value;
-    };
-  }
-
-  function shift(context) {
-    return (id) => {
-      return id.array.shift();
-    };
-  }
-
-  function size(context) {
-    return (id) => {
-      return id.array.length;
-    };
-  }
-
-  function slice(context) {
-    return (id, start, end) => {
-      const adjustedEnd = end !== void 0 ? end + 1 : void 0;
-      return new PineArrayObject(id.array.slice(start, adjustedEnd));
-    };
-  }
-
-  function some(context) {
-    return (id, callback) => {
-      return id.array.some(callback);
-    };
-  }
-
-  function sort(context) {
-    return (id, order = "asc") => {
-      id.array.sort((a, b) => order === "asc" ? a - b : b - a);
-    };
-  }
-
-  function sort_indices(context) {
-    return (id, comparator) => {
-      const indices = id.array.map((_, index) => index);
-      indices.sort((a, b) => {
-        const valA = id.array[a];
-        const valB = id.array[b];
-        return comparator ? comparator(valA, valB) : valA - valB;
-      });
-      return new PineArrayObject(indices);
-    };
-  }
-
-  function standardize(context) {
-    return (id) => {
-      const mean = context.array.avg(id);
-      const stdev = context.array.stdev(id);
-      if (stdev === 0) {
-        return new PineArrayObject(id.array.map(() => 0));
-      }
-      return new PineArrayObject(id.array.map((x) => (x - mean) / stdev));
-    };
-  }
-
-  function stdev$1(context) {
-    return (id, biased = true) => {
-      const mean = context.array.avg(id);
-      const deviations = id.array.map((x) => Math.pow(x - mean, 2));
-      const divisor = biased ? id.array.length : id.array.length - 1;
-      return Math.sqrt(context.array.sum(new PineArrayObject(deviations)) / divisor);
-    };
-  }
-
-  function sum$1(context) {
-    return (id) => {
-      return id.array.reduce((a, b) => a + (isNaN(b) ? 0 : b), 0);
-    };
-  }
-
-  function unshift(context) {
-    return (id, value) => {
-      id.array.unshift(value);
-    };
-  }
-
-  function variance$1(context) {
-    return (id, biased = true) => {
-      const mean = context.array.avg(id);
-      const deviations = id.array.map((x) => Math.pow(x - mean, 2));
-      const divisor = biased ? id.array.length : id.array.length - 1;
-      return context.array.sum(new PineArrayObject(deviations)) / divisor;
-    };
+  class PineMatrix {
+    constructor(context) {
+      this.context = context;
+      this.add_col = (id, ...args) => id.add_col(...args);
+      this.add_row = (id, ...args) => id.add_row(...args);
+      this.avg = (id, ...args) => id.avg(...args);
+      this.col = (id, ...args) => id.col(...args);
+      this.columns = (id, ...args) => id.columns(...args);
+      this.concat = (id, ...args) => id.concat(...args);
+      this.copy = (id, ...args) => id.copy(...args);
+      this.det = (id, ...args) => id.det(...args);
+      this.diff = (id, ...args) => id.diff(...args);
+      this.eigenvalues = (id, ...args) => id.eigenvalues(...args);
+      this.eigenvectors = (id, ...args) => id.eigenvectors(...args);
+      this.elements_count = (id, ...args) => id.elements_count(...args);
+      this.fill = (id, ...args) => id.fill(...args);
+      this.get = (id, ...args) => id.get(...args);
+      this.inv = (id, ...args) => id.inv(...args);
+      this.is_antidiagonal = (id, ...args) => id.is_antidiagonal(...args);
+      this.is_antisymmetric = (id, ...args) => id.is_antisymmetric(...args);
+      this.is_binary = (id, ...args) => id.is_binary(...args);
+      this.is_diagonal = (id, ...args) => id.is_diagonal(...args);
+      this.is_identity = (id, ...args) => id.is_identity(...args);
+      this.is_square = (id, ...args) => id.is_square(...args);
+      this.is_stochastic = (id, ...args) => id.is_stochastic(...args);
+      this.is_symmetric = (id, ...args) => id.is_symmetric(...args);
+      this.is_triangular = (id, ...args) => id.is_triangular(...args);
+      this.is_zero = (id, ...args) => id.is_zero(...args);
+      this.kron = (id, ...args) => id.kron(...args);
+      this.max = (id, ...args) => id.max(...args);
+      this.median = (id, ...args) => id.median(...args);
+      this.min = (id, ...args) => id.min(...args);
+      this.mode = (id, ...args) => id.mode(...args);
+      this.mult = (id, ...args) => id.mult(...args);
+      this.new = new_fn(context);
+      this.param = param$4();
+      this.pinv = (id, ...args) => id.pinv(...args);
+      this.pow = (id, ...args) => id.pow(...args);
+      this.rank = (id, ...args) => id.rank(...args);
+      this.remove_col = (id, ...args) => id.remove_col(...args);
+      this.remove_row = (id, ...args) => id.remove_row(...args);
+      this.reshape = (id, ...args) => id.reshape(...args);
+      this.reverse = (id, ...args) => id.reverse(...args);
+      this.row = (id, ...args) => id.row(...args);
+      this.rows = (id, ...args) => id.rows(...args);
+      this.set = (id, ...args) => id.set(...args);
+      this.sort = (id, ...args) => id.sort(...args);
+      this.submatrix = (id, ...args) => id.submatrix(...args);
+      this.sum = (id, ...args) => id.sum(...args);
+      this.swap_columns = (id, ...args) => id.swap_columns(...args);
+      this.swap_rows = (id, ...args) => id.swap_rows(...args);
+      this.trace = (id, ...args) => id.trace(...args);
+      this.transpose = (id, ...args) => id.transpose(...args);
+    }
   }
 
   var __defProp$8 = Object.defineProperty;
   var __defNormalProp$8 = (obj, key, value) => key in obj ? __defProp$8(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
   var __publicField$8 = (obj, key, value) => __defNormalProp$8(obj, typeof key !== "symbol" ? key + "" : key, value);
-  const methods$4 = {
-    abs: abs$1,
-    avg: avg$1,
-    clear,
-    concat,
-    copy,
-    covariance,
-    every,
-    fill,
-    first,
-    from,
-    get,
-    includes,
-    indexof,
-    insert,
-    join,
-    last,
-    lastindexof,
-    max: max$1,
-    min: min$1,
-    new: new_fn,
-    new_bool,
-    new_float,
-    new_int,
-    new_string,
-    param: param$4,
-    pop,
-    push,
-    range: range$1,
-    remove,
-    reverse,
-    set,
-    shift,
-    size,
-    slice,
-    some,
-    sort,
-    sort_indices,
-    standardize,
-    stdev: stdev$1,
-    sum: sum$1,
-    unshift,
-    variance: variance$1
-  };
-  class PineArray {
+  class Barstate {
     constructor(context) {
       this.context = context;
-      __publicField$8(this, "_cache", {});
-      __publicField$8(this, "abs");
-      __publicField$8(this, "avg");
-      __publicField$8(this, "clear");
-      __publicField$8(this, "concat");
-      __publicField$8(this, "copy");
-      __publicField$8(this, "covariance");
-      __publicField$8(this, "every");
-      __publicField$8(this, "fill");
-      __publicField$8(this, "first");
-      __publicField$8(this, "from");
-      __publicField$8(this, "get");
-      __publicField$8(this, "includes");
-      __publicField$8(this, "indexof");
-      __publicField$8(this, "insert");
-      __publicField$8(this, "join");
-      __publicField$8(this, "last");
-      __publicField$8(this, "lastindexof");
-      __publicField$8(this, "max");
-      __publicField$8(this, "min");
-      __publicField$8(this, "new");
-      __publicField$8(this, "new_bool");
-      __publicField$8(this, "new_float");
-      __publicField$8(this, "new_int");
-      __publicField$8(this, "new_string");
-      __publicField$8(this, "param");
-      __publicField$8(this, "pop");
-      __publicField$8(this, "push");
-      __publicField$8(this, "range");
-      __publicField$8(this, "remove");
-      __publicField$8(this, "reverse");
-      __publicField$8(this, "set");
-      __publicField$8(this, "shift");
-      __publicField$8(this, "size");
-      __publicField$8(this, "slice");
-      __publicField$8(this, "some");
-      __publicField$8(this, "sort");
-      __publicField$8(this, "sort_indices");
-      __publicField$8(this, "standardize");
-      __publicField$8(this, "stdev");
-      __publicField$8(this, "sum");
-      __publicField$8(this, "unshift");
-      __publicField$8(this, "variance");
-      Object.entries(methods$4).forEach(([name, factory]) => {
-        this[name] = factory(context);
-      });
+      __publicField$8(this, "_live", false);
+    }
+    setLive() {
+      this._live = true;
+    }
+    get isnew() {
+      return !this._live;
+    }
+    get islast() {
+      return this.context.idx === this.context.data.close.data.length - 1;
+    }
+    get isfirst() {
+      return this.context.idx === 0;
+    }
+    get ishistory() {
+      return this.context.idx < this.context.data.close.data.length - 1;
+    }
+    get isrealtime() {
+      return this.context.idx === this.context.data.close.data.length - 1;
+    }
+    get isconfirmed() {
+      return this.context.data.closeTime[this.context.data.closeTime.length - 1] <= (/* @__PURE__ */ new Date()).getTime();
+    }
+    get islastconfirmedhistory() {
+      return this.context.data.closeTime[this.context.data.closeTime.length - 1] <= (/* @__PURE__ */ new Date()).getTime();
     }
   }
 
@@ -10060,7 +12151,22 @@ ${code}
         maroon: "maroon",
         black: "black",
         gray: "gray",
-        blue: "blue"
+        blue: "blue",
+        yellow: "yellow",
+        orange: "orange",
+        purple: "purple",
+        pink: "pink",
+        brown: "brown",
+        teal: "teal",
+        cyan: "cyan",
+        navy: "navy",
+        indigo: "indigo",
+        violet: "violet",
+        magenta: "magenta",
+        rose: "rose",
+        gold: "gold",
+        silver: "silver",
+        bronze: "bronze"
       });
     }
     extractPlotOptions(options) {
@@ -10289,6 +12395,12 @@ ${code}
     };
   }
 
+  function e(context) {
+    return () => {
+      return Math.E;
+    };
+  }
+
   function exp(context) {
     return (source) => {
       return Math.exp(Series.from(source).get(0));
@@ -10357,6 +12469,18 @@ ${code}
     };
   }
 
+  function phi(context) {
+    return () => {
+      return 1.618033988749895;
+    };
+  }
+
+  function pi(context) {
+    return () => {
+      return Math.PI;
+    };
+  }
+
   function pow(context) {
     return (source, power) => {
       return Math.pow(Series.from(source).get(0), Series.from(power).get(0));
@@ -10372,6 +12496,24 @@ ${code}
   function round(context) {
     return (source) => {
       return Math.round(Series.from(source).get(0));
+    };
+  }
+
+  function round_to_mintick(context) {
+    return (source) => {
+      return context.precision(Math.round(Series.from(source).get(0) / context.pine.syminfo.mintick) * context.pine.syminfo.mintick);
+    };
+  }
+
+  function rphi(context) {
+    return () => {
+      return 0.6180339887498948;
+    };
+  }
+
+  function sign(context) {
+    return (source) => {
+      return Math.sign(Series.from(source).get(0));
     };
   }
 
@@ -10427,6 +12569,7 @@ ${code}
     avg,
     ceil,
     cos,
+    e,
     exp,
     floor,
     ln,
@@ -10435,9 +12578,14 @@ ${code}
     max,
     min,
     param: param$2,
+    phi,
+    pi,
     pow,
     random,
     round,
+    round_to_mintick,
+    rphi,
+    sign,
     sin,
     sqrt,
     sum,
@@ -10455,6 +12603,7 @@ ${code}
       __publicField$5(this, "avg");
       __publicField$5(this, "ceil");
       __publicField$5(this, "cos");
+      __publicField$5(this, "e");
       __publicField$5(this, "exp");
       __publicField$5(this, "floor");
       __publicField$5(this, "ln");
@@ -10463,9 +12612,14 @@ ${code}
       __publicField$5(this, "max");
       __publicField$5(this, "min");
       __publicField$5(this, "param");
+      __publicField$5(this, "phi");
+      __publicField$5(this, "pi");
       __publicField$5(this, "pow");
       __publicField$5(this, "random");
       __publicField$5(this, "round");
+      __publicField$5(this, "round_to_mintick");
+      __publicField$5(this, "rphi");
+      __publicField$5(this, "sign");
       __publicField$5(this, "sin");
       __publicField$5(this, "sqrt");
       __publicField$5(this, "sum");
@@ -10632,12 +12786,68 @@ ${code}
     };
   }
 
+  function security_lower_tf(context) {
+    return async (symbol, timeframe, expression, ignore_invalid_symbol = false, currency = null, ignore_invalid_timeframe = false, calc_bars_count = 0) => {
+      const _symbol = symbol[0];
+      const _timeframe = timeframe[0];
+      const _expression = expression[0];
+      const _expression_name = expression[1];
+      Array.isArray(ignore_invalid_symbol) ? ignore_invalid_symbol[0] : ignore_invalid_symbol;
+      const _ignore_invalid_timeframe = Array.isArray(ignore_invalid_timeframe) ? ignore_invalid_timeframe[0] : ignore_invalid_timeframe;
+      if (context.isSecondaryContext) {
+        return Array.isArray(_expression) ? [_expression] : _expression;
+      }
+      const ctxTimeframeIdx = TIMEFRAMES.indexOf(context.timeframe);
+      const reqTimeframeIdx = TIMEFRAMES.indexOf(_timeframe);
+      if (ctxTimeframeIdx === -1 || reqTimeframeIdx === -1) {
+        if (_ignore_invalid_timeframe) return NaN;
+        throw new Error("Invalid timeframe");
+      }
+      if (reqTimeframeIdx > ctxTimeframeIdx) {
+        if (_ignore_invalid_timeframe) return NaN;
+        throw new Error(`Timeframe ${_timeframe} is not lower than or equal to chart timeframe ${context.timeframe}`);
+      }
+      if (reqTimeframeIdx === ctxTimeframeIdx) {
+        return [[_expression]];
+      }
+      const cacheKey = `${_symbol}_${_timeframe}_${_expression_name}_lower`;
+      if (!context.cache[cacheKey]) {
+        const buffer = 1e3 * 60 * 60 * 24 * 30;
+        const adjustedSDate = context.sDate ? context.sDate - buffer : void 0;
+        const limit = context.sDate && context.eDate ? void 0 : context.limit || 1e3;
+        const pineTS = new PineTS(context.source, _symbol, _timeframe, limit, adjustedSDate, context.eDate);
+        pineTS.markAsSecondary();
+        const secContext2 = await pineTS.run(context.pineTSCode);
+        context.cache[cacheKey] = secContext2;
+      }
+      const secContext = context.cache[cacheKey];
+      const myOpenTime = Series.from(context.data.openTime).get(0);
+      const myCloseTime = Series.from(context.data.closeTime).get(0);
+      const secOpenTimes = secContext.data.openTime.data;
+      const secCloseTimes = secContext.data.closeTime.data;
+      const secValues = secContext.params[_expression_name];
+      if (!secValues) return [];
+      const result = [];
+      for (let i = 0; i < secOpenTimes.length; i++) {
+        const sOpen = secOpenTimes[i];
+        const sClose = secCloseTimes[i];
+        if (sClose <= myOpenTime) continue;
+        if (sOpen >= myCloseTime) break;
+        if (sOpen >= myOpenTime && sOpen < myCloseTime) {
+          result.push(secValues[i]);
+        }
+      }
+      return [result];
+    };
+  }
+
   var __defProp$4 = Object.defineProperty;
   var __defNormalProp$4 = (obj, key, value) => key in obj ? __defProp$4(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
   var __publicField$4 = (obj, key, value) => __defNormalProp$4(obj, typeof key !== "symbol" ? key + "" : key, value);
   const methods$1 = {
     param: param$1,
-    security
+    security,
+    security_lower_tf
   };
   class PineRequest {
     constructor(context) {
@@ -10645,6 +12855,7 @@ ${code}
       __publicField$4(this, "_cache", {});
       __publicField$4(this, "param");
       __publicField$4(this, "security");
+      __publicField$4(this, "security_lower_tf");
       Object.entries(methods$1).forEach(([name, factory]) => {
         this[name] = factory(context);
       });
@@ -12447,10 +14658,10 @@ ${code}
       const low0 = context.get(context.data.low, 0);
       const close1 = context.get(context.data.close, 1);
       if (isNaN(close1)) {
-        return handleNa ? high0 - low0 : NaN;
+        return handleNa ? context.precision(high0 - low0) : NaN;
       }
       const val = Math.max(high0 - low0, Math.abs(high0 - close1), Math.abs(low0 - close1));
-      return val;
+      return context.precision(val);
     };
   }
 
@@ -12942,6 +15153,189 @@ ${code}
     }
   }
 
+  class Log {
+    constructor(context) {
+      this.context = context;
+    }
+    logFormat(message, ...args) {
+      return message.replace(/{(\d+)}/g, (match, index) => args[index]);
+    }
+    param(source, index = 0, name) {
+      return Series.from(source).get(index);
+    }
+    warning(message, ...args) {
+      console.warn(this.logFormat(message, ...args));
+    }
+    error(message, ...args) {
+      console.error(this.logFormat(message, ...args));
+    }
+    info(message, ...args) {
+      console.log(this.logFormat(message, ...args));
+    }
+  }
+
+  class Str {
+    constructor(context) {
+      this.context = context;
+    }
+    param(source, index = 0, name) {
+      return Series.from(source).get(index);
+    }
+    tostring(value) {
+      return String(value);
+    }
+    tonumber(value) {
+      return Number(value);
+    }
+    lower(value) {
+      return String(value).toLowerCase();
+    }
+    upper(value) {
+      return String(value).toUpperCase();
+    }
+    trim(value) {
+      return String(value).trim();
+    }
+    repeat(source, repeat, separator = "") {
+      return Array(repeat).fill(source).join(separator || "");
+    }
+    replace_all(source, target, replacement) {
+      return String(source).replaceAll(target, replacement);
+    }
+    //occurense is the nth occurrence to replace
+    replace(source, target, replacement, occurrence = 0) {
+      const str = String(source);
+      const tgt = String(target);
+      const repl = String(replacement);
+      const occ = Math.floor(Number(occurrence)) || 0;
+      if (tgt === "") return str;
+      let pos = 0;
+      let found = 0;
+      while (true) {
+        const idx = str.indexOf(tgt, pos);
+        if (idx === -1) return str;
+        if (found === occ) {
+          return str.substring(0, idx) + repl + str.substring(idx + tgt.length);
+        }
+        found++;
+        pos = idx + tgt.length;
+      }
+    }
+    contains(source, target) {
+      return String(source).includes(target);
+    }
+    endswith(source, target) {
+      return String(source).endsWith(target);
+    }
+    startswith(source, target) {
+      return String(source).startsWith(target);
+    }
+    pos(source, target) {
+      const idx = String(source).indexOf(target);
+      return idx === -1 ? NaN : idx;
+    }
+    length(source) {
+      return String(source).length;
+    }
+    match(source, pattern) {
+      return String(source).match(new RegExp(pattern));
+    }
+    split(source, separator) {
+      return [String(source).split(separator)];
+    }
+    substring(source, begin_pos, end_pos) {
+      return String(source).substring(begin_pos, end_pos);
+    }
+    format(message, ...args) {
+      return message.replace(/{(\d+)}/g, (match, index) => args[index]);
+    }
+  }
+
+  class Timeframe {
+    constructor(context) {
+      this.context = context;
+    }
+    param(source, index = 0, name) {
+      return Series.from(source).get(index);
+    }
+    //Note : current PineTS implementation does not differentiate between main_period and period because the timeframe is always taken from the main execution context.
+    //once we implement indicator() function, the main_period can be overridden by the indicator's timeframe.
+    get main_period() {
+      return this.context.timeframe;
+    }
+    get period() {
+      return this.context.timeframe;
+    }
+    get multiplier() {
+      const val = parseInt(this.context.timeframe);
+      return isNaN(val) ? 1 : val;
+    }
+    get isdwm() {
+      return ["D", "W", "M"].includes(this.context.timeframe.slice(-1));
+    }
+    get isdaily() {
+      return this.context.timeframe.slice(-1) === "D";
+    }
+    get isweekly() {
+      return this.context.timeframe.slice(-1) === "W";
+    }
+    get ismonthly() {
+      return this.context.timeframe.slice(-1) === "M";
+    }
+    get isseconds() {
+      return this.context.timeframe.slice(-1) === "S";
+    }
+    get isminutes() {
+      return parseInt(this.context.timeframe).toString() == this.context.timeframe.trim();
+    }
+    get isintraday() {
+      return !this.isdwm;
+    }
+    // public change(timeframe: string) {
+    //     const prevOpenTime = this.context.data.openTime.get(this.context.data.openTime.length - 2);
+    //     const currentOpenTime = this.context.data.openTime.get(this.context.data.openTime.length - 1);
+    // }
+    from_seconds(seconds) {
+      if (seconds < 60) {
+        const roundedSeconds = Math.ceil(seconds / 5) * 5;
+        return roundedSeconds + "S";
+      }
+      if (seconds < 60 * 60 * 24) {
+        const roundedMinutes = Math.ceil(seconds / 60);
+        return roundedMinutes;
+      }
+      if (seconds <= 60 * 60 * 24 * 7 * 52) {
+        if (seconds % (60 * 60 * 24 * 7) === 0) {
+          const roundedWeeks = Math.ceil(seconds / (60 * 60 * 24 * 7));
+          return roundedWeeks + "W";
+        }
+        const roundedHours = Math.ceil(seconds / (60 * 60 * 24));
+        return roundedHours + "D";
+      }
+      return "12M";
+    }
+    in_seconds(timeframe) {
+      const multiplier = parseInt(timeframe);
+      const unit = timeframe.slice(-1);
+      if (unit === "S") {
+        return multiplier;
+      }
+      if (unit === "D") {
+        return multiplier * 60 * 60 * 24;
+      }
+      if (unit === "W") {
+        return multiplier * 60 * 60 * 24 * 7;
+      }
+      if (unit === "M") {
+        return multiplier * 60 * 60 * 24 * 30;
+      }
+      if (!isNaN(multiplier)) {
+        return multiplier * 60;
+      }
+      return 0;
+    }
+  }
+
   var __defProp$2 = Object.defineProperty;
   var __defNormalProp$2 = (obj, key, value) => key in obj ? __defProp$2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
   var __publicField$2 = (obj, key, value) => __defNormalProp$2(obj, typeof key !== "symbol" ? key + "" : key, value);
@@ -12953,7 +15347,8 @@ ${code}
       timeframe,
       limit,
       sDate,
-      eDate
+      eDate,
+      fullContext
     }) {
       __publicField$2(this, "data", {
         open: new Series([]),
@@ -12963,7 +15358,8 @@ ${code}
         volume: new Series([]),
         hl2: new Series([]),
         hlc3: new Series([]),
-        ohlc4: new Series([])
+        ohlc4: new Series([]),
+        hlcc4: new Series([])
       });
       __publicField$2(this, "cache", {});
       __publicField$2(this, "taState", {});
@@ -12988,6 +15384,7 @@ ${code}
       __publicField$2(this, "limit");
       __publicField$2(this, "sDate");
       __publicField$2(this, "eDate");
+      __publicField$2(this, "fullContext");
       __publicField$2(this, "pineTSCode");
       this.marketData = marketData;
       this.source = source;
@@ -12996,6 +15393,7 @@ ${code}
       this.limit = limit;
       this.sDate = sDate;
       this.eDate = eDate;
+      this.fullContext = fullContext || this;
       const core = new Core(this);
       const coreFunctions = {
         plotchar: core.plotchar.bind(core),
@@ -13011,14 +15409,33 @@ ${code}
         math: new PineMath(this),
         request: new PineRequest(this),
         array: new PineArray(this),
+        map: new PineMap(this),
+        matrix: new PineMatrix(this),
         na: coreFunctions.na,
         plotchar: coreFunctions.plotchar,
         color: coreFunctions.color,
         plot: coreFunctions.plot,
         nz: coreFunctions.nz,
+        syminfo: null,
+        timeframe: new Timeframe(this),
+        //FIXME : this is a temporary solution to get the barstate values,
+        //we need to implement a better way to handle realtime states
+        barstate: new Barstate(this),
         get bar_index() {
           return _this.idx;
-        }
+        },
+        get last_bar_index() {
+          return _this.data.close.length - 1;
+        },
+        get last_bar_time() {
+          return _this.data.openTime.get(_this.data.openTime.length - 1);
+        },
+        get timenow() {
+          return (/* @__PURE__ */ new Date()).getTime();
+        },
+        log: new Log(this),
+        str: new Str(this),
+        ...types
       };
     }
     //#region [Runtime functions] ===========================
@@ -13038,10 +15455,10 @@ ${code}
         if (Array.isArray(src[0])) {
           value = src[0];
         } else {
-          value = this.precision(src[src.length - 1 + idx]);
+          value = src[src.length - 1 + idx];
         }
       } else {
-        value = this.precision(src);
+        value = src;
       }
       if (!trg) {
         return new Series([value]);
@@ -13089,9 +15506,9 @@ ${code}
      * @param decimals - the number of decimals to precision to
      * @returns the precision number
      */
-    precision(n, decimals = 10) {
-      if (typeof n !== "number" || isNaN(n)) return n;
-      return Number(n.toFixed(decimals));
+    precision(value, decimals = 10) {
+      const epsilon = 10 ** decimals;
+      return typeof value === "number" ? Math.round(value * epsilon) / epsilon : value;
     }
     /**
      * This function is used to apply special transformation to internal PineTS parameters and handle them as time-series
@@ -13256,6 +15673,7 @@ ${code}
       __publicField$1(this, "hl2", []);
       __publicField$1(this, "hlc3", []);
       __publicField$1(this, "ohlc4", []);
+      __publicField$1(this, "hlcc4", []);
       __publicField$1(this, "openTime", []);
       __publicField$1(this, "closeTime", []);
       //#endregion
@@ -13274,6 +15692,7 @@ ${code}
       });
       __publicField$1(this, "_transpiledCode", null);
       __publicField$1(this, "_isSecondaryContext", false);
+      __publicField$1(this, "_syminfo");
       this._readyPromise = new Promise((resolve) => {
         this.loadMarketData(source, tickerId, timeframe, limit, sDate, eDate).then((data) => {
           const marketData = data;
@@ -13286,6 +15705,7 @@ ${code}
           const _hlc3 = marketData.map((d) => (d.high + d.low + d.close) / 3);
           const _hl2 = marketData.map((d) => (d.high + d.low) / 2);
           const _ohlc4 = marketData.map((d) => (d.high + d.low + d.open + d.close) / 4);
+          const _hlcc4 = marketData.map((d) => (d.high + d.low + d.close + d.close) / 4);
           const _openTime = marketData.map((d) => d.openTime);
           const _closeTime = marketData.map((d) => d.closeTime);
           this.open = _open;
@@ -13296,10 +15716,23 @@ ${code}
           this.hl2 = _hl2;
           this.hlc3 = _hlc3;
           this.ohlc4 = _ohlc4;
+          this.hlcc4 = _hlcc4;
           this.openTime = _openTime;
           this.closeTime = _closeTime;
-          this._ready = true;
-          resolve(true);
+          if (source && source.getSymbolInfo) {
+            source.getSymbolInfo(tickerId).then((symbolInfo2) => {
+              this._syminfo = symbolInfo2;
+              this._ready = true;
+              resolve(true);
+            }).catch((error) => {
+              console.warn("Failed to get symbol info, using default values:", error);
+              this._ready = true;
+              resolve(true);
+            });
+          } else {
+            this._ready = true;
+            resolve(true);
+          }
         });
       });
     }
@@ -13389,6 +15822,7 @@ ${code}
         }
         this._removeLastResult(context);
         processedUpToIdx = this.data.length - (newCandles + 1);
+        context.pine.barstate.setLive();
       }
     }
     /**
@@ -13418,7 +15852,8 @@ ${code}
         timeframe: this.timeframe,
         limit: this.limit,
         sDate: this.sDate,
-        eDate: this.eDate
+        eDate: this.eDate,
+        fullContext
       });
       pageContext.pineTSCode = fullContext.pineTSCode;
       pageContext.idx = fullContext.idx;
@@ -13491,6 +15926,7 @@ ${code}
       this.hl2[index] = (candle.high + candle.low) / 2;
       this.hlc3[index] = (candle.high + candle.low + candle.close) / 3;
       this.ohlc4[index] = (candle.high + candle.low + candle.open + candle.close) / 4;
+      this.hlcc4[index] = (candle.high + candle.low + candle.close + candle.close) / 4;
       this.openTime[index] = candle.openTime;
       this.closeTime[index] = candle.closeTime;
     }
@@ -13508,6 +15944,7 @@ ${code}
       this.hl2.push((candle.high + candle.low) / 2);
       this.hlc3.push((candle.high + candle.low + candle.close) / 3);
       this.ohlc4.push((candle.high + candle.low + candle.open + candle.close) / 4);
+      this.hlcc4.push((candle.high + candle.low + candle.close + candle.close) / 4);
       this.openTime.push(candle.openTime);
       this.closeTime.push(candle.closeTime);
     }
@@ -13533,6 +15970,7 @@ ${code}
       context.data.hl2.data.pop();
       context.data.hlc3.data.pop();
       context.data.ohlc4.data.pop();
+      context.data.hlcc4.data.pop();
       context.data.openTime.data.pop();
       if (context.data.closeTime) {
         context.data.closeTime.data.pop();
@@ -13552,6 +15990,7 @@ ${code}
         sDate: this.sDate,
         eDate: this.eDate
       });
+      context.pine.syminfo = this._syminfo;
       context.pineTSCode = pineTSCode;
       context.isSecondaryContext = isSecondary;
       context.data.close = new Series([]);
@@ -13562,6 +16001,7 @@ ${code}
       context.data.hl2 = new Series([]);
       context.data.hlc3 = new Series([]);
       context.data.ohlc4 = new Series([]);
+      context.data.hlcc4 = new Series([]);
       context.data.openTime = new Series([]);
       context.data.closeTime = new Series([]);
       return context;
@@ -13590,6 +16030,7 @@ ${code}
         context.data.hl2.data.push(this.hl2[i]);
         context.data.hlc3.data.push(this.hlc3[i]);
         context.data.ohlc4.data.push(this.ohlc4[i]);
+        context.data.hlcc4.data.push(this.hlcc4[i]);
         context.data.openTime.data.push(this.openTime[i]);
         context.data.closeTime.data.push(this.closeTime[i]);
         const result = await transpiledFn(context);
@@ -13768,10 +16209,13 @@ ${code}
     }
     async getMarketData(tickerId, timeframe, limit, sDate, eDate) {
       try {
+        const shouldCache = eDate !== void 0;
         const cacheParams = { tickerId, timeframe, limit, sDate, eDate };
-        const cachedData = this.cacheManager.get(cacheParams);
-        if (cachedData) {
-          return cachedData;
+        if (shouldCache) {
+          const cachedData = this.cacheManager.get(cacheParams);
+          if (cachedData) {
+            return cachedData;
+          }
         }
         const interval = timeframe_to_binance[timeframe.toUpperCase()];
         if (!interval) {
@@ -13816,7 +16260,9 @@ ${code}
             ignore: item[11]
           };
         });
-        this.cacheManager.set(cacheParams, data);
+        if (shouldCache) {
+          this.cacheManager.set(cacheParams, data);
+        }
         return data;
       } catch (error) {
         console.error("Error in binance.klines:", error);
@@ -13852,6 +16298,106 @@ ${code}
         }
       }
       return false;
+    }
+    async getSymbolInfo(tickerId) {
+      try {
+        let marketType = "crypto";
+        let apiUrl = BINANCE_API_URL;
+        let apiSymbol = tickerId;
+        let contractType = "";
+        if (tickerId.endsWith(".P")) {
+          marketType = "futures";
+          apiSymbol = tickerId.replace(".P", "");
+          apiUrl = "https://fapi.binance.com/fapi/v1";
+          contractType = "Perpetual";
+        } else if (tickerId.includes("_")) {
+          marketType = "futures";
+          apiSymbol = tickerId;
+          apiUrl = "https://dapi.binance.com/dapi/v1";
+          contractType = "Delivery";
+        }
+        const url = marketType === "crypto" ? `${apiUrl}/exchangeInfo?symbol=${apiSymbol}` : `${apiUrl}/exchangeInfo`;
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        const symbols = result.symbols;
+        if (!symbols || symbols.length === 0) {
+          console.error(`Symbol ${tickerId} not found`);
+          return null;
+        }
+        const symbolData = marketType === "futures" ? symbols.find((s) => s.symbol === apiSymbol) : symbols[0];
+        if (!symbolData) {
+          console.error(`Symbol ${apiSymbol} not found in exchange info`);
+          return null;
+        }
+        const priceFilter = symbolData.filters?.find((f) => f.filterType === "PRICE_FILTER");
+        const lotSizeFilter = symbolData.filters?.find((f) => f.filterType === "LOT_SIZE");
+        const tickSize = priceFilter ? parseFloat(priceFilter.tickSize) : 0.01;
+        const minQty = lotSizeFilter ? parseFloat(lotSizeFilter.minQty) : 0;
+        const pricescale = Math.round(1 / tickSize);
+        const baseAsset = symbolData.baseAsset;
+        const quoteAsset = symbolData.quoteAsset;
+        const typeLabel = contractType ? ` ${contractType}` : "";
+        const description = `${baseAsset} / ${quoteAsset}${typeLabel}`;
+        const symbolInfo = {
+          // Symbol Identification
+          ticker: tickerId,
+          // KEEP ORIGINAL including .P if present!
+          tickerid: `BINANCE:${tickerId}`,
+          // Also keep .P here
+          prefix: "BINANCE",
+          root: baseAsset,
+          // Just the base asset: "BTC"
+          description,
+          type: marketType,
+          main_tickerid: `BINANCE:${tickerId}`,
+          current_contract: contractType,
+          isin: "",
+          // Currency & Location
+          basecurrency: baseAsset,
+          currency: quoteAsset,
+          timezone: "Etc/UTC",
+          country: "",
+          // Price & Contract Info
+          mintick: tickSize,
+          pricescale,
+          minmove: 1,
+          pointvalue: symbolData.contractSize || 1,
+          mincontract: minQty,
+          // Session & Market
+          session: "24x7",
+          volumetype: "base",
+          expiration_date: symbolData.deliveryDate || 0,
+          // Company Data (N/A for crypto)
+          employees: 0,
+          industry: "",
+          sector: "",
+          shareholders: 0,
+          shares_outstanding_float: 0,
+          shares_outstanding_total: 0,
+          // Analyst Ratings (N/A for crypto)
+          recommendations_buy: 0,
+          recommendations_buy_strong: 0,
+          recommendations_date: 0,
+          recommendations_hold: 0,
+          recommendations_sell: 0,
+          recommendations_sell_strong: 0,
+          recommendations_total: 0,
+          // Price Targets (N/A for crypto)
+          target_price_average: 0,
+          target_price_date: 0,
+          target_price_estimates: 0,
+          target_price_high: 0,
+          target_price_low: 0,
+          target_price_median: 0
+        };
+        return symbolInfo;
+      } catch (error) {
+        console.error("Error in binance.exchangeInfo:", error);
+        return null;
+      }
     }
   }
 

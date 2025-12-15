@@ -4,8 +4,7 @@ import { PineArrayObject } from '../PineArrayObject';
 
 export function slice(context: any) {
     return (id: PineArrayObject, start: number, end?: number): PineArrayObject => {
-        const adjustedEnd = end !== undefined ? end + 1 : undefined;
-        return new PineArrayObject(id.array.slice(start, adjustedEnd));
+        const adjustedEnd = end !== undefined ? end : undefined;
+        return new PineArrayObject(id.array.slice(start, adjustedEnd), id.type, context);
     };
 }
-

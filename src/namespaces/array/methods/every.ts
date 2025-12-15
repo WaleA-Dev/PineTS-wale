@@ -3,8 +3,7 @@
 import { PineArrayObject } from '../PineArrayObject';
 
 export function every(context: any) {
-    return (id: PineArrayObject, callback: (val: any) => boolean): boolean => {
-        return id.array.every(callback);
+    return (id: PineArrayObject): boolean => {
+        return id.array.every((value: number) => !isNaN(value) && value);
     };
 }
-

@@ -8,7 +8,8 @@ const __dirname = dirname(__filename);
 const arrayDir = join(__dirname, '../src/namespaces/array');
 const gettersDir = join(arrayDir, 'getters');
 const methodsDir = join(arrayDir, 'methods');
-const outputFile = join(arrayDir, 'array.index.ts');
+const indexFile = join(arrayDir, 'array.index.ts');
+const objectFile = join(arrayDir, 'PineArrayObject.ts');
 
 async function generateIndex() {
     try {
@@ -32,78 +33,130 @@ async function generateIndex() {
                 return name === 'new' ? { file: name, export: 'new_fn', classProp: 'new' } : { file: name, export: name, classProp: name };
             });
 
-        // Generate imports
-        const getterImports = getters.length > 0 ? getters.map((name) => `import { ${name} } from './getters/${name}';`).join('\n') : '';
-        const methodImports = methods.map((m) => {
-            if (m.file === 'new') {
-                return `import { new_fn } from './methods/${m.file}';`;
-            }
-            return `import { ${m.export} } from './methods/${m.file}';`;
-        }).join('\n');
+        const staticMethods = ['new', 'new_bool', 'new_float', 'new_int', 'new_string', 'from', 'param'];
 
-        // Generate getters object
-        const gettersObj = getters.map((name) => `  ${name}`).join(',\n');
-        const gettersObjStr = getters.length > 0 ? `const getters = {\n${gettersObj}\n};` : '';
+        // --- Generate PineArrayObject.ts ---
+        const objectMethods = methods.filter((m) => !staticMethods.includes(m.classProp));
 
-        // Generate methods object - handle 'new' specially
-        const methodsObj = methods.map((m) => {
-            if (m.file === 'new') {
-                return `  new: new_fn`;
-            }
-            return `  ${m.classProp}`;
-        }).join(',\n');
-        const methodsObjStr = `const methods = {\n${methodsObj}\n};`;
+        const objectImports = objectMethods.map((m) => `import { ${m.export} as ${m.export}_factory } from './methods/${m.file}';`).join('\n');
 
-        // Generate type declarations for getters (as readonly properties)
-        const getterTypes = getters.map((name) => `  readonly ${name}: ReturnType<ReturnType<typeof getters.${name}>>;`).join('\n');
+        const objectPrivateProps = objectMethods.map((m) => `    private _${m.classProp}: any;`).join('\n');
 
-        // Generate type declarations for methods - handle 'new' specially
-        const methodTypes = methods.map((m) => {
-            if (m.file === 'new') {
-                return `  new: ReturnType<typeof methods.new>;`;
-            }
-            return `  ${m.classProp}: ReturnType<typeof methods.${m.classProp}>;`;
-        }).join('\n');
+        const objectInitProps = objectMethods.map((m) => `        this._${m.classProp} = ${m.export}_factory(this.context);`).join('\n');
 
-        // Generate the class
-        const classCode = `// SPDX-License-Identifier: AGPL-3.0-only
+        const objectMethodDefs = objectMethods
+            .map((m) => {
+                return `    ${m.classProp}(...args: any[]) {
+        return this._${m.classProp}(this, ...args);
+    }`;
+            })
+            .join('\n\n');
+
+        const pineArrayTypeEnum = `export enum PineArrayType {
+    any = '',
+    box = 'box',
+    bool = 'bool',
+    color = 'color',
+    float = 'float',
+    int = 'int',
+    label = 'label',
+    line = 'line',
+    linefill = 'linefill',
+    string = 'string',
+    table = 'table',
+}`;
+
+        const objectClassCode = `// SPDX-License-Identifier: AGPL-3.0-only
 // This file is auto-generated. Do not edit manually.
 // Run: npm run generate:array-index
 
-export { PineArrayObject } from './PineArrayObject';
+${objectImports}
 
-${getterImports ? getterImports + '\n' : ''}${methodImports}
+${pineArrayTypeEnum}
 
-${gettersObjStr ? gettersObjStr + '\n' : ''}${methodsObjStr}
+export class PineArrayObject {
+${objectPrivateProps}
 
-export class PineArray {
-  private _cache = {};
-${getterTypes ? getterTypes + '\n' : ''}${methodTypes}
+    constructor(public array: any, public type: PineArrayType, public context: any) {
+${objectInitProps}
+    }
 
-  constructor(private context: any) {
-${getters.length > 0 ? `    // Install getters
+    toString(): string {
+        return '[' + this.array.toString().replace(/,/g, ', ') + ']';
+    }
+
+${objectMethodDefs}
+}
+`;
+        await writeFile(objectFile, objectClassCode, 'utf-8');
+        console.log(`✅ Generated ${objectFile}`);
+
+        // --- Generate array.index.ts ---
+
+        // Generate imports
+        const getterImports = getters.length > 0 ? getters.map((name) => `import { ${name} } from './getters/${name}';`).join('\n') : '';
+
+        // Imports for index file
+        let indexImports = `export { PineArrayObject } from './PineArrayObject';\n\nimport { PineArrayObject } from './PineArrayObject';`;
+
+        // Import static method factories
+        const staticMethodImports = methods
+            .filter((m) => staticMethods.includes(m.classProp))
+            .map((m) => `import { ${m.export} } from './methods/${m.file}';`)
+            .join('\n');
+
+        indexImports += '\n' + staticMethodImports;
+
+        // Generate getters object (for type definitions mostly, or we just inline)
+        const getterInstall =
+            getters.length > 0
+                ? `    // Install getters
+    const getters = {
+${getters.map((g) => `      ${g}: ${g}`).join(',\n')}
+    };
     Object.entries(getters).forEach(([name, factory]) => {
       Object.defineProperty(this, name, {
         get: factory(context),
         enumerable: true
       });
-    });
-    ` : ''}    // Install methods
-    Object.entries(methods).forEach(([name, factory]) => {
-      this[name] = factory(context);
-    });
+    });`
+                : '';
+
+        // Generate methods installation
+        const methodInstall = methods
+            .map((m) => {
+                if (staticMethods.includes(m.classProp)) {
+                    return `    this.${m.classProp} = ${m.export}(context);`;
+                }
+                return `    this.${m.classProp} = (id: PineArrayObject, ...args: any[]) => id.${m.classProp}(...args);`;
+            })
+            .join('\n');
+
+        const classCode = `// SPDX-License-Identifier: AGPL-3.0-only
+// This file is auto-generated. Do not edit manually.
+// Run: npm run generate:array-index
+
+${indexImports}
+${getterImports ? getterImports + '\n' : ''}
+export class PineArray {
+  [key: string]: any;
+
+  constructor(private context: any) {
+${getterInstall}
+    // Install methods
+${methodInstall}
   }
 }
 
 export default PineArray;
 `;
 
-        await writeFile(outputFile, classCode, 'utf-8');
-        console.log(`✅ Generated ${outputFile}`);
+        await writeFile(indexFile, classCode, 'utf-8');
+        console.log(`✅ Generated ${indexFile}`);
         if (getters.length > 0) {
             console.log(`   - ${getters.length} getters: ${getters.join(', ')}`);
         }
-        console.log(`   - ${methods.length} methods: ${methods.map(m => m.classProp).join(', ')}`);
+        console.log(`   - ${methods.length} methods: ${methods.map((m) => m.classProp).join(', ')}`);
     } catch (error) {
         console.error('Error generating Array index:', error);
         process.exit(1);
@@ -111,4 +164,3 @@ export default PineArray;
 }
 
 generateIndex();
-

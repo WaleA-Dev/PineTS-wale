@@ -16,7 +16,7 @@ describe('Technical Analysis - Oscillators & Momentum', () => {
     it('CHANGE - Price Change', async () => {
         const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2020-01-27').getTime());
 
-        const sourceCode = (context) => {
+        const sourceCode = (context: Context) => {
             const { close, high, low } = context.data;
             const { ta, plotchar } = context.pine;
 

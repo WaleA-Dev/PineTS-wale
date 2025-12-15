@@ -3,6 +3,7 @@
 
 import * as walk from 'acorn-walk';
 import { CONTEXT_NAME } from '../utils/ASTFactory';
+import { CONTEXT_CORE_VARS, CONTEXT_DATA_VARS, CONTEXT_PINE_VARS, KNOWN_NAMESPACES } from '../settings';
 
 /**
  * Normalizes imports from context.data and context.pine to prevent renaming of native symbols.
@@ -42,31 +43,11 @@ export function normalizeNativeImports(ast: any): void {
     if (!mainBody) return;
 
     // 2. Define native symbols to watch for
-    const contextDataVars = new Set(['open', 'high', 'low', 'close', 'volume', 'hl2', 'hlc3', 'ohlc4', 'openTime', 'closeTime']);
+    const contextDataVars = new Set(CONTEXT_DATA_VARS);
 
-    const contextPineVars = new Set([
-        'input',
-        'ta',
-        'math',
-        'request',
-        'array',
-        'na',
-        'plotchar',
-        'color',
-        'plot',
-        'nz',
-        'strategy',
-        'library',
-        'str',
-        'box',
-        'line',
-        'label',
-        'table',
-        'map',
-        'matrix',
-    ]);
+    const contextPineVars = new Set(CONTEXT_PINE_VARS);
 
-    const contextCoreVars = new Set(['na', 'nz', 'plot', 'plotchar', 'color']);
+    const contextCoreVars = new Set(CONTEXT_CORE_VARS);
 
     const renames = new Map<string, string>(); // alias -> original (e.g., 'close2' -> 'close')
 
@@ -113,8 +94,7 @@ export function normalizeNativeImports(ast: any): void {
                     }
                     // Handle direct namespace assignment: const ta2 = context.ta;
                     else if (decl.id.type === 'Identifier') {
-                        const validSingletonNames = ['ta', 'math', 'input', 'request', 'array'];
-                        if (validSingletonNames.includes(sourceName)) {
+                        if (KNOWN_NAMESPACES.includes(sourceName)) {
                             const originalName = sourceName;
                             const aliasName = decl.id.name;
 

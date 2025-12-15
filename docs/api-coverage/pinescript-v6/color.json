@@ -1,0 +1,30 @@
+{
+  "Predefined Colors": {
+    "color.aqua": false,
+    "color.black": true,
+    "color.blue": true,
+    "color.fuchsia": false,
+    "color.gray": true,
+    "color.green": true,
+    "color.lime": true,
+    "color.maroon": true,
+    "color.navy": false,
+    "color.olive": false,
+    "color.orange": false,
+    "color.purple": false,
+    "color.red": true,
+    "color.silver": false,
+    "color.teal": false,
+    "color.white": true,
+    "color.yellow": false
+  },
+  "Color Functions": {
+    "color.b()": false,
+    "color.from_gradient()": false,
+    "color.g()": false,
+    "color.new()": true,
+    "color.r()": false,
+    "color.rgb()": true,
+    "color.t()": false
+  }
+}

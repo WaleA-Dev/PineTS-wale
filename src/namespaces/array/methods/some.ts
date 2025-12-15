@@ -3,8 +3,7 @@
 import { PineArrayObject } from '../PineArrayObject';
 
 export function some(context: any) {
-    return (id: PineArrayObject, callback: (val: any) => boolean): boolean => {
-        return id.array.some(callback);
+    return (id: PineArrayObject): boolean => {
+        return id.array.some((value: number) => !isNaN(value) && value);
     };
 }
-

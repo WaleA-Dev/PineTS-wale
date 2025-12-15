@@ -21,7 +21,7 @@ const timeframe_to_binance = {
     M: '1M', // 1 month
 };
 
-import { IProvider } from '@pinets/marketData/IProvider';
+import { IProvider, ISymbolInfo } from '@pinets/marketData/IProvider';
 
 interface CacheEntry<T> {
     data: T;
@@ -152,11 +152,16 @@ export class BinanceProvider implements IProvider {
     async getMarketData(tickerId: string, timeframe: string, limit?: number, sDate?: number, eDate?: number): Promise<any> {
         try {
             // Check cache first
+            // Skip cache if eDate is undefined (live request) to ensure we get fresh data
+            const shouldCache = eDate !== undefined;
             const cacheParams = { tickerId, timeframe, limit, sDate, eDate };
-            const cachedData = this.cacheManager.get(cacheParams);
-            if (cachedData) {
-                //console.log('cache hit', tickerId, timeframe, limit, sDate, eDate);
-                return cachedData;
+
+            if (shouldCache) {
+                const cachedData = this.cacheManager.get(cacheParams);
+                if (cachedData) {
+                    //console.log('cache hit', tickerId, timeframe, limit, sDate, eDate);
+                    return cachedData;
+                }
             }
 
             const interval = timeframe_to_binance[timeframe.toUpperCase()];
@@ -198,6 +203,7 @@ export class BinanceProvider implements IProvider {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const result = await response.json();
+
             const data = result.map((item) => {
                 return {
                     openTime: parseInt(item[0]),
@@ -216,7 +222,9 @@ export class BinanceProvider implements IProvider {
             });
 
             // Cache the results
-            this.cacheManager.set(cacheParams, data);
+            if (shouldCache) {
+                this.cacheManager.set(cacheParams, data);
+            }
 
             return data;
         } catch (error) {
@@ -260,5 +268,133 @@ export class BinanceProvider implements IProvider {
         }
 
         return false;
+    }
+
+    async getSymbolInfo(tickerId: string): Promise<ISymbolInfo> {
+        try {
+            // tickerId comes in as "BTCUSDT" or "BTCUSDT.P"
+            // We keep it EXACTLY as is for ticker field (Pine Script includes .P)
+
+            let marketType: 'crypto' | 'futures' = 'crypto';
+            let apiUrl = BINANCE_API_URL; // Default to spot API
+            let apiSymbol = tickerId; // Symbol for API call
+            let contractType = '';
+
+            if (tickerId.endsWith('.P')) {
+                // USDT-Margined Perpetual Futures
+                marketType = 'futures';
+                apiSymbol = tickerId.replace('.P', ''); // Remove .P only for Binance API call
+                apiUrl = 'https://fapi.binance.com/fapi/v1';
+                contractType = 'Perpetual';
+                // NOTE: ticker field will KEEP the .P suffix (as Pine Script does)
+            } else if (tickerId.includes('_')) {
+                // COIN-Margined Delivery Futures
+                marketType = 'futures';
+                apiSymbol = tickerId; // API might use this format directly
+                apiUrl = 'https://dapi.binance.com/dapi/v1';
+                contractType = 'Delivery';
+            }
+
+            // Fetch from appropriate API
+            // Note: Spot API supports ?symbol= parameter, but futures APIs return all symbols
+            const url = marketType === 'crypto' ? `${apiUrl}/exchangeInfo?symbol=${apiSymbol}` : `${apiUrl}/exchangeInfo`;
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const symbols = result.symbols;
+
+            if (!symbols || symbols.length === 0) {
+                console.error(`Symbol ${tickerId} not found`);
+                return null;
+            }
+
+            // For futures API, we need to find the specific symbol ourselves
+            const symbolData = marketType === 'futures' ? symbols.find((s: any) => s.symbol === apiSymbol) : symbols[0];
+
+            if (!symbolData) {
+                console.error(`Symbol ${apiSymbol} not found in exchange info`);
+                return null;
+            }
+
+            // Extract filters
+            const priceFilter = symbolData.filters?.find((f: any) => f.filterType === 'PRICE_FILTER');
+            const lotSizeFilter = symbolData.filters?.find((f: any) => f.filterType === 'LOT_SIZE');
+
+            const tickSize = priceFilter ? parseFloat(priceFilter.tickSize) : 0.01;
+            const minQty = lotSizeFilter ? parseFloat(lotSizeFilter.minQty) : 0;
+            const pricescale = Math.round(1 / tickSize);
+
+            const baseAsset = symbolData.baseAsset;
+            const quoteAsset = symbolData.quoteAsset;
+
+            // Build description
+            const typeLabel = contractType ? ` ${contractType}` : '';
+            const description = `${baseAsset} / ${quoteAsset}${typeLabel}`;
+
+            const symbolInfo: ISymbolInfo = {
+                // Symbol Identification
+                ticker: tickerId, // KEEP ORIGINAL including .P if present!
+                tickerid: `BINANCE:${tickerId}`, // Also keep .P here
+                prefix: 'BINANCE',
+                root: baseAsset, // Just the base asset: "BTC"
+                description: description,
+                type: marketType,
+                main_tickerid: `BINANCE:${tickerId}`,
+                current_contract: contractType,
+                isin: '',
+
+                // Currency & Location
+                basecurrency: baseAsset,
+                currency: quoteAsset,
+                timezone: 'Etc/UTC',
+                country: '',
+
+                // Price & Contract Info
+                mintick: tickSize,
+                pricescale: pricescale,
+                minmove: 1,
+                pointvalue: symbolData.contractSize || 1,
+                mincontract: minQty,
+
+                // Session & Market
+                session: '24x7',
+                volumetype: 'base',
+                expiration_date: symbolData.deliveryDate || 0,
+
+                // Company Data (N/A for crypto)
+                employees: 0,
+                industry: '',
+                sector: '',
+                shareholders: 0,
+                shares_outstanding_float: 0,
+                shares_outstanding_total: 0,
+
+                // Analyst Ratings (N/A for crypto)
+                recommendations_buy: 0,
+                recommendations_buy_strong: 0,
+                recommendations_date: 0,
+                recommendations_hold: 0,
+                recommendations_sell: 0,
+                recommendations_sell_strong: 0,
+                recommendations_total: 0,
+
+                // Price Targets (N/A for crypto)
+                target_price_average: 0,
+                target_price_date: 0,
+                target_price_estimates: 0,
+                target_price_high: 0,
+                target_price_low: 0,
+                target_price_median: 0,
+            };
+
+            return symbolInfo;
+        } catch (error) {
+            console.error('Error in binance.exchangeInfo:', error);
+            return null;
+        }
     }
 }

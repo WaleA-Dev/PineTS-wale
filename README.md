@@ -4,14 +4,58 @@
 [![Documentation](https://img.shields.io/badge/docs-github--pages-blue?style=flat-square)](https://quantforgeorg.github.io/PineTS/)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/QuantForge?style=flat-square&logo=reddit)](https://www.reddit.com/r/QuantForge/)
 
+---
+
 This project aims to provide a Javascript/Typescript port for Tradingview's Pine Script.
 The current version does not run Pine Script directly, instead it runs a close Javascript equivalent called PineTS.
 
 PineTS makes it possible to migrate Pine Script v5+ indicators to Javascript/Typescript, in order to run them in a Javascript environment.
 
-## Disclaimer
+> _Disclaimer : PineTS is an independent project and is not affiliated with, endorsed by, or associated with TradingView or Pine Script™. All trademarks and registered trademarks mentioned belong to their respective owners._
 
-PineTS is an independent project and is not affiliated with, endorsed by, or associated with TradingView or Pine Script™. All trademarks and registered trademarks mentioned belong to their respective owners.
+---
+
+## Pine Script API Coverage
+
+### Data
+
+[![syminfo](./.github/badges/api-syminfo.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/syminfo.html)
+[![session](./.github/badges/api-session.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/session.html)
+[![timeframe](./.github/badges/api-timeframe.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/timeframe.html)
+[![barstate](./.github/badges/api-barstate.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/barstate.html)
+[![ticker](./.github/badges/api-ticker.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/ticker.html)
+[![builtin](./.github/badges/api-builtin.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/builtin.html)
+
+### Calculation
+
+[![ta](./.github/badges/api-ta.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/ta.html)
+[![math](./.github/badges/api-math.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/math.html)
+[![array](./.github/badges/api-array.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/array.html)
+[![map](./.github/badges/api-map.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/map.html)
+[![matrix](./.github/badges/api-matrix.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/matrix.html)
+[![request](./.github/badges/api-request.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/request.html)
+[![types](./.github/badges/api-types.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/types.html)
+[![strategy](./.github/badges/api-strategy.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/strategy.html)
+[![input](./.github/badges/api-input.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/input.html)
+
+### Visualization
+
+[![color](./.github/badges/api-color.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/color.html)
+[![plots](./.github/badges/api-plots.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/plots.html)
+[![chart](./.github/badges/api-chart.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/chart.html)
+[![label](./.github/badges/api-label.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/label.html)
+[![line](./.github/badges/api-line.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/line.html)
+[![polyline](./.github/badges/api-polyline.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/polyline.html)
+[![box](./.github/badges/api-box.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/box.html)
+[![table](./.github/badges/api-table.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/table.html)
+[![linefill](./.github/badges/api-linefill.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/linefill.html)
+
+### Logging
+
+[![log](./.github/badges/api-log.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/log.html)
+[![str](./.github/badges/api-str.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/str.html)
+
+---
 
 ## Overview
 
@@ -67,7 +111,7 @@ npm install pinets
 
 Original Pine Script:
 
-<table>
+<table width="100%">
 <tr>
 <td>
 

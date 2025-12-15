@@ -1,0 +1,38 @@
+{
+    "Management": {
+        "box.all": false,
+        "box.copy()": false,
+        "box.delete()": false,
+        "box.new()": false
+    },
+    "Getters": {
+        "box.get_bottom()": false,
+        "box.get_left()": false,
+        "box.get_right()": false,
+        "box.get_top()": false
+    },
+    "Setters": {
+        "box.set_bgcolor()": false,
+        "box.set_border_color()": false,
+        "box.set_border_style()": false,
+        "box.set_border_width()": false,
+        "box.set_bottom()": false,
+        "box.set_bottom_right_point()": false,
+        "box.set_extend()": false,
+        "box.set_left()": false,
+        "box.set_lefttop()": false,
+        "box.set_right()": false,
+        "box.set_rightbottom()": false,
+        "box.set_text()": false,
+        "box.set_text_color()": false,
+        "box.set_text_font_family()": false,
+        "box.set_text_formatting()": false,
+        "box.set_text_halign()": false,
+        "box.set_text_size()": false,
+        "box.set_text_valign()": false,
+        "box.set_text_wrap()": false,
+        "box.set_top()": false,
+        "box.set_top_left_point()": false,
+        "box.set_xloc()": false
+    }
+}
