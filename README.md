@@ -180,9 +180,9 @@ The library uses a runtime transpiler that:
 3. Handles array indexing and series operations
 4. Provides Pine Script-compatible function calls
 
-## Pine Script API Coverage
+### Pine Script API Coverage
 
-### Data
+#### Data
 
 [![syminfo](./.github/badges/api-syminfo.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/syminfo.html)
 [![session](./.github/badges/api-session.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/session.html)
@@ -191,7 +191,7 @@ The library uses a runtime transpiler that:
 [![ticker](./.github/badges/api-ticker.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/ticker.html)
 [![builtin](./.github/badges/api-builtin.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/builtin.html)
 
-### Calculation
+#### Calculation
 
 [![ta](./.github/badges/api-ta.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/ta.html)
 [![math](./.github/badges/api-math.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/math.html)
@@ -203,7 +203,7 @@ The library uses a runtime transpiler that:
 [![strategy](./.github/badges/api-strategy.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/strategy.html)
 [![input](./.github/badges/api-input.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/input.html)
 
-### Visualization
+#### Visualization
 
 [![color](./.github/badges/api-color.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/color.html)
 [![plots](./.github/badges/api-plots.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/plots.html)
@@ -215,7 +215,7 @@ The library uses a runtime transpiler that:
 [![table](./.github/badges/api-table.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/table.html)
 [![linefill](./.github/badges/api-linefill.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/linefill.html)
 
-### Logging
+#### Logging
 
 [![log](./.github/badges/api-log.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/log.html)
 [![str](./.github/badges/api-str.svg)](https://quantforgeorg.github.io/PineTS/api-coverage/str.html)
