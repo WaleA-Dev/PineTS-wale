@@ -9,7 +9,7 @@ describe('Request ', () => {
     it('request.security higher timeframe lookahead=false', async () => {
         const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'D', null, new Date('2025-10-01').getTime(), new Date('2025-10-10').getTime());
 
-        const { result, plots } = await pineTS.run(async (context) => {
+        const context = await pineTS.run((context) => {
             const { close, open } = context.data;
             const { plot, plotchar, request } = context.pine;
 
@@ -21,6 +21,7 @@ describe('Request ', () => {
                 res,
             };
         });
+        const { result, plots } = context;
 
         const plotdata = plots['_plotchar']?.data;
 

@@ -33,7 +33,7 @@ describe('Transpiler', () => {
         const result = transpiled.toString().trim();
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close, open, high, low, hlc3, volume} = $.data;
   const {plotchar, color, plot, na, nz} = $.core;
   const ta = $.ta;
@@ -85,7 +85,7 @@ describe('Transpiler', () => {
         const result = transpiled.toString().trim();
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close, open, high, low, hlc3, volume} = $.data;
   const {plotchar, color, plot, na, nz} = $.core;
   const ta = $.ta;
@@ -134,7 +134,7 @@ if (na(n_a)) {
         const result = transpiled.toString().trim();
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {open, close} = $.data;
   const {na, nz} = $.pine;
   const ta = $.ta;
@@ -173,7 +173,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         const result = transpiled.toString().trim();
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {open, close} = $.data;
   const {input} = $.pine;
   const p0 = input.param({
@@ -236,7 +236,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         const result = transpiled.toString().trim();
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {high, low, close} = $.data;
   const {ta, na} = $.pine;
   const {open} = $.data;
@@ -298,7 +298,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close} = $.data;
   const ta = $.ta;
   const math = $.math;
@@ -372,7 +372,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close} = $.data;
   const ta = $.ta;
   const p0 = ta.param(close, undefined, 'p0');
@@ -405,7 +405,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {ta, plot, na, bool} = $.pine;
   $.let.glb1_highUsePivot = $.init($.let.glb1_highUsePivot, 10);
   const p0 = $.param($.let.glb1_highUsePivot, undefined, 'p0');
@@ -447,7 +447,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close} = $.data;
   const {ta, fixnan} = $.pine;
   const p0 = ta.param(close, undefined, 'p0');
@@ -497,7 +497,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close, open} = $.data;
   const ta = $.ta;
   $.const.glb1_green_candle = $.init($.const.glb1_green_candle, $.get(close, 0) > $.get(open, 0));
@@ -536,7 +536,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close, open} = $.data;
   const ta = $.ta;
   $.const.glb1_green_candle = $.init($.const.glb1_green_candle, $.get(close, 0) > $.get(open, 0) ? 1 : 0);
@@ -571,7 +571,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close, open} = $.data;
   const {plot} = $.core;
   $.const.glb1_res = $.init($.const.glb1_res, open);
@@ -659,7 +659,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close} = $.data;
   $.const.glb1__cc = $.init($.const.glb1__cc, close);
   $.let.glb1_aa = $.init($.let.glb1_aa, 0);
@@ -781,7 +781,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close} = $.data;
   $.let.glb1_aa = $.init($.let.glb1_aa, 10);
   $.let.glb1__cc = $.init($.let.glb1__cc, close);
@@ -891,7 +891,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close} = $.data;
   const ta = $.ta;
   const math = $.math;
@@ -969,7 +969,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         const result = transpiled.toString().trim();
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {high} = $.data;
   const {open, close} = $.data;
   const {array} = $.pine;
@@ -1014,7 +1014,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         const result = transpiled.toString().trim();
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close, open} = $.data;
   const {plot, plotchar, request, ta} = $.pine;
   function foo() {
@@ -1090,7 +1090,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         console.log(result);
 
         /* prettier-ignore */
-        const expected_code = `$ => {
+        const expected_code = `async $ => {
   const {close} = $.data;
   const ta = $.ta;
   $.const.glb1__cc = $.init($.const.glb1__cc, close);

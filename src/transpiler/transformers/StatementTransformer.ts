@@ -292,6 +292,22 @@ export function transformVariableDeclaration(varNode: any, scopeManager: ScopeMa
                                 c(node.object, { parent: node });
                             }
                         },
+                        AwaitExpression(node: any, state: any, c: any) {
+                            // Mark the argument as being inside an await
+                            if (node.argument) {
+                                node.argument._insideAwait = true;
+
+                                // Transform the argument
+                                c(node.argument, { parent: node });
+
+                                // After transformation, if the argument was hoisted and is now an identifier,
+                                // remove the await since it's already in the hoisted statement
+                                if (node.argument.type === 'Identifier' && node.argument._wasInsideAwait) {
+                                    // Replace the AwaitExpression with just the identifier
+                                    Object.assign(node, node.argument);
+                                }
+                            }
+                        },
                     }
                 );
             }

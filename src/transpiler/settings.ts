@@ -4,6 +4,9 @@ export const KNOWN_NAMESPACES = ['ta', 'math', 'request', 'array', 'input'];
 // This is used to transform ns() calls to ns.any() calls
 export const NAMESPACES_LIKE = ['hline'];
 
+// Async methods that require await keyword (format: 'namespace.method')
+export const ASYNC_METHODS = ['request.security', 'request.security_lower_tf'];
+
 // All known data variables in the context
 export const CONTEXT_DATA_VARS = ['open', 'high', 'low', 'close', 'volume', 'hl2', 'hlc3', 'ohlc4', 'openTime', 'closeTime'];
 

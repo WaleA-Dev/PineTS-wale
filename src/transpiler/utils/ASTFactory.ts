@@ -144,4 +144,11 @@ export const ASTFactory = {
             ],
         };
     },
+
+    createAwaitExpression(argument: any): any {
+        return {
+            type: 'AwaitExpression',
+            argument,
+        };
+    },
 };

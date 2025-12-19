@@ -127,5 +127,30 @@ export function runTransformationPass(
         IfStatement(node: any, state: ScopeManager, c: any) {
             transformIfStatement(node, state, c);
         },
+        AwaitExpression(node: any, state: ScopeManager, c: any) {
+            // Mark the argument as being inside an await so transformCallExpression knows not to add another await
+            if (node.argument) {
+                node.argument._insideAwait = true;
+
+                // First, transform the argument
+                c(node.argument, state);
+
+                // After transformation, if the argument was hoisted and replaced with an identifier,
+                // remove the await since the hoisted statement already has it
+                if (node.argument.type === 'Identifier') {
+                    // Check if this identifier came from hoisting an awaited call
+                    const isHoistedAwaitedCall = node.argument._wasInsideAwait === true;
+                    if (isHoistedAwaitedCall) {
+                        // Replace the AwaitExpression with just the identifier
+                        node.type = 'Identifier';
+                        node.name = node.argument.name;
+                        // Copy over any other properties
+                        if (node.argument._wasHoisted) node._wasHoisted = node.argument._wasHoisted;
+                        // Clean up the await-specific properties
+                        delete node.argument;
+                    }
+                }
+            }
+        },
     });
 }
