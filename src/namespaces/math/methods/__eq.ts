@@ -8,10 +8,14 @@ export function __eq(context: any) {
         const valA = Series.from(a).get(0);
         const valB = Series.from(b).get(0);
 
-        if (isNaN(valA) && isNaN(valB)) return true; // Treat NaNs as equal?
+        if (typeof valA === 'number' && typeof valB === 'number') {
+            if (isNaN(valA) && isNaN(valB)) return true; // Treat NaNs as equal?
 
-        if (isNaN(valA) || isNaN(valB)) return false; // One is NaN, other is not -> False.
+            if (isNaN(valA) || isNaN(valB)) return false; // One is NaN, other is not -> False.
 
-        return Math.abs(valA - valB) < 1e-8;
+            return Math.abs(valA - valB) < 1e-8;
+        }
+
+        return valA === valB;
     };
 }

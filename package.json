@@ -2,10 +2,27 @@
     "name": "pinets",
     "version": "0.6.1",
     "description": "",
-    "main": "dist/pinets.dev.es.js",
+    "main": "dist/pinets.min.cjs",
+    "module": "dist/pinets.min.es.js",
+    "browser": "dist/pinets.min.browser.es.js",
     "types": "dist/types/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "node": {
+                "import": "./dist/pinets.min.es.js",
+                "require": "./dist/pinets.min.cjs"
+            },
+            "browser": {
+                "import": "./dist/pinets.min.browser.es.js",
+                "default": "./dist/pinets.min.browser.js"
+            },
+            "default": "./dist/pinets.min.es.js"
+        }
+    },
     "files": [
-        "dist"
+        "dist/*.min.*",
+        "dist/types"
     ],
     "type": "module",
     "scripts": {
@@ -20,13 +37,15 @@
         "generate:request-index": "node scripts/generate-request-index.js",
         "generate:map-index": "node scripts/generate-map-index.js",
         "generate:matrix-index": "node scripts/generate-matrix-index.js",
-        "build:dev:all": "npm run generate:ta-index && npm run generate:math-index && npm run generate:array-index && npm run generate:input-index && npm run generate:request-index && npm run generate:map-index && npm run generate:matrix-index && npm run build:dev:browser && npm run build:dev:cjs && npm run build:dev:es && tsc --emitDeclarationOnly --declaration --outDir dist/types -p tsconfig.dts.json",
+        "build:dev:all": "npm run generate:ta-index && npm run generate:math-index && npm run generate:array-index && npm run generate:input-index && npm run generate:request-index && npm run generate:map-index && npm run generate:matrix-index && npm run build:dev:browser && npm run build:dev:cjs && npm run build:dev:es && npm run build:dev:browser-es && tsc --emitDeclarationOnly --declaration --outDir dist/types -p tsconfig.dts.json",
         "build:dev:cjs": "cross-env BUILD=dev FORMAT=cjs rollup -c ./rollup.config.js",
         "build:dev:browser": "cross-env BUILD=dev FORMAT=browser rollup -c ./rollup.config.js",
+        "build:dev:browser-es": "cross-env BUILD=dev FORMAT=browser-es rollup -c ./rollup.config.js",
         "build:dev:es": "cross-env BUILD=dev rollup -c ./rollup.config.js",
-        "build:prod:all": "npm run generate:ta-index && npm run generate:math-index && npm run generate:array-index && npm run generate:input-index && npm run generate:request-index && npm run generate:map-index && npm run generate:matrix-index && npm run build:prod:browser && npm run build:prod:cjs && npm run build:prod:es && tsc --emitDeclarationOnly --declaration --outDir dist/types -p tsconfig.dts.json",
+        "build:prod:all": "npm run generate:ta-index && npm run generate:math-index && npm run generate:array-index && npm run generate:input-index && npm run generate:request-index && npm run generate:map-index && npm run generate:matrix-index && npm run build:prod:browser && npm run build:prod:cjs && npm run build:prod:es && npm run build:prod:browser-es && tsc --emitDeclarationOnly --declaration --outDir dist/types -p tsconfig.dts.json",
         "build:prod:cjs": "cross-env BUILD=prod FORMAT=cjs rollup -c ./rollup.config.js",
         "build:prod:browser": "cross-env BUILD=prod FORMAT=browser rollup -c ./rollup.config.js",
+        "build:prod:browser-es": "cross-env BUILD=prod FORMAT=browser-es rollup -c ./rollup.config.js",
         "build:prod:es": "cross-env BUILD=prod rollup -c ./rollup.config.js",
         "knip": "knip"
     },

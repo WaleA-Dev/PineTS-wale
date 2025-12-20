@@ -16,7 +16,7 @@ import { Log } from './namespaces/Log';
 import { Str } from './namespaces/Str';
 import types from './namespaces/Types';
 import { Timeframe } from './namespaces/Timeframe';
-import { HlineHelper, PlotHelper } from './namespaces/Plot.helper';
+import { HlineHelper, PlotHelper } from './namespaces/Plots';
 
 export class Context {
     public data: any = {

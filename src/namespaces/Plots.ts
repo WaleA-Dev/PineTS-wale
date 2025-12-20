@@ -1,4 +1,4 @@
-import { Series } from 'Series';
+import { Series } from '../Series';
 import { parseArgsForPineParams } from './utils';
 
 const PLOT_SIGNATURE = [
