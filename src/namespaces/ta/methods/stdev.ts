@@ -18,6 +18,11 @@ export function stdev(context: any) {
         const state = context.taState[stateKey];
         const currentValue = Series.from(source).get(0);
 
+        // Fix: Handle NaN/null values by skipping them
+        if (currentValue === null || currentValue === undefined || isNaN(currentValue)) {
+            return NaN;
+        }
+
         state.window.unshift(currentValue);
         state.sum += currentValue;
 

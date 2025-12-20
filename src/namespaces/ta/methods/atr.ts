@@ -26,6 +26,11 @@ export function atr(context: any): //
         const low = context.get(context.data.low, 0);
         const close = context.get(context.data.close, 0);
 
+        // Fix: Handle NaN inputs
+        if (isNaN(high) || isNaN(low) || isNaN(close)) {
+            return NaN;
+        }
+
         // Calculate True Range
         let tr;
         if (state.prevClose !== null) {

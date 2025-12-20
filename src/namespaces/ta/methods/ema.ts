@@ -17,6 +17,10 @@ export function ema(context: any) {
         const state = context.taState[stateKey];
         const currentValue = Series.from(source).get(0);
 
+        if (currentValue === null || currentValue === undefined || isNaN(currentValue)) {
+            return NaN;
+        }
+
         if (state.initCount < period) {
             // Accumulate for SMA initialization
             state.initSum += currentValue;
