@@ -17,7 +17,7 @@ This makes it possible to run Pine Script indicators in Node.js, browsers, and o
 
 ## Overview
 
-PineTS is a sophisticated runtime transpiler that converts Pine Script (or PineTS syntax) into executable JavaScript. It preserves the original functionality and behavior while providing robust handling of time-series data processing, technical analysis calculations, and Pine Script's distinctive scoping mechanisms.
+PineTS is a runtime + transpiler that converts Pine Script (or PineTS syntax) into executable JavaScript. It preserves the original functionality and behavior while providing robust handling of time-series data processing, technical analysis calculations, and Pine Script's distinctive scoping mechanisms.
 
 ### Input Format Support
 
