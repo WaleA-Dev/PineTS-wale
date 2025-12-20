@@ -130,9 +130,9 @@
         "format.volume": false
     },
     "hline": {
-        "hline.style_dashed": false,
-        "hline.style_dotted": false,
-        "hline.style_solid": false
+        "hline.style_dashed": true,
+        "hline.style_dotted": true,
+        "hline.style_solid": true
     },
     "location": {
         "location.abovebar": false,

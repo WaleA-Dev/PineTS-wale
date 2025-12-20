@@ -4,7 +4,7 @@
 import * as walk from 'acorn-walk';
 import ScopeManager from '../analysis/ScopeManager';
 import { ASTFactory, CONTEXT_NAME } from '../utils/ASTFactory';
-import { KNOWN_NAMESPACES } from '../settings';
+import { KNOWN_NAMESPACES, NAMESPACES_LIKE, ASYNC_METHODS } from '../settings';
 
 const UNDEFINED_ARG = {
     type: 'Identifier',
@@ -677,6 +677,21 @@ export function transformFunctionArgument(arg: any, namespace: string, scopeMana
     const isArrayAccess = arg.type === 'MemberExpression' && arg.computed && arg.property;
 
     if (isArrayAccess) {
+        // Ensure complex objects are transformed before being used as array source
+        if (arg.object.type === 'CallExpression') {
+            transformCallExpression(arg.object, scopeManager);
+        } else if (arg.object.type === 'MemberExpression') {
+            transformMemberExpression(arg.object, '', scopeManager);
+        } else if (arg.object.type === 'BinaryExpression') {
+            arg.object = getParamFromBinaryExpression(arg.object, scopeManager, namespace);
+        } else if (arg.object.type === 'LogicalExpression') {
+            arg.object = getParamFromLogicalExpression(arg.object, scopeManager, namespace);
+        } else if (arg.object.type === 'ConditionalExpression') {
+            arg.object = getParamFromConditionalExpression(arg.object, scopeManager, namespace);
+        } else if (arg.object.type === 'UnaryExpression') {
+            arg.object = getParamFromUnaryExpression(arg.object, scopeManager, namespace);
+        }
+
         // Transform array access
         const transformedObject =
             arg.object.type === 'Identifier' && scopeManager.isContextBound(arg.object.name) && !scopeManager.isRootParam(arg.object.name)
@@ -746,6 +761,9 @@ export function transformFunctionArgument(arg: any, namespace: string, scopeMana
                     shorthand: false,
                     computed: false,
                 };
+            } else if (prop.value.type !== 'Literal') {
+                // For complex expressions (CallExpression, BinaryExpression, etc.), recursively transform them
+                prop.value = transformFunctionArgument(prop.value, namespace, scopeManager);
             }
             return prop;
         });
@@ -820,7 +838,7 @@ export function transformCallExpression(node: any, scopeManager: ScopeManager, n
     if (
         node.callee &&
         node.callee.type === 'Identifier' &&
-        KNOWN_NAMESPACES.includes(node.callee.name) &&
+        (KNOWN_NAMESPACES.includes(node.callee.name) || NAMESPACES_LIKE.includes(node.callee.name)) &&
         scopeManager.isContextBound(node.callee.name)
     ) {
         // Transform to namespace.any(...)
@@ -860,14 +878,47 @@ export function transformCallExpression(node: any, scopeManager: ScopeManager, n
             node.arguments.push(scopeManager.getNextTACallId());
         }
 
+        // Check if this is an async method call that needs await
+        const methodName = node.callee.property.name;
+        const methodPath = `${namespace}.${methodName}`;
+        const isAsyncMethod = ASYNC_METHODS.includes(methodPath);
+
+        // Check if already inside an await expression (marked by AwaitExpression handler)
+        const isAlreadyAwaited = node._insideAwait === true;
+
+        // If it's an async method and not already awaited, we need to wrap it
+        if (isAsyncMethod && !isAlreadyAwaited) {
+            // Create a copy of the current node state before wrapping
+            const callExpressionCopy = Object.assign({}, node);
+            // Wrap in AwaitExpression
+            const awaitExpr = ASTFactory.createAwaitExpression(callExpressionCopy);
+            // Replace the current node with the AwaitExpression
+            Object.assign(node, awaitExpr);
+        }
+
         if (!scopeManager.shouldSuppressHoisting()) {
             const tempVarName = scopeManager.generateTempVar();
             scopeManager.addLocalSeriesVar(tempVarName); // Mark as local series
-            const variableDecl = ASTFactory.createVariableDeclaration(tempVarName, Object.assign({}, node));
+
+            // Check if this CallExpression was inside an await expression
+            const wasInsideAwait = node._insideAwait === true;
+
+            // Create the variable declaration
+            // If it was inside await, wrap the call in an AwaitExpression for the hoisted statement
+            let initExpression = Object.assign({}, node);
+            if (wasInsideAwait) {
+                initExpression = ASTFactory.createAwaitExpression(initExpression);
+            }
+
+            const variableDecl = ASTFactory.createVariableDeclaration(tempVarName, initExpression);
             scopeManager.addHoistedStatement(variableDecl);
 
-            // Replace the CallExpression with the temp variable identifier
-            Object.assign(node, ASTFactory.createIdentifier(tempVarName));
+            // Replace the CallExpression with the temp variable identifier (no await here)
+            const tempIdentifier = ASTFactory.createIdentifier(tempVarName);
+            Object.assign(node, tempIdentifier);
+            // Mark that this identifier came from hoisting AFTER Object.assign to ensure it's preserved
+            node._wasHoisted = true;
+            node._wasInsideAwait = wasInsideAwait; // Mark so parent AwaitExpression knows to remove itself
             // The original node is modified in place, so we don't need to return anything
             return;
         }

@@ -160,9 +160,14 @@ const ESConfigDev = {
     },
     plugins: [
         json(),
+        resolve({
+            preferBuiltins: true,
+            extensions: ['.js', '.ts', '.json'],
+        }),
+        commonjs(),
         //filenameReplacePlugin(),
         typescriptPaths({
-            tsconfig: '../tsconfig.json',
+            tsconfig: './tsconfig.json',
             preserveExtensions: true,
             nonRelative: false,
         }),
@@ -178,12 +183,45 @@ const ESConfigDev = {
     ],
 };
 
+// ES Browser build (excludes Node.js-specific code)
+const ESBrowserConfigDev = {
+    input: './src/index.ts',
+    output: {
+        format: 'es',
+        sourcemap: true,
+        file: './dist/pinets.dev.browser.es.js',
+    },
+    plugins: [
+        excludeMockProvider(),
+        json(),
+        resolve({
+            preferBuiltins: true,
+            extensions: ['.js', '.ts', '.json'],
+            browser: true,
+        }),
+        commonjs(),
+        typescriptPaths({
+            tsconfig: './tsconfig.json',
+            preserveExtensions: true,
+            nonRelative: false,
+        }),
+        esbuild({
+            sourceMap: true,
+            minify: false,
+            treeShaking: false,
+            target: 'es2020',
+        }),
+        addSPDXHeader(),
+        sourcemaps(),
+    ],
+};
+
 const CJSConfigProd = {
     input: './src/index.ts',
     output: {
         file: './dist/pinets.min.cjs', // BrowserCommonJS output
         format: 'cjs', // Specify the CommonJS format
-        sourcemap: false,
+        sourcemap: true,
         inlineDynamicImports: true, // Inline all dynamic imports into one file
     },
     plugins: [
@@ -202,12 +240,13 @@ const CJSConfigProd = {
             nonRelative: false,
         }),
         esbuild({
-            sourceMap: false,
+            sourceMap: true,
             minify: true,
             treeShaking: true,
             target: 'node18',
         }),
         addSPDXHeader(),
+        sourcemaps(),
     ],
 };
 
@@ -218,6 +257,7 @@ const BrowserConfigProd = {
         format: 'umd',
         name: 'PineTSLib',
         exports: 'auto',
+        sourcemap: true,
     },
     plugins: [
         excludeMockProvider(),
@@ -233,7 +273,7 @@ const BrowserConfigProd = {
             nonRelative: false,
         }),
         esbuild({
-            sourceMap: false,
+            sourceMap: true,
             minify: true,
             treeShaking: true,
             target: 'es2020',
@@ -253,6 +293,7 @@ const BrowserConfigProd = {
             },
         },
         addSPDXHeader(),
+        sourcemaps(),
     ],
 };
 
@@ -260,25 +301,64 @@ const ESConfigProd = {
     input: './src/index.ts',
     output: {
         format: 'es',
-        sourcemap: false,
+        sourcemap: true,
 
         //Comment this line and uncomment the following lines if you need ES bundle
         file: './dist/pinets.min.es.js',
     },
     plugins: [
         json(),
+        resolve({
+            preferBuiltins: true,
+            extensions: ['.js', '.ts', '.json'],
+        }),
+        commonjs(),
         //filenameReplacePlugin(),
         typescriptPaths({
-            tsconfig: '../tsconfig.json',
+            tsconfig: './tsconfig.json',
             preserveExtensions: true,
             nonRelative: false,
         }),
         esbuild({
-            sourceMap: false,
+            sourceMap: true,
             minify: true,
             treeShaking: true,
         }),
         addSPDXHeader(),
+        sourcemaps(),
+    ],
+};
+
+// ES Browser build (excludes Node.js-specific code) - Production
+const ESBrowserConfigProd = {
+    input: './src/index.ts',
+    output: {
+        format: 'es',
+        sourcemap: true,
+        file: './dist/pinets.min.browser.es.js',
+    },
+    plugins: [
+        excludeMockProvider(),
+        json(),
+        resolve({
+            preferBuiltins: true,
+            extensions: ['.js', '.ts', '.json'],
+            browser: true,
+        }),
+        commonjs(),
+        typescriptPaths({
+            tsconfig: './tsconfig.json',
+            preserveExtensions: true,
+            nonRelative: false,
+        }),
+        esbuild({
+            sourceMap: true,
+            minify: true,
+            treeShaking: true,
+            target: 'es2020',
+        }),
+        addSPDXHeader(),
+        sourcemaps(),
     ],
 };
 
@@ -289,6 +369,10 @@ if (format === 'cjs') {
 
 if (format === 'browser') {
     config = build === 'dev' ? BrowserConfigDev : BrowserConfigProd;
+}
+
+if (format === 'browser-es') {
+    config = build === 'dev' ? ESBrowserConfigDev : ESBrowserConfigProd;
 }
 
 export default config;

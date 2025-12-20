@@ -1,7 +1,50 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { Series } from '../Series';
+import { parseArgsForPineParams } from './utils';
 
+const INDICATOR_SIGNATURE = [
+    'title',
+    'shorttitle',
+    'overlay',
+    'format',
+    'precision',
+    'scale',
+    'max_bars_back',
+    'timeframe',
+    'timeframe_gaps',
+    'explicit_plot_zorder',
+    'max_lines_count',
+    'max_labels_count',
+    'max_boxes_count',
+    'calc_bars_count',
+    'max_polylines_count',
+    'dynamic_requests',
+    'behind_chart',
+];
+const INDICATOR_ARGS_TYPES = {
+    title: 'string',
+    shorttitle: 'string',
+    overlay: 'boolean',
+    format: 'string',
+    precision: 'number',
+    scale: 'string', ////TODO : handle enums types
+    max_bars_back: 'number',
+    timeframe: 'string',
+    timeframe_gaps: 'boolean',
+    explicit_plot_zorder: 'boolean',
+    max_lines_count: 'number',
+    max_labels_count: 'number',
+    max_boxes_count: 'number',
+    calc_bars_count: 'number',
+    max_polylines_count: 'number',
+    dynamic_requests: 'boolean',
+    behind_chart: 'boolean',
+};
+
+export function parseIndicatorOptions(args: any[]): Partial<IndicatorOptions> {
+    return parseArgsForPineParams<Partial<IndicatorOptions>>(args, INDICATOR_SIGNATURE, INDICATOR_ARGS_TYPES);
+}
 export class Core {
     public color = {
         param: (source, index = 0) => {
@@ -54,37 +97,31 @@ export class Core {
         }
         return _options;
     }
-    indicator(title: string, shorttitle?: string, options?: IndicatorOptions) {
-        //Just for compatibility, we don't need to do anything here
-    }
+    indicator(...args) {
+        const options = parseIndicatorOptions(args);
 
-    //in the current implementation, plot functions are only used to collect data for the plots array and map it to the market data
-    plotchar(series: number[], title: string, options: PlotCharOptions) {
-        if (!this.context.plots[title]) {
-            this.context.plots[title] = { data: [], options: this.extractPlotOptions(options), title };
-        }
-
-        const value = Series.from(series).get(0);
-
-        this.context.plots[title].data.push({
-            time: this.context.marketData[this.context.idx].openTime,
-            value: value,
-            options: { ...this.extractPlotOptions(options), style: 'char' },
-        });
-    }
-
-    plot(series: any, title: string, options: PlotOptions) {
-        if (!this.context.plots[title]) {
-            this.context.plots[title] = { data: [], options: this.extractPlotOptions(options), title };
-        }
-
-        const value = Series.from(series).get(0);
-
-        this.context.plots[title].data.push({
-            time: this.context.marketData[this.context.idx].openTime,
-            value: value,
-            options: this.extractPlotOptions(options),
-        });
+        const defaults = {
+            title: '',
+            shorttitle: '',
+            overlay: false,
+            format: 'inherit',
+            precision: 10,
+            scale: 'points',
+            max_bars_back: 0,
+            timeframe: '',
+            timeframe_gaps: true,
+            explicit_plot_zorder: false,
+            max_lines_count: 50,
+            max_labels_count: 50,
+            max_boxes_count: 50,
+            calc_bars_count: 0,
+            max_polylines_count: 50,
+            dynamic_requests: false,
+            behind_chart: true,
+        };
+        //TODO : most of these values are not actually used by PineTS, future work should be done to implement them
+        this.context.indicator = { ...defaults, ...options };
+        return this.context.indicator;
     }
 
     get bar_index() {
@@ -98,5 +135,46 @@ export class Core {
         const val = Series.from(series).get(0);
         const rep = Series.from(replacement).get(0);
         return isNaN(val) ? rep : val;
+    }
+    fixnan(series: any) {
+        const _s = Series.from(series);
+        for (let i = 0; i < _s.length; i++) {
+            const val = _s.get(i);
+            if (!isNaN(val)) {
+                return val;
+            }
+        }
+        return NaN;
+    }
+
+    alertcondition(condition, title, message) {
+        //console.warn('alertcondition called but is currently not implemented', condition, title, message);
+    }
+    //types
+    bool(series: any) {
+        const val = Series.from(series).get(0);
+        return !isNaN(val) && val !== 0;
+    }
+    int(series: any) {
+        const val = Series.from(series).get(0);
+        if (typeof val !== 'number')
+            throw new Error(
+                `Cannot call "int" with argument "x"="${val}". An argument of "literal string" type was used but a "simple int" is expected.`
+            );
+        return Math.floor(val);
+    }
+    float(series: any) {
+        const val = Series.from(series).get(0);
+        if (typeof val !== 'number')
+            throw new Error(
+                `Cannot call "float" with argument "x"="${val}". An argument of "literal string" type was used but a "const float" is expected.`
+            );
+        return val;
+    }
+    string(series: any) {
+        //Pine Script seems to be throwing an error for any argument that is not a string
+        //the following implementation might need to be updated in the future
+        const val = Series.from(series).get(0);
+        return val.toString();
     }
 }

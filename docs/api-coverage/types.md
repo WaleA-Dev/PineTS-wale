@@ -176,9 +176,9 @@ parent: API Coverage
 
 | Function             | Status | Description                  |
 | -------------------- | ------ | ---------------------------- |
-| `hline.style_dashed` |        | Dashed horizontal line style |
-| `hline.style_dotted` |        | Dotted horizontal line style |
-| `hline.style_solid`  |        | Solid horizontal line style  |
+| `hline.style_dashed` | ✅     | Dashed horizontal line style |
+| `hline.style_dotted` | ✅     | Dotted horizontal line style |
+| `hline.style_solid`  | ✅     | Solid horizontal line style  |
 
 ### Location
 

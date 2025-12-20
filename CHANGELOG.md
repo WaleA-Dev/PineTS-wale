@@ -1,5 +1,28 @@
 # Change Log
 
+## [0.7.0] - 2025-12-20 - Pine Script Parser & Build System Modernization
+
+### Added
+
+-   **Pine Script Parser/Converter**: Initial implementation of native Pine Script parser that automatically detects and converts Pine Script v5 and v6 source code into PineTS executable code. PineTS.run(source) can now run a native PineScript source.
+-   **Async Statement Handling**: Graceful handling of async statements (e.g., `request.security`) declared in PineTS syntax without explicit `await`, bringing PineTS syntax closer to native Pine Script
+-   **Test Coverage**: New comprehensive unit tests covering the PineTS transpiler
+-   **Namespace Documentation**: Added detailed documentation for Namespaces folder
+
+### Changed
+
+-   **Build Pipeline**: Updated build system to generate modern package supporting multiple formats and environments (ESM, CJS, UMD)
+-   **Plot Namespace**: Restructured Plot namespace for better organization and maintainability
+-   **Documentation**: Updated README with improved formatting and comprehensive project information
+
+### Fixed
+
+-   **Critical TA bug** : Fixed a critical bug in atr, ema and stdev moving averages, the bug was affecting series that contain NaN values.
+-   **Equality Operator**: Fixed `__eq` method to properly handle string value comparisons
+-   **Transpiler Expression Handling**: Fixed wrong decomposition of expressions passed to JSON objects
+-   **TA Functions**: Fixed `ta.pivotlow` and `ta.pivothigh` when called without optional source argument
+-   **Matrix Build**: Fixed matrix namespace build issues
+
 ## [0.6.0] - 2025-12-15 - Array, Map, Matrix namespaces & API enhancements
 
 ### Added

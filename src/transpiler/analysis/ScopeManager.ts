@@ -4,14 +4,7 @@
 /**
  * JavaScript global literals and objects that should never be treated as user variables
  */
-const JS_GLOBAL_LITERALS = new Set([
-    'Infinity',
-    'NaN',
-    'undefined',
-    'null',
-    'true',
-    'false',
-]);
+const JS_GLOBAL_LITERALS = new Set(['Infinity', 'NaN', 'undefined', 'null', 'true', 'false']);
 
 /**
  * JavaScript global objects that should not be transformed

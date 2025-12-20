@@ -23,23 +23,26 @@ The chart data and indicator are generated using PineTS, showcasing the capabili
 
 The visualization is done using the [Lightweight Charts](https://tradingview.github.io/lightweight-charts/) library.
 
-<div class="chart-container">
+<div id="container">
+    <p>
+        This is demo uses <a href="https://github.com/QuantForgeOrg/QFChart" target="_blank">QFChart</a> for visualization and 
+        <a href="https://github.com/QuantForgeOrg/PineTS" target="_blank">PineTS</a> library for market data loading and indicators processing.
+    </p>
+    <hr />
     <div id="main-chart"></div>
-    <div id="indicator-chart"></div>
 </div>
 
-<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-<link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="./js/pinets.dev.browser.js"></script>
-<script src="./indicators/willvixfix/WillVixFix.js"></script>
-<script src="./js/chart.js"></script>
-<style>
-    .chart-container td {
-        min-width: 0 !important;
-    }
-</style>
+<!-- QFChart Library (Bundled with ECharts) -->
+<script src="https://cdn.jsdelivr.net/npm/@qfo/qfchart/dist/qfchart.min.browser.js"></script>
+
+<!-- Dependencies for Data Loading -->
+<script src="https://cdn.jsdelivr.net/npm/pinets/dist/pinets.min.browser.js"></script>
+<script src="./js/indicators/sqzmom.js"></script>
+<script src="./js/indicators/macd.js"></script>
+<script src="./js/indicators/instit-bias.js"></script>
+<script src="./js/chart-script.js"></script>
+
+---
 
 ## Documentation
 

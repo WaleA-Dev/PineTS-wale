@@ -54,8 +54,32 @@ import { normalizeNativeImports } from './transformers/NormalizationTransformer'
 import { wrapInContextFunction } from './transformers/WrapperTransformer';
 import { transformNestedArrowFunctions, preProcessContextBoundVars, runAnalysisPass } from './analysis/AnalysisPass';
 import { runTransformationPass, transformEqualityChecks } from './transformers/MainTransformer';
+import { extractPineScriptVersion, pineToJS } from './pineToJS/pineToJS.index';
 
-export function transpile(fn: string | Function, options: { debug: boolean; ln?: boolean } = { debug: false, ln: false }): Function {
+function getPineTSFromSource(source: string | Function): string {
+    if (typeof source === 'function') {
+        return source.toString();
+    } else {
+        const pineScriptVersion = extractPineScriptVersion(source);
+        if (pineScriptVersion === null) {
+            //assume it's PineTS syntax ==> use it as is
+            return source;
+        }
+        if (pineScriptVersion >= 5) {
+            //assume it's Pine Script syntax ==> use pineToJS to transpile it
+            const pineToJSResult = pineToJS(source);
+            if (pineToJSResult.success) {
+                return pineToJSResult.code;
+            } else {
+                throw new Error(`Failed to transpile Pine Script version ${pineScriptVersion}: ${pineToJSResult.error}`);
+            }
+        } else {
+            throw new Error(`Unsupported Pine Script version ${pineScriptVersion}. Only version 5 and above are supported.`);
+        }
+    }
+}
+
+export function transpile(source: string | Function, options: { debug: boolean; ln?: boolean } = { debug: false, ln: false }): Function {
     // Handle backward compatibility if a boolean is passed (though signature changed)
     if (typeof options === 'boolean') {
         options = { debug: options, ln: true };
@@ -63,8 +87,7 @@ export function transpile(fn: string | Function, options: { debug: boolean; ln?:
 
     const { debug } = options;
 
-    let code = typeof fn === 'function' ? fn.toString() : fn;
-    code = code.trim();
+    let code = getPineTSFromSource(source);
 
     // Pre-process: Wrap in context function if not already wrapped
     code = wrapInContextFunction(code);

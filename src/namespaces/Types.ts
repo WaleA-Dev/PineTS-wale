@@ -77,7 +77,6 @@ export enum display {
     data_window = 'data_window',
     none = 'none',
     pane = 'pane',
-    pine_screener = 'pine_screener',
     price_scale = 'price_scale',
     status_line = 'status_line',
 }
@@ -86,6 +85,7 @@ const types = {
     order,
     currency,
     dayofweek,
+    display,
 };
 
 export default types;

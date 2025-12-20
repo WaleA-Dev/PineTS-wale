@@ -6,16 +6,23 @@
 
 ---
 
-This project aims to provide a Javascript/Typescript port for Tradingview's Pine Script.
-The current version does not run Pine Script directly, instead it runs a close Javascript equivalent called PineTS.
+**PineTS** is a JavaScript/TypeScript runtime that enables execution of Pine Script indicators in JavaScript environments. It supports two input formats:
 
-PineTS makes it possible to migrate Pine Script v5+ indicators to Javascript/Typescript, in order to run them in a Javascript environment.
+1. **Native Pine Script v5/v6** _(experimental)_ - Run original Pine Script code directly
+2. **PineTS Syntax** - A JavaScript/TypeScript syntax that closely mirrors Pine Script
+
+This makes it possible to run Pine Script indicators in Node.js, browsers, and other JavaScript runtimes without modification or with minimal conversion effort.
 
 > _Disclaimer : PineTS is an independent project and is not affiliated with, endorsed by, or associated with TradingView or Pine Script™. All trademarks and registered trademarks mentioned belong to their respective owners._
 
 ## Overview
 
-PineTS enables seamless conversion of Pine Script indicators to JavaScript/TypeScript code. It preserves the original functionality and behavior while providing robust handling of time-series data processing, technical analysis calculations, and Pine Script's distinctive scoping mechanisms.
+PineTS is a sophisticated runtime transpiler that converts Pine Script (or PineTS syntax) into executable JavaScript. It preserves the original functionality and behavior while providing robust handling of time-series data processing, technical analysis calculations, and Pine Script's distinctive scoping mechanisms.
+
+### Input Format Support
+
+-   **Native Pine Script** _(v0.7.0+, experimental)_: Run original Pine Script v5 and v6 indicators directly. Note that some indicators may fail if they use Pine Script API features not yet implemented in PineTS. Check the [API coverage badges](#pine-script-api-coverage) below to verify compatibility.
+-   **PineTS Syntax**: A JavaScript/TypeScript syntax that mirrors Pine Script closely, requiring minimal conversion effort from original Pine Script code.
 
 ## See it in action
 
@@ -27,14 +34,15 @@ PineTS is used to generate plot data, and tradingview light weight chart is used
 
 ## Key Features
 
--   **Pine Script Compatibility**: Supports Pine Script v5+ syntax and functionality
+-   **Native Pine Script Support**: Run original Pine Script v5/v6 code directly _(experimental)_
+-   **Dual Input Format**: Support for both native Pine Script and PineTS syntax
 -   **High Precision**: Aims for the same precision as Pine Script (up to the 8th digit)
 -   **Time-Series Processing**: Handles historical data and series operations
--   **Technical Analysis Functions**: Comprehensive set of TA indicators and calculations
+-   **Technical Analysis Functions**: Comprehensive set of 60+ TA indicators and calculations
 -   **Mathematical Operations**: Advanced mathematical functions and precision handling
 -   **Input Management**: Flexible parameter and input handling system
 -   **Context Management**: Maintains proper scoping and variable access rules
--   **Runtime Transpilation**: Converts PineTS code to executable JavaScript at runtime
+-   **Runtime Transpilation**: Converts code to executable JavaScript at runtime without pre-compilation
 
 ## Core Components
 
@@ -61,9 +69,44 @@ The main class that handles:
 npm install pinets
 ```
 
-## Usage Example
+## Usage Examples
 
-### Converting Pine Script to PineTS
+### Option 1: Run Native Pine Script Directly _(Experimental)_
+
+Starting with v0.7.0, you can run original Pine Script code directly:
+
+```javascript
+import { PineTS, Provider } from 'pinets';
+
+// Initialize with market data
+const pineTS = new PineTS(Provider.Binance, 'BTCUSDT', 'D', 100);
+
+// Run native Pine Script directly
+const pineScriptCode = `
+//@version=5
+indicator('My EMA Cross Strategy')
+
+ema9 = ta.ema(close, 9)
+ema18 = ta.ema(close, 18)
+
+bull_bias = ema9 > ema18
+bear_bias = ema9 < ema18
+
+plot(ema9, title = '9 EMA', color = color.yellow)
+plot(ema18, title = '18 EMA', color = color.red)
+`;
+
+const { result, plots } = await pineTS.run(pineScriptCode);
+// Access results: result.ema9, result.ema18, result.bull_bias, result.bear_bias
+```
+
+> **⚠️ Note**: Native Pine Script support is experimental. Some indicators may fail if they use API features not yet implemented. Refer to the [API coverage badges](#pine-script-api-coverage) to check compatibility.
+
+### Option 2: Use PineTS Syntax
+
+PineTS syntax is a JavaScript/TypeScript version of Pine Script with minimal differences:
+
+#### Converting Pine Script to PineTS
 
 Original Pine Script:
 
@@ -71,7 +114,7 @@ Original Pine Script:
 <tr>
 <td>
 
-```javascript
+```pinescript
 /*==[ Original Pine Script ]==*/
 
 //@version=5
@@ -88,6 +131,10 @@ diff_close = close - prev_close;
 
 _oo = open;
 _oo = math.abs(open[1] - close[2]);
+
+// plot ema's
+plot(ema9, title = '9 EMA', color = color.yellow)
+plot(ema18, title = '18 EMA', color = color.red)
 ```
 
 </td>
@@ -97,7 +144,7 @@ _oo = math.abs(open[1] - close[2]);
 /*==[ Equivalent PineTS ]==*/
 
 //
-//'My EMA Cross Strategy';
+indicator('My EMA Cross Strategy');
 
 let ema9 = ta.ema(close, 9);
 let ema18 = ta.ema(close, 18);
@@ -110,6 +157,10 @@ let diff_close = close - prev_close;
 
 let _oo = open;
 _oo = math.abs(open[1] - close[2]);
+
+// plot ema's
+plot(ema9, { title: '9 EMA', color: color.yellow });
+plot(ema18, { title: '18 EMA', color: color.red });
 ```
 
 </td>
@@ -147,45 +198,60 @@ const { result } = await pineTS.run((context) => {
 
 > **📖 For detailed documentation on initialization options, parameters, and advanced usage, see the [Initialization and Usage Guide](https://quantforgeorg.github.io/PineTS/initialization-and-usage/)**
 
-## Key Differences from Pine Script
+## Key Differences: PineTS Syntax vs Native Pine Script
+
+When using **PineTS syntax** (not native Pine Script), note these differences:
 
 1. **Variable Declaration**: Use JavaScript's `const`, `let`, and `var` instead of Pine Script's implicit declaration
 2. **Function Syntax**: JavaScript arrow functions and standard function syntax
-3. **Module System**: Pine Script native types should be imported using syntax like : const ta = context.ta; const {close, open} = context.data;
-4. **Scoping Rules**: Maintains Pine Script's series behavior through runtime transformation
-5. **Return syntax**: PineTS can returns an object with the results of the indicator, allowing you to get the results of the indicator in a single call.
+3. **Module System**: Import Pine Script namespaces from context: `const { ta } = context; const { close, open } = context.data;`
+4. **Object Syntax**: Use JavaScript object notation for parameters: `plot(ema9, { title: '9 EMA', color: color.yellow })`
+5. **Scoping Rules**: Maintains Pine Script's series behavior through runtime transformation
+6. **Return Syntax**: Can return an object with indicator results for easy access in JavaScript
+
+When using **Native Pine Script**, write code exactly as you would in TradingView - no conversion needed!
 
 ## Project Goals
 
-PineTS aims for **full coverage** of Pine Script functions and capabilities. The ultimate goal is to enable running **original Pine Script code directly** without manual conversion to PineTS syntax.
-However, at the current stage, PineTS syntax allows running indicators with low conversion effort because it shares a vary close syntax with Pine Script.
+PineTS aims for **full coverage** of Pine Script functions and capabilities to enable seamless execution of Pine Script indicators in JavaScript environments.
 
-**Current Progress (v0.6.1)**:
+**Current Status (v0.7.0)**:
 
--   ✅ Runtime Transpiler (PineTS => JS)
--   🚧 Pine to PineTS transpiler to allow running pine scripts directly (In-progress)
--   ✅ Core Pine Script functions and variables (~75% coverage)
--   ✅ Series and scope management
--   ✅ Technical analysis functions (60+ indicators)
--   ✅ Mathematical functions
--   ✅ Arrays and Matrices (90+ operations)
--   ✅ Input handling
--   ✅ Plots data handling
--   🚧 Market data connectors (Binance supported, others will be added)
--   ✅ Realtime execution
--   🚧 Visualization (In-progress)
--   🚧 Scripts and Market data caching (In-progress)
--   🎯 Strategy execution (planned)
--   🎯 Backtesting and simulation (planned)
+-   ✅ **Native Pine Script Support (Experimental)**: Run original Pine Script v5/v6 code directly
+-   ✅ **PineTS Runtime Transpiler**: Convert PineTS syntax to executable JavaScript
+-   ✅ **Core Pine Script API**: ~75% coverage of built-in functions and variables
+-   ✅ **Series and Scope Management**: Full Pine Script semantics preserved
+-   ✅ **Technical Analysis**: 60+ indicators and analysis functions
+-   ✅ **Mathematical Operations**: Comprehensive math functions
+-   ✅ **Data Structures**: Arrays and Matrices (90+ operations)
+-   ✅ **Input System**: Dynamic parameter handling
+-   ✅ **Plot Data Management**: Multi-series plotting support
+-   ✅ **Real-time Execution**: Live data processing capability
+-   ✔️🚧 **Market Data Providers**: Binance supported (more coming soon)
+-   ✅ **Visualization**: Interactive charting ==> handled in [QFChart](https://github.com/QuantForgeOrg/QFChart)
+-   🚧 **Caching System**: Script and market data optimization (in progress)
+-   🎯 **Strategy Execution**: Backtesting and live trading (planned)
+
+> **⚠️ API Coverage**: While PineTS supports native Pine Script execution, not all Pine Script API features are implemented yet. Check the [API coverage badges](#pine-script-api-coverage) below to verify if specific functions are available. Indicators using unimplemented features will fail with descriptive error messages.
 
 ## Technical Details
 
-The library uses a runtime transpiler that:
+The library uses a dual-layer transpilation system:
 
-1. Transforms PineTS code to handle time-series data
-2. Manages variable scoping and context
-3. Handles array indexing and series operations
-4. Provides Pine Script-compatible function calls
+### Pine Script Parser _(v0.7.0+, Experimental)_
+
+-   Automatically detects Pine Script v5 and v6 code
+-   Converts native Pine Script syntax to PineTS intermediate representation
+-   Preserves Pine Script semantics and behavior
+
+### Runtime Transpiler
+
+-   Transforms PineTS source (or converted Pine Script) to handle time-series data
+-   Manages variable scoping and context
+-   Handles array indexing and series operations
+-   Provides Pine Script-compatible function calls
+-   Executes in real-time without pre-compilation
+    ==> The resulting code is a low level javascript that allows handling the complex structures and specificities of PineScript
 
 ### Pine Script API Coverage
 

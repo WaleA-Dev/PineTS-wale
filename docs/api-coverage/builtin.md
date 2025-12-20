@@ -55,17 +55,17 @@ parent: API Coverage
 | `nz()`             | ✅     | Replace NaN with zero |
 | `alert()`          |        | Alert function        |
 | `alertcondition()` |        | Alert condition       |
-| `bool()`           |        | Boolean conversion    |
+| `bool()`           | ✅     | Boolean conversion    |
 | `box()`            |        | Box object            |
 | `color()`          |        | Color object          |
 | `dayofmonth()`     |        | Day of month function |
 | `dayofweek()`      |        | Day of week function  |
 | `fill()`           |        | Fill function         |
 | `fixnan()`         |        | Fix NaN values        |
-| `float()`          |        | Float conversion      |
-| `hline()`          |        | Horizontal line       |
+| `float()`          | ✅     | Float conversion      |
+| `hline()`          | ✅     | Horizontal line       |
 | `hour()`           |        | Hour function         |
-| `int()`            |        | Integer conversion    |
+| `int()`            | ✅     | Integer conversion    |
 | `label()`          |        | Label object          |
 | `library()`        |        | Library declaration   |
 | `line()`           |        | Line object           |
@@ -75,7 +75,7 @@ parent: API Coverage
 | `month()`          |        | Month function        |
 | `second()`         |        | Second function       |
 | `strategy()`       |        | Strategy declaration  |
-| `string()`         |        | String conversion     |
+| `string()`         | ✅     | String conversion     |
 | `table()`          |        | Table object          |
 | `time()`           |        | Time function         |
 | `time_close()`     |        | Time close function   |

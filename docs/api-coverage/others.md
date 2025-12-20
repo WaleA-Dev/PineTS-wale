@@ -33,7 +33,7 @@ parent: API Coverage
 | `fill()`      |        |
 | `fixnan()`    |        |
 | `float()`     |        |
-| `hline()`     |        |
+| `hline()`     | ✅     |
 | `indicator()` |        |
 
 ---
