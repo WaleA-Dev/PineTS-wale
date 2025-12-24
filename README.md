@@ -215,7 +215,7 @@ When using **Native Pine Script**, write code exactly as you would in TradingVie
 
 PineTS aims for **full coverage** of Pine Script functions and capabilities to enable seamless execution of Pine Script indicators in JavaScript environments.
 
-**Current Status (v0.7.1)**:
+**Current Status (v0.7.3)**:
 
 -   ✅ **Native Pine Script Support (Experimental)**: Run original Pine Script v5/v6 code directly
 -   ✅ **PineTS Runtime Transpiler**: Convert PineTS syntax to executable JavaScript
