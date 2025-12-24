@@ -47,6 +47,7 @@
         "build:prod:browser": "cross-env BUILD=prod FORMAT=browser rollup -c ./rollup.config.js",
         "build:prod:browser-es": "cross-env BUILD=prod FORMAT=browser-es rollup -c ./rollup.config.js",
         "build:prod:es": "cross-env BUILD=prod rollup -c ./rollup.config.js",
+        "prepublishOnly": "npm run build:prod:all",
         "knip": "knip"
     },
     "author": "Alaa-eddine KADDOURI",
