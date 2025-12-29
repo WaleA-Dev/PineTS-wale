@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { Series } from '../Series';
+import { PineTypeObject } from './PineTypeObject';
 import { parseArgsForPineParams } from './utils';
 
 const INDICATOR_SIGNATURE = [
@@ -176,5 +177,24 @@ export class Core {
         //the following implementation might need to be updated in the future
         const val = Series.from(series).get(0);
         return val.toString();
+    }
+
+    Type(definition: Record<string, string>) {
+        const definitionKeys = Object.keys(definition);
+        const UDT = {
+            new: function (...args: any[]) {
+                //map the args to the definition
+                const mappedArgs = {};
+                for (let i = 0; i < args.length; i++) {
+                    mappedArgs[definitionKeys[i]] = args[i];
+                }
+                return new PineTypeObject(mappedArgs, this.context);
+            },
+
+            copy: function (object: PineTypeObject) {
+                return new PineTypeObject(object.__def__, this.context);
+            },
+        };
+        return UDT;
     }
 }

@@ -1141,4 +1141,115 @@ let src_open = input.any({ title: 'Open Source', defval: open });
 
         expect(result).toBe(expected_code);
     });
+
+    it('User Defined Types - Property Access and Assignment', async () => {
+        const fakeContext = {};
+        const transformer = transpile.bind(fakeContext);
+
+        const source = (context) => {
+            const { close, open, high } = context.data;
+            const { Type, ta } = context.pine;
+
+            const Trade = Type({ entry: 'float', stop: 'float', target: 'float', active: 'bool' });
+            let trade = Trade.new(close, open, high, close > open);
+            let trade2 = trade.copy();
+
+            // Test property assignment
+            trade2.active = false;
+
+            // Test property access as function argument
+            let res = ta.sma(trade.entry, 14);
+
+            return { trade, trade2, res };
+        };
+
+        let transpiled = transformer(source);
+
+        console.log(transpiled.toString());
+        const result = transpiled.toString().trim();
+
+        /* prettier-ignore */
+        const expected_code = `async $ => {
+  const {close, open, high} = $.data;
+  const {Type, ta} = $.pine;
+  const p0 = $.param({
+    entry: "float",
+    stop: "float",
+    target: "float",
+    active: "bool"
+  }, undefined, 'p0');
+  $.const.glb1_Trade = $.init($.const.glb1_Trade, Type(p0));
+  $.let.glb1_trade = $.init($.let.glb1_trade, $.get($.const.glb1_Trade, 0).new($.get(close, 0), $.get(open, 0), $.get(high, 0), $.get(close, 0) > $.get(open, 0)));
+  $.let.glb1_trade2 = $.init($.let.glb1_trade2, $.get($.let.glb1_trade, 0).copy());
+  $.get($.let.glb1_trade2, 0).active = false;
+  const p1 = ta.param($.get($.let.glb1_trade, 0).entry, undefined, 'p1');
+  const p2 = ta.param(14, undefined, 'p2');
+  const temp_1 = ta.sma(p1, p2, "_ta0");
+  $.let.glb1_res = $.init($.let.glb1_res, temp_1);
+  return {
+    trade: $.let.glb1_trade,
+    trade2: $.let.glb1_trade2,
+    res: $.let.glb1_res
+  };
+}`;
+
+        expect(result).toBe(expected_code);
+    });
+
+    it('Context-bound namespace property access (display.data_window)', async () => {
+        const fakeContext = {};
+        const transformer = transpile.bind(fakeContext);
+
+        const source = (context) => {
+            const { close } = context.data;
+            const { input, display, plot } = context.pine;
+
+            // Test that display.data_window is NOT transformed to $.get(display, 0).data_window
+            let signal_length = input.int({
+                title: 'Signal Smoothing',
+                minval: 1,
+                maxval: 50,
+                defval: 9,
+                display: display.data_window,
+            });
+
+            // Test that plot.style_columns is also NOT transformed
+            plot(close, { style: plot.style_columns });
+
+            return { signal_length };
+        };
+
+        let transpiled = transformer(source);
+
+        console.log(transpiled.toString());
+        const result = transpiled.toString().trim();
+
+        /* prettier-ignore */
+        const expected_code = `async $ => {
+  const {close} = $.data;
+  const {input, display, plot} = $.pine;
+  const p0 = input.param(display.data_window, undefined, 'p0');
+  const p1 = input.param({
+    title: "Signal Smoothing",
+    minval: 1,
+    maxval: 50,
+    defval: 9,
+    display: p0
+  }, undefined, 'p1');
+  const temp_1 = input.int(p1);
+  $.let.glb1_signal_length = $.init($.let.glb1_signal_length, temp_1);
+  const p2 = plot.param(close, undefined, 'p2');
+  const p3 = plot.param(plot.style_columns, undefined, 'p3');
+  const p4 = plot.param({
+    style: p3
+  }, undefined, 'p4');
+  const temp_2 = plot.any(p2, p4);
+  temp_2;
+  return {
+    signal_length: $.let.glb1_signal_length
+  };
+}`;
+
+        expect(result).toBe(expected_code);
+    });
 });

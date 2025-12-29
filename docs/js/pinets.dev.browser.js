@@ -8002,7 +8002,7 @@
   };
 
   const KNOWN_NAMESPACES = ["ta", "math", "request", "array", "input"];
-  const NAMESPACES_LIKE = ["hline"];
+  const NAMESPACES_LIKE = ["hline", "plot"];
   const ASYNC_METHODS = ["request.security", "request.security_lower_tf"];
   const CONTEXT_DATA_VARS = ["open", "high", "low", "close", "volume", "hl2", "hlc3", "ohlc4", "openTime", "closeTime"];
   const CONTEXT_PINE_VARS = [
@@ -8034,6 +8034,8 @@
     "log",
     "map",
     //types
+    "Type",
+    //UDT
     "bool",
     //market info
     "timeframe",
@@ -8885,6 +8887,7 @@ ${code}
         break;
     }
     const isArrayAccess = arg.type === "MemberExpression" && arg.computed && arg.property;
+    const isPropertyAccess = arg.type === "MemberExpression" && !arg.computed;
     if (isArrayAccess) {
       if (arg.object.type === "CallExpression") {
         transformCallExpression(arg.object, scopeManager);
@@ -8918,6 +8921,20 @@ ${code}
         return ASTFactory.createIdentifier(tempVarName);
       }
       return paramCall2;
+    }
+    if (isPropertyAccess) {
+      if (arg.object.type === "Identifier") {
+        const name = arg.object.name;
+        const [varName, kind] = scopeManager.getVariable(name);
+        const isRenamed = varName !== name;
+        if (isRenamed && !scopeManager.isLoopVariable(name)) {
+          const contextVarRef = ASTFactory.createContextVariableReference(kind, varName);
+          const getCall = ASTFactory.createGetCall(contextVarRef, 0);
+          arg.object = getCall;
+        }
+      } else if (arg.object.type === "MemberExpression") {
+        transformFunctionArgument(arg.object, namespace, scopeManager);
+      }
     }
     if (arg.type === "ObjectExpression") {
       arg.properties = arg.properties.map((prop) => {
@@ -9133,6 +9150,17 @@ ${code}
           if (node.left.property.type === "Literal" && node.left.property.value === 0) {
             targetVarRef = ASTFactory.createContextVariableReference(kind, varName);
           }
+        }
+      }
+    } else if (node.left.type === "MemberExpression" && !node.left.computed) {
+      if (node.left.object.type === "Identifier") {
+        const name = node.left.object.name;
+        const [varName, kind] = scopeManager.getVariable(name);
+        const isRenamed = varName !== name;
+        if (isRenamed && !scopeManager.isLoopVariable(name)) {
+          const contextVarRef = ASTFactory.createContextVariableReference(kind, varName);
+          const getCall = ASTFactory.createGetCall(contextVarRef, 0);
+          node.left.object = getCall;
         }
       }
     }
@@ -13016,23 +13044,6 @@ ${code}
     format2["volume"] = "volume";
     return format2;
   })(format || {});
-  var plot = /* @__PURE__ */ ((plot2) => {
-    plot2["linestyle_dashed"] = "linestyle_dashed";
-    plot2["linestyle_dotted"] = "linestyle_dotted";
-    plot2["linestyle_solid"] = "linestyle_solid";
-    plot2["style_area"] = "style_area";
-    plot2["style_areabr"] = "style_areabr";
-    plot2["style_circles"] = "style_circles";
-    plot2["style_columns"] = "style_columns";
-    plot2["style_cross"] = "style_cross";
-    plot2["style_histogram"] = "style_histogram";
-    plot2["style_line"] = "style_line";
-    plot2["style_linebr"] = "style_linebr";
-    plot2["style_stepline"] = "style_stepline";
-    plot2["style_stepline_diamond"] = "style_stepline_diamond";
-    plot2["style_steplinebr"] = "style_steplinebr";
-    return plot2;
-  })(plot || {});
   const types = {
     order,
     currency,
@@ -13041,8 +13052,7 @@ ${code}
     shape,
     location,
     size: size$1,
-    format,
-    plot
+    format
   };
 
   function sort$1(context) {
@@ -14977,8 +14987,31 @@ ${code}
     }
   }
 
+  class PineTypeObject {
+    constructor(_definition, context) {
+      this._definition = _definition;
+      this.context = context;
+      for (let key in _definition) {
+        this[key] = _definition[key];
+      }
+    }
+    get __def__() {
+      return this._definition;
+    }
+    copy() {
+      return new PineTypeObject(this.__def__, this.context);
+    }
+    toString() {
+      const obj = {};
+      for (let key in this.__def__) {
+        obj[key] = this[key];
+      }
+      return JSON.stringify(obj);
+    }
+  }
+
   const TYPE_CHECK = {
-    series: (arg) => arg instanceof Series || typeof arg === "number",
+    series: (arg) => arg instanceof Series || typeof arg === "number" || typeof arg === "string" || typeof arg === "boolean",
     string: (arg) => typeof arg === "string",
     number: (arg) => typeof arg === "number",
     boolean: (arg) => typeof arg === "boolean",
@@ -15189,6 +15222,22 @@ ${code}
     string(series) {
       const val = Series.from(series).get(0);
       return val.toString();
+    }
+    Type(definition) {
+      const definitionKeys = Object.keys(definition);
+      const UDT = {
+        new: function(...args) {
+          const mappedArgs = {};
+          for (let i = 0; i < args.length; i++) {
+            mappedArgs[definitionKeys[i]] = args[i];
+          }
+          return new PineTypeObject(mappedArgs, this.context);
+        },
+        copy: function(object) {
+          return new PineTypeObject(object.__def__, this.context);
+        }
+      };
+      return UDT;
     }
   }
 
@@ -18473,11 +18522,57 @@ ${code}
       }
       return _options;
     }
+    get linestyle_dashed() {
+      return "linestyle_dashed";
+    }
+    get linestyle_dotted() {
+      return "linestyle_dotted";
+    }
+    get linestyle_solid() {
+      return "linestyle_solid";
+    }
+    get style_area() {
+      return "style_area";
+    }
+    get style_areabr() {
+      return "style_areabr";
+    }
+    get style_circles() {
+      return "style_circles";
+    }
+    get style_columns() {
+      return "style_columns";
+    }
+    get style_cross() {
+      return "style_cross";
+    }
+    get style_histogram() {
+      return "style_histogram";
+    }
+    get style_line() {
+      return "style_line";
+    }
+    get style_linebr() {
+      return "style_linebr";
+    }
+    get style_stepline() {
+      return "style_stepline";
+    }
+    get style_stepline_diamond() {
+      return "style_stepline_diamond";
+    }
+    get style_steplinebr() {
+      return "style_steplinebr";
+    }
+    param(source, index = 0, name) {
+      return Series.from(source).get(index);
+    }
     //in the current implementation, plot functions are only used to collect data for the plots array and map it to the market data
     plotchar(...args) {
-      this.plot(...args);
+      this.any(...args);
     }
-    plot(...args) {
+    //this will map to plot() - see README.md for more details
+    any(...args) {
       const _parsed = parseArgsForPineParams(args, PLOT_SIGNATURE, PLOT_ARGS_TYPES);
       const { series, title, ...others } = _parsed;
       const options = this.extractPlotOptions(others);
@@ -18524,7 +18619,7 @@ ${code}
       this.context.plots[title].data.push({
         time: this.context.marketData[this.context.idx].openTime,
         value,
-        options: value !== 0 ? {
+        options: typeof value === "number" && !isNaN(value) && value !== 0 ? {
           text: void 0,
           textcolor: void 0,
           color: value > 0 ? options.colorup : options.colordown,
@@ -18554,7 +18649,7 @@ ${code}
     }
     //this will map to hline()
     any(price, title, color, linestyle, linewidth, editable, display) {
-      return this.context.pine.plot(price, { title, color, linestyle, linewidth, editable, display });
+      return this.context.pine.plot.any(price, { title, color, linestyle, linewidth, editable, display });
     }
   }
 
@@ -18619,9 +18714,7 @@ ${code}
       this.fullContext = fullContext || this;
       const core = new Core(this);
       const coreFunctions = {
-        // plot: core.plot.bind(core),
-        // plotchar: core.plotchar.bind(core),
-        // hline: core.hline.bind(core),
+        Type: core.Type.bind(core),
         na: core.na.bind(core),
         color: core.color,
         nz: core.nz.bind(core),
@@ -18664,7 +18757,29 @@ ${code}
       };
       const plotHelper = new PlotHelper(this);
       const hlineHelper = new HlineHelper(this);
-      this.bindContextObject(plotHelper, ["plot", "plotchar", "plotshape", "plotarrow"]);
+      this.bindContextObject(plotHelper, ["plotchar", "plotshape", "plotarrow"]);
+      this.bindContextObject(
+        plotHelper,
+        [
+          "any",
+          "param",
+          "linestyle_dashed",
+          "linestyle_dotted",
+          "linestyle_solid",
+          "style_area",
+          "style_areabr",
+          "style_circles",
+          "style_columns",
+          "style_cross",
+          "style_histogram",
+          "style_line",
+          "style_linebr",
+          "style_stepline",
+          "style_stepline_diamond",
+          "style_steplinebr"
+        ],
+        "plot"
+      );
       this.bindContextObject(hlineHelper, ["any", "style_dashed", "style_solid", "style_dotted", "param"], "hline");
     }
     bindContextObject(instance, entries, root = "") {

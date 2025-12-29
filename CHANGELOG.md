@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.7.5] - 2025-12-29 - UDT Support
+
+### Added
+
+-   Support for User defined types
+
 ## [0.7.4] - 2025-12-27 - Plot styles fix + PineScript transpiler coverage
 
 ### Added

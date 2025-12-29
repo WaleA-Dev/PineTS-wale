@@ -673,8 +673,11 @@ export function transformFunctionArgument(arg: any, namespace: string, scopeMana
             break;
     }
 
-    // Check if the argument is an array access
+    // Check if the argument is an array access (computed member expression)
     const isArrayAccess = arg.type === 'MemberExpression' && arg.computed && arg.property;
+
+    // Check if the argument is a property access (non-computed member expression)
+    const isPropertyAccess = arg.type === 'MemberExpression' && !arg.computed;
 
     if (isArrayAccess) {
         // Ensure complex objects are transformed before being used as array source
@@ -724,6 +727,28 @@ export function transformFunctionArgument(arg: any, namespace: string, scopeMana
         }
 
         return paramCall;
+    }
+
+    if (isPropertyAccess) {
+        // Handle property access like trade.entry
+        // Transform the object identifier if it's a user variable
+        if (arg.object.type === 'Identifier') {
+            const name = arg.object.name;
+            const [varName, kind] = scopeManager.getVariable(name);
+            const isRenamed = varName !== name;
+
+            // Only transform if the variable has been renamed (i.e., it's a user-defined variable)
+            // Context-bound variables that are NOT renamed (like 'display', 'ta', 'input') should NOT be transformed
+            if (isRenamed && !scopeManager.isLoopVariable(name)) {
+                // Transform object to $.get($.let.varName, 0)
+                const contextVarRef = ASTFactory.createContextVariableReference(kind, varName);
+                const getCall = ASTFactory.createGetCall(contextVarRef, 0);
+                arg.object = getCall;
+            }
+        } else if (arg.object.type === 'MemberExpression') {
+            // Recursively handle nested member expressions like obj.prop1.prop2
+            transformFunctionArgument(arg.object, namespace, scopeManager);
+        }
     }
 
     if (arg.type === 'ObjectExpression') {

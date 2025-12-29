@@ -33,6 +33,24 @@ export function transformAssignmentExpression(node: any, scopeManager: ScopeMana
                 }
             }
         }
+    } else if (node.left.type === 'MemberExpression' && !node.left.computed) {
+        // Assignment to object property: obj.property = val
+        // Transform the object identifier if it's a user variable
+        if (node.left.object.type === 'Identifier') {
+            const name = node.left.object.name;
+            const [varName, kind] = scopeManager.getVariable(name);
+            const isRenamed = varName !== name;
+
+            // Only transform if the variable has been renamed (i.e., it's a user-defined variable)
+            // Context-bound variables that are NOT renamed (like 'display', 'ta', 'input') should NOT be transformed
+            if (isRenamed && !scopeManager.isLoopVariable(name)) {
+                // Transform object to scoped variable reference with [0] access
+                // trade2.active = false  ->  $.get($.let.glb1_trade2, 0).active = false
+                const contextVarRef = ASTFactory.createContextVariableReference(kind, varName);
+                const getCall = ASTFactory.createGetCall(contextVarRef, 0);
+                node.left.object = getCall;
+            }
+        }
     }
 
     // Transform identifiers in the right side of the assignment

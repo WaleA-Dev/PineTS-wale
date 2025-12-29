@@ -42,6 +42,7 @@ export const CONTEXT_PINE_VARS = [
     'log',
     'map',
     //types
+    'Type', //UDT
     'bool',
 
     //market info

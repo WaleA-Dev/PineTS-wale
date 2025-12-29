@@ -116,9 +116,8 @@ export class Context {
         // Initialize core functions
         const core = new Core(this);
         const coreFunctions = {
-            // plot: core.plot.bind(core),
-            // plotchar: core.plotchar.bind(core),
-            // hline: core.hline.bind(core),
+            Type: core.Type.bind(core),
+
             na: core.na.bind(core),
             color: core.color,
 
