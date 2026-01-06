@@ -170,7 +170,8 @@ export class PlotHelper {
         const { series, title, ...others } = _parsed;
         const options = this.extractPlotOptions(others);
         if (!this.context.plots[title]) {
-            this.context.plots[title] = { data: [], options, title };
+            const overlay = options.force_overlay ?? this.context.indicator.overlay;
+            this.context.plots[title] = { data: [], options: { ...options, overlay }, title };
         }
 
         const value = Series.from(series).get(0);
@@ -186,7 +187,12 @@ export class PlotHelper {
         const { series, title, ...others } = _parsed;
         const options: PlotShapeOptions = this.extractPlotOptions(others);
         if (!this.context.plots[title]) {
-            this.context.plots[title] = { data: [], options: { ...options, style: 'shape', shape: options.style }, title };
+            const overlay = options.force_overlay ?? this.context.indicator.overlay;
+            this.context.plots[title] = {
+                data: [],
+                options: { ...options, style: 'shape', shape: options.style, overlay },
+                title,
+            };
         }
         const value = Series.from(series).get(0);
         this.context.plots[title].data.push({
@@ -213,7 +219,8 @@ export class PlotHelper {
         const value = Series.from(series).get(0);
         const options: PlotArrowOptions = this.extractPlotOptions(others);
         if (!this.context.plots[title]) {
-            this.context.plots[title] = { data: [], options: { ...options, style: 'shape' }, title };
+            const overlay = options.force_overlay ?? this.context.indicator.overlay;
+            this.context.plots[title] = { data: [], options: { ...options, style: 'shape', overlay }, title };
         }
 
         this.context.plots[title].data.push({
@@ -239,7 +246,8 @@ export class PlotHelper {
         const { open, high, low, close, title, ...others } = _parsed;
         const options: PlotBarOptions = this.extractPlotOptions(others);
         if (!this.context.plots[title]) {
-            this.context.plots[title] = { data: [], options: { ...options, style: 'bar' }, title };
+            const overlay = options.force_overlay ?? this.context.indicator.overlay;
+            this.context.plots[title] = { data: [], options: { ...options, style: 'bar', overlay }, title };
         }
 
         const value = [Series.from(open).get(0), Series.from(high).get(0), Series.from(low).get(0), Series.from(close).get(0)];
@@ -256,7 +264,8 @@ export class PlotHelper {
         const { open, high, low, close, title, ...others } = _parsed;
         const options: PlotCandleOptions = this.extractPlotOptions(others);
         if (!this.context.plots[title]) {
-            this.context.plots[title] = { data: [], options: { ...options, style: 'candle' }, title };
+            const overlay = options.force_overlay ?? this.context.indicator.overlay;
+            this.context.plots[title] = { data: [], options: { ...options, style: 'candle', overlay }, title };
         }
 
         const value = [Series.from(open).get(0), Series.from(high).get(0), Series.from(low).get(0), Series.from(close).get(0)];
@@ -273,7 +282,8 @@ export class PlotHelper {
         const { title, ...others } = _parsed;
         const options: BackgroundColorOptions = this.extractPlotOptions(others);
         if (!this.context.plots[title]) {
-            this.context.plots[title] = { data: [], options: { ...options, style: 'background' }, title };
+            const overlay = options.force_overlay ?? this.context.indicator.overlay;
+            this.context.plots[title] = { data: [], options: { ...options, style: 'background', overlay }, title };
         }
 
         this.context.plots[title].data.push({
