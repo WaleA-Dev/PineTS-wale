@@ -127,8 +127,8 @@ plot(sma, "Signal")
 <td>
 
 ```javascript
-const { close } = $.data;
-const { ta, plot } = $.pine;
+//@PineTS
+indicator('RSI Strategy');
 
 const rsi = ta.rsi(close, 14);
 const sma = ta.sma(rsi, 10);
