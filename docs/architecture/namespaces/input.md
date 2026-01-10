@@ -14,6 +14,13 @@ This directory contains the implementation of Pine Script's `input.*` namespace 
 
 Functions are factory functions accessing the `context`.
 
+### Runtime Input Resolution
+
+Starting with v0.8.0, `input` functions automatically resolve values from `context.inputs` if available. This allows passing custom values at runtime using the `Indicator` class.
+
+1.  **Check `context.inputs`**: The function looks for a key matching the input's `title`.
+2.  **Fallback**: If no runtime input is found for that title, the `defval` (default value) specified in the script is used.
+
 ## The `param()` Method
 
 The `input.param()` method returns the value wrapped in a **single-element array**: `[val]`.
