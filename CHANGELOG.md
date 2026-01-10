@@ -1,5 +1,16 @@
 # Change Log
 
+## [0.8.0] - 2026-01-10 - Runtime Inputs & UDT Transpiler Fix
+
+### Added
+
+-   **Runtime Indicator Inputs**: New `Indicator` class to pass custom input values at runtime. Create indicators with `new Indicator(source, inputs)` and pass them to `PineTS.run()`. Input values override default values from `input.*` declarations.
+-   **Input Resolution**: Enhanced `input.*` namespace methods to resolve values from runtime inputs via `context.inputs`, falling back to default values when not provided.
+
+### Fixed
+
+-   **PineScript UDT Transpilation**: User-defined types (`type` keyword) now correctly transpile to `Type({...})` syntax instead of JavaScript classes, ensuring compatibility with PineTS runtime.
+
 ## [0.7.9] - 2026-01-06 - User Function Call ID Fix
 
 ### Fixed

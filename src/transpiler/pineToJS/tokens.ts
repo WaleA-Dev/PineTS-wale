@@ -74,7 +74,7 @@ export const MultiCharOperators = ['==', '!=', '<=', '>=', ':=', '+=', '-=', '*=
 export class Token {
     constructor(public type: string, public value: any, public line: number, public column: number, public indent = 0) {}
 
-    toString() {
-        return `Token(${this.type}, ${JSON.stringify(this.value)}, ${this.line}:${this.column}, indent=${this.indent})`;
-    }
+    // toString() {
+    //     return `Token(${this.type}, ${JSON.stringify(this.value)}, ${this.line}:${this.column}, indent=${this.indent})`;
+    // }
 }

@@ -259,17 +259,46 @@ The `run()` method executes your indicator or strategy code across all candles i
 
 ```typescript
 const context = await pineTS.run(
-    pineTSCode: Function | String,
+    pineTSCode: Indicator | Function | String,
     n?: number
 ): Promise<Context>
 ```
 
 ### Parameters
 
-| Parameter    | Type                 | Default     | Description                                                                              |
-| ------------ | -------------------- | ----------- | ---------------------------------------------------------------------------------------- |
-| `pineTSCode` | `Function \| String` | Required    | The indicator/strategy function to execute                                               |
-| `n`          | `number`             | All periods | Number of most recent periods to process. If not specified, processes all available data |
+| Parameter    | Type                              | Default     | Description                                                                              |
+| ------------ | --------------------------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| `pineTSCode` | `Indicator \| Function \| String` | Required    | The indicator/strategy function to execute. Use `Indicator` class to pass runtime inputs |
+| `n`          | `number`                          | All periods | Number of most recent periods to process. If not specified, processes all available data |
+
+### Running with Runtime Inputs
+
+To pass custom input values to your indicator at runtime, use the `Indicator` class:
+
+```typescript
+import { PineTS, Provider, Indicator } from 'pinets';
+
+// Your indicator code (Native Pine Script or PineTS syntax)
+const code = `
+//@version=5
+indicator("My Indicator")
+len = input.int(14, "Length")
+src = input.source(close, "Source")
+plot(ta.sma(src, len))
+`;
+
+// Initialize PineTS
+const pineTS = new PineTS(Provider.Binance, 'BTCUSDT', 'D', 100);
+
+// Create Indicator with custom inputs
+// Keys must match the 'title' argument in input.* calls
+const indicator = new Indicator(code, {
+    Length: 50, // Override default 14
+});
+
+// Run with inputs
+const { result } = await pineTS.run(indicator);
+```
 
 ### Return Value
 
@@ -290,7 +319,7 @@ The `stream()` method provides an event-based interface for handling live data s
 
 ```typescript
 const evt = pineTS.stream(
-    pineTSCode: Function | String,
+    pineTSCode: Indicator | Function | String,
     options?: {
         pageSize?: number,
         live?: boolean,

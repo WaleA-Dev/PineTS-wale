@@ -25,3 +25,14 @@ const INPUT_ARGS_TYPES = {
 export function parseInputOptions(args: any[]): Partial<InputOptions> {
     return parseArgsForPineParams<Partial<InputOptions>>(args, INPUT_SIGNATURES, INPUT_ARGS_TYPES);
 }
+
+export function resolveInput(context: any, options: Partial<InputOptions>) {
+    // If we have a runtime input value for this title, use it
+    // We check against context.inputs if it exists
+    if (options.title && context.inputs && context.inputs[options.title] !== undefined) {
+        return context.inputs[options.title];
+    }
+    
+    // Otherwise return default value
+    return options.defval;
+}

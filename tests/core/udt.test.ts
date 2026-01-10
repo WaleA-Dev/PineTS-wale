@@ -62,6 +62,66 @@ describe('Core - UDT', () => {
         console.log('plotdata_str', plotdata_str);
         expect(plotdata_str.trim()).toEqual(expected_plot.trim());
     });
+
+    it('UDT Pine Script source', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2020-01-27').getTime());
+
+        const code = `
+// @Version=5
+indicator('Test Indicator')
+type Trade
+    float entry
+    float stop
+    float target
+    bool active
+
+let trade = Trade.new(close, open, high, close > open)
+res = trade
+plotchar(res, '_plot')
+`;
+
+        const { result, plots } = await pineTS.run(code);
+
+        let _plotdata = plots['_plot']?.data;
+        const startDate = new Date('2018-12-10').getTime();
+        const endDate = new Date('2019-04-18').getTime();
+
+        let plotdata_str = '';
+        for (let i = 0; i < _plotdata.length; i++) {
+            const time = _plotdata[i].time;
+            if (time < startDate || time > endDate) {
+                continue;
+            }
+
+            const str_time = new Date(time).toISOString().slice(0, -1) + '-00:00';
+            const res = _plotdata[i].value;
+            plotdata_str += `[${str_time}]: ${res.entry} ${res.stop} ${res.target} ${res.active}\n`;
+        }
+
+        const expected_plot = `[2018-12-10T00:00:00.000-00:00]: 3199.27 3200 3312.32 false
+[2018-12-17T00:00:00.000-00:00]: 3953.49 3192.69 4170 true
+[2018-12-24T00:00:00.000-00:00]: 3821.66 3948.01 4299 false
+[2018-12-31T00:00:00.000-00:00]: 4039.13 3832.27 4080 true
+[2019-01-07T00:00:00.000-00:00]: 3509.21 4039 4110.5 false
+[2019-01-14T00:00:00.000-00:00]: 3535.79 3511.94 3748 true
+[2019-01-21T00:00:00.000-00:00]: 3531.36 3535.89 3660.86 false
+[2019-01-28T00:00:00.000-00:00]: 3413.46 3527.66 3648.89 false
+[2019-02-04T00:00:00.000-00:00]: 3651.57 3413.24 3721.3 true
+[2019-02-11T00:00:00.000-00:00]: 3628.54 3651.57 3652.61 false
+[2019-02-18T00:00:00.000-00:00]: 3721.64 3628.54 4184.27 true
+[2019-02-25T00:00:00.000-00:00]: 3784.63 3730.78 3880 true
+[2019-03-04T00:00:00.000-00:00]: 3897.55 3784.63 3949.99 true
+[2019-03-11T00:00:00.000-00:00]: 3967.01 3900.31 4046.34 true
+[2019-03-18T00:00:00.000-00:00]: 3973.06 3964.97 4053.15 true
+[2019-03-25T00:00:00.000-00:00]: 4093.12 3970.64 4130 true
+[2019-04-01T00:00:00.000-00:00]: 5192.3 4095.99 5377.98 true
+[2019-04-08T00:00:00.000-00:00]: 5161.56 5197.14 5469 false
+[2019-04-15T00:00:00.000-00:00]: 5297 5163.52 5360 true`;
+
+        console.log('expected_plot', expected_plot);
+        console.log('plotdata_str', plotdata_str);
+        expect(plotdata_str.trim()).toEqual(expected_plot.trim());
+    });
     it('UDT - copy', async () => {
         const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2020-01-27').getTime());
 

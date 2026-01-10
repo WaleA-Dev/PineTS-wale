@@ -14,5 +14,3 @@ export type InputOptions = {
     display?: string;
     active?: boolean;
 };
-
-export const InputOptionsKeys = ['defval', 'title', 'options', 'tooltip', 'minval', 'maxval', 'step', 'inline', 'group', 'confirm'] as const;

@@ -58,6 +58,7 @@ export const CONTEXT_PINE_VARS = [
     'bar_index',
     'last_bar_index',
     'last_bar_time',
+    'inputs',
 
     // Pine Script enum types
     'order',

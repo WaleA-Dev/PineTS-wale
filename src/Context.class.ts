@@ -86,6 +86,8 @@ export class Context {
 
     public pineTSCode: Function | String;
 
+    public inputs: Record<string, any> = {};
+
     constructor({
         marketData,
         source,
@@ -95,6 +97,7 @@ export class Context {
         sDate,
         eDate,
         fullContext,
+        inputs,
     }: {
         marketData: any;
         source: IProvider | any[];
@@ -104,6 +107,7 @@ export class Context {
         sDate?: number;
         eDate?: number;
         fullContext?: Context;
+        inputs?: Record<string, any>;
     }) {
         this.marketData = marketData;
         this.source = source;
@@ -113,6 +117,8 @@ export class Context {
         this.sDate = sDate;
         this.eDate = eDate;
         this.fullContext = fullContext || this;
+        this.inputs = inputs || {};
+        // console.log('Context initialized with inputs keys:', Object.keys(this.inputs));
         // Initialize core functions
         const core = new Core(this);
         const coreFunctions = {
@@ -156,6 +162,9 @@ export class Context {
             },
             get timenow() {
                 return new Date().getTime();
+            },
+            get inputs() {
+                return _this.inputs;
             },
             log: new Log(this),
             str: new Str(this),

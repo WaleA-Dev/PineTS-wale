@@ -4,6 +4,7 @@ import { transpile } from '@pinets/transpiler/index';
 import { IProvider, ISymbolInfo } from './marketData/IProvider';
 import { Context } from './Context.class';
 import { Series } from './Series';
+import { Indicator } from './Indicator';
 
 /**
  * This class is a wrapper for the Pine Script language, it allows to run Pine Script code in a JavaScript environment
@@ -140,7 +141,7 @@ export class PineTS {
      * @param periods
      * @returns Promise<Context>
      */
-    public run(pineTSCode: Function | String, periods?: number): Promise<Context>;
+    public run(pineTSCode: Indicator | Function | String, periods?: number): Promise<Context>;
     /**
      * Run the Pine Script code with pagination, yielding results page by page.
      * @param pineTSCode
@@ -148,7 +149,7 @@ export class PineTS {
      * @param pageSize
      * @returns AsyncGenerator<Context>
      */
-    public run(pineTSCode: Function | String, periods: number | undefined, pageSize: number): AsyncGenerator<Context>;
+    public run(pineTSCode: Indicator | Function | String, periods: number | undefined, pageSize: number): AsyncGenerator<Context>;
     /**
      * Run the Pine Script code and return the resulting context.
      * if pageSize is provided, the function will return an iterator that will yield the results page by page.
@@ -158,13 +159,23 @@ export class PineTS {
      * @param pageSize
      * @returns Context if pageSize is 0 or undefined, or AsyncGenerator<Context> if pageSize > 0
      */
-    public run(pineTSCode: Function | String, periods?: number, pageSize?: number): Promise<Context> | AsyncGenerator<Context> {
+    public run(pineTSCode: Indicator | Function | String, periods?: number, pageSize?: number): Promise<Context> | AsyncGenerator<Context> {
+        let code: Function | String;
+        let inputs: Record<string, any> = {};
+
+        if (pineTSCode instanceof Indicator) {
+            code = pineTSCode.source;
+            inputs = pineTSCode.inputs || {};
+        } else {
+            code = pineTSCode;
+        }
+
         if (pageSize && pageSize > 0) {
             // livemode is enabled if eDate is undefined and we're using a provider as a source
             const enableLiveStream = typeof this.eDate === 'undefined' && !Array.isArray(this.source);
-            return this._runPaginated(pineTSCode, periods, pageSize, enableLiveStream);
+            return this._runPaginated(code, inputs, periods, pageSize, enableLiveStream);
         } else {
-            return this._runComplete(pineTSCode, periods);
+            return this._runComplete(code, inputs, periods);
         }
     }
 
@@ -176,11 +187,21 @@ export class PineTS {
      * @returns Object with on(event, callback) and stop() methods
      */
     public stream(
-        pineTSCode: Function | String,
+        pineTSCode: Indicator | Function | String,
         options: { pageSize?: number; live?: boolean; interval?: number } = {}
     ): { on: (event: 'data' | 'error', callback: Function) => void; stop: () => void } {
         const { live = true, interval = 1000 } = options;
         const pageSize = options.pageSize || this.data.length; // Default pageSize to full data if not provided
+
+        let code: Function | String;
+        let inputs: Record<string, any> = {};
+
+        if (pineTSCode instanceof Indicator) {
+            code = pineTSCode.source;
+            inputs = pineTSCode.inputs || {};
+        } else {
+            code = pineTSCode;
+        }
 
         const listeners: { [key: string]: Function[] } = { data: [], error: [] };
         let stopped = false;
@@ -209,7 +230,7 @@ export class PineTS {
 
                 // Pass undefined for periods to include all data
                 // We use the generator version directly to control enableLiveStream
-                const iterator = this._runPaginated(pineTSCode, undefined, pageSize, enableLiveStream);
+                const iterator = this._runPaginated(code, inputs, undefined, pageSize, enableLiveStream);
 
                 for await (const ctx of iterator) {
                     if (stopped) break;
@@ -248,11 +269,11 @@ export class PineTS {
      * Run the script completely and return the final context (backward compatible behavior)
      * @private
      */
-    private async _runComplete(pineTSCode: Function | String, periods?: number): Promise<Context> {
+    private async _runComplete(pineTSCode: Function | String, inputs: Record<string, any>, periods?: number): Promise<Context> {
         await this.ready();
         if (!periods) periods = this.data.length;
 
-        const context = this._initializeContext(pineTSCode, this._isSecondaryContext);
+        const context = this._initializeContext(pineTSCode, inputs, this._isSecondaryContext);
         this._transpiledCode = this._transpileCode(pineTSCode);
 
         await this._executeIterations(context, this._transpiledCode, this.data.length - periods, this.data.length);
@@ -268,6 +289,7 @@ export class PineTS {
      */
     private async *_runPaginated(
         pineTSCode: Function | String,
+        inputs: Record<string, any>,
         periods: number | undefined,
         pageSize: number,
         enableLiveStream: boolean = false
@@ -275,7 +297,7 @@ export class PineTS {
         await this.ready();
         if (!periods) periods = this.data.length;
 
-        const context = this._initializeContext(pineTSCode, this._isSecondaryContext);
+        const context = this._initializeContext(pineTSCode, inputs, this._isSecondaryContext);
         this._transpiledCode = this._transpileCode(pineTSCode);
 
         const startIdx = this.data.length - periods;
@@ -352,6 +374,7 @@ export class PineTS {
      * @private
      */
     private _createPageContext(fullContext: Context, previousResultLength: number): Context {
+        // console.log('_createPageContext fullContext.inputs keys:', fullContext.inputs ? Object.keys(fullContext.inputs) : 'undefined');
         const pageContext = new Context({
             marketData: this.data,
             source: this.source,
@@ -361,6 +384,7 @@ export class PineTS {
             sDate: this.sDate,
             eDate: this.eDate,
             fullContext,
+            inputs: fullContext.inputs,
         });
 
         pageContext.pineTSCode = fullContext.pineTSCode;
@@ -527,7 +551,7 @@ export class PineTS {
      * Initialize a new context for running Pine Script code
      * @private
      */
-    private _initializeContext(pineTSCode: Function | String, isSecondary: boolean = false): Context {
+    private _initializeContext(pineTSCode: Function | String, inputs: Record<string, any> = {}, isSecondary: boolean = false): Context {
         const context = new Context({
             marketData: this.data,
             source: this.source,
@@ -536,6 +560,7 @@ export class PineTS {
             limit: this.limit,
             sDate: this.sDate,
             eDate: this.eDate,
+            inputs,
         });
 
         context.pine.syminfo = this._syminfo;

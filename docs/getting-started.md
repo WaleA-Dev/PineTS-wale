@@ -54,6 +54,31 @@ const { result, plots } = await pineTS.run(pineScriptCode);
 // Access results: result.ema9, result.ema18, result.bull_bias, result.bear_bias
 ```
 
+### Option 3: Runtime Inputs
+
+You can pass dynamic values to your indicator's `input()` functions at runtime using the `Indicator` class. This allows you to change parameters without modifying the code.
+
+```javascript
+import { PineTS, Provider, Indicator } from 'pinets';
+
+const pineTS = new PineTS(Provider.Binance, 'BTCUSDT', 'D', 100);
+
+const code = `
+//@version=5
+indicator("Dynamic MA")
+len = input.int(14, "Length")
+src = input.source(close, "Source")
+plot(ta.sma(src, len))
+`;
+
+// Override default input values
+const indicator = new Indicator(code, {
+    "Length": 50,    // Use 50 instead of 14
+});
+
+const { result } = await pineTS.run(indicator);
+```
+
 > **⚠️ Note**: Native Pine Script support is experimental. Some indicators may fail if they use API features not yet implemented. Check the [API Coverage](../api-coverage/) pages to verify compatibility.
 
 ---

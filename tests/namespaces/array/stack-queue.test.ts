@@ -2,6 +2,54 @@ import { describe, expect, it } from 'vitest';
 import { Context, PineTS, Provider } from 'index';
 
 describe('Array Stack & Queue Operations', () => {
+    it('invalid INSERT, PUSH, SET, UNSHIFT', async () => {
+        const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2019-04-20').getTime());
+
+        try {
+            await pineTS.run((context) => {
+                const { array } = context.pine;
+                let a = array.new_float(5, 0);
+                array.insert(a, 1, 'invalid_type');
+            });
+        } catch (error) {
+            expect(error).toBeInstanceOf(Error);
+            expect(error.message).toContain('array.insert');
+        }
+
+        try {
+            await pineTS.run((context) => {
+                const { array } = context.pine;
+                let a = array.new_float(5, 0);
+                array.push(a, 'invalid_type');
+            });
+        } catch (error) {
+            expect(error).toBeInstanceOf(Error);
+            expect(error.message).toContain('array.push');
+        }
+
+        try {
+            await pineTS.run((context) => {
+                const { array } = context.pine;
+                let a = array.new_float(5, 0);
+                array.set(a, 1, 'invalid_type');
+            });
+        } catch (error) {
+            expect(error).toBeInstanceOf(Error);
+            expect(error.message).toContain('array.set');
+        }
+
+        try {
+            await pineTS.run((context) => {
+                const { array } = context.pine;
+                let a = array.new_float(5, 0);
+                array.unshift(a, 'invalid_type');
+            });
+        } catch (error) {
+            expect(error).toBeInstanceOf(Error);
+            expect(error.message).toContain('array.unshift');
+        }
+    });
+
     it('PUSH, POP, UNSHIFT, SHIFT, INSERT, REMOVE', async () => {
         const pineTS = new PineTS(Provider.Mock, 'BTCUSDC', 'W', null, new Date('2018-12-10').getTime(), new Date('2019-04-20').getTime());
 
