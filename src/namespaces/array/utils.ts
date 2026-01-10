@@ -16,8 +16,8 @@ export function inferArrayType(values: any[]): PineArrayType {
     } else if (values.every((value) => typeof value === 'boolean')) {
         return PineArrayType.bool;
     } else {
-        throw new Error('Cannot infer type from values');
-        //return PineArrayType.any;
+        //throw new Error('Cannot infer type from values');
+        return PineArrayType.any;
     }
 }
 
@@ -55,9 +55,9 @@ export function isArrayOfType(array: any[], type: PineArrayType) {
 export function isValueOfType(value: any, type: PineArrayType) {
     switch (type) {
         case PineArrayType.int:
-            return (typeof value === 'number' && (value | 0) === value) || isNaN(value);
+            return typeof value === 'number' && ((value | 0) === value || isNaN(value));
         case PineArrayType.float:
-            return typeof value === 'number' || isNaN(value);
+            return typeof value === 'number';
         case PineArrayType.string:
             return typeof value === 'string';
         case PineArrayType.bool:

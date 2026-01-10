@@ -135,41 +135,24 @@ export class CodeGenerator {
         }
     }
 
-    // Generate TypeDefinition (convert to class in JavaScript)
+    // Generate TypeDefinition (convert to Type(...) call)
     generateTypeDefinition(node) {
         this.write(this.indentStr.repeat(this.indent));
-        this.write(`class ${node.name} {\n`);
-        this.increaseIndent();
+        this.write(`const ${node.name} = Type({`);
 
-        // Generate constructor
-        this.write(this.indentStr.repeat(this.indent));
-        this.write('constructor(');
-
-        const params = node.fields.map((f) => f.name).join(', ');
-        this.write(params);
-        this.write(') {\n');
-        this.increaseIndent();
-
-        // Assign fields
-        for (const field of node.fields) {
-            this.write(this.indentStr.repeat(this.indent));
-            this.write(`this.${field.name} = ${field.name}`);
-            if (field.defaultValue) {
-                this.write(' !== undefined ? ');
-                this.write(field.name);
-                this.write(' : ');
-                this.generateExpression(field.defaultValue);
+        if (node.fields.length > 0) {
+            this.write(' ');
+            for (let i = 0; i < node.fields.length; i++) {
+                const field = node.fields[i];
+                this.write(`${field.name}: '${field.type}'`);
+                if (i < node.fields.length - 1) {
+                    this.write(', ');
+                }
             }
-            this.write(';\n');
+            this.write(' ');
         }
 
-        this.decreaseIndent();
-        this.write(this.indentStr.repeat(this.indent));
-        this.write('}\n');
-
-        this.decreaseIndent();
-        this.write(this.indentStr.repeat(this.indent));
-        this.write('}\n');
+        this.write('});\n');
     }
 
     // Generate FunctionDeclaration

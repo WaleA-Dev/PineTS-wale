@@ -137,6 +137,12 @@ export enum plot {
     style_steplinebr = 'style_steplinebr',
 }
 
+export enum barmerge {
+    gaps_on = 'gaps_on',
+    gaps_off = 'gaps_off',
+    lookahead_on = 'lookahead_on',
+    lookahead_off = 'lookahead_off',
+}
 const types = {
     order,
     currency,
@@ -146,6 +152,7 @@ const types = {
     location,
     size,
     format,
+    barmerge,
 };
 
 export default types;
