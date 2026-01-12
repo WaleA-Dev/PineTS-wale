@@ -1,5 +1,9 @@
 import { Series } from '../Series';
 
+//TODO : we should use a more robust way to check if an argument is a plot.
+function isPlot(arg: any) {
+    return typeof arg === 'object' && arg.title !== undefined && arg.data !== undefined && arg.options !== undefined;
+}
 const TYPE_CHECK = {
     series: (arg) => arg instanceof Series || typeof arg === 'number' || typeof arg === 'string' || typeof arg === 'boolean',
     string: (arg) => typeof arg === 'string',
@@ -14,7 +18,7 @@ const TYPE_CHECK = {
     NaN: (arg) => isNaN(arg),
 
     //TODO should we exclude the other PineTS Objects ?
-    remaining_options: (arg) => typeof arg === 'object' && !(arg instanceof Series),
+    remaining_options: (arg) => typeof arg === 'object' && !(arg instanceof Series) && !isPlot(arg),
 };
 
 export type PineTypeMap<T> = {

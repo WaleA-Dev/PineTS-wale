@@ -16,7 +16,7 @@ import { Log } from './namespaces/Log';
 import { Str } from './namespaces/Str';
 import types, { display, shape } from './namespaces/Types';
 import { Timeframe } from './namespaces/Timeframe';
-import { HlineHelper, PlotHelper } from './namespaces/Plots';
+import { FillHelper, HlineHelper, PlotHelper } from './namespaces/Plots';
 
 export class Context {
     public data: any = {
@@ -174,6 +174,7 @@ export class Context {
 
         const plotHelper = new PlotHelper(this);
         const hlineHelper = new HlineHelper(this);
+        const fillHelper = new FillHelper(this);
         this.bindContextObject(plotHelper, ['plotchar', 'plotshape', 'plotarrow', 'plotbar', 'plotcandle', 'bgcolor', 'barcolor']);
         this.bindContextObject(
             plotHelper,
@@ -199,6 +200,7 @@ export class Context {
         );
 
         this.bindContextObject(hlineHelper, ['any', 'style_dashed', 'style_solid', 'style_dotted', 'param'], 'hline');
+        this.bindContextObject(fillHelper, ['any', 'param'], 'fill');
     }
 
     private bindContextObject(instance: any, entries: string[], root: string = '') {
@@ -480,6 +482,7 @@ export class Context {
         this._showDeprecationWarning('context.core.*', 'context.pine (e.g., const { na, plotchar, color, plot, nz } = context.pine)');
         return {
             na: this.pine.na,
+            fill: this.pine.fill,
             plotchar: this.pine.plotchar,
             plotshape: this.pine.plotshape,
             plotarrow: this.pine.plotarrow,

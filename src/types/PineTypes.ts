@@ -137,6 +137,16 @@ type IndicatorOptions = {
     behind_chart: boolean;
 };
 
+type FillOptions = {
+    plot1: Record<string, any>;
+    plot2: Record<string, any>;
+    color: string;
+    title: string;
+    editable: boolean;
+    show_last: number;
+    fillgaps: boolean;
+    display: string;
+};
 type TSessionInfo = {
     isfirstbar: boolean;
     isfirstbar_regular: boolean;

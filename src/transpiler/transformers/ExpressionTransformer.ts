@@ -379,21 +379,28 @@ function transformIdentifierForParam(node: any, scopeManager: ScopeManager): any
             return node;
         }
 
-        // If it's a local series variable (hoisted), return as is
-        if (scopeManager.isLocalSeriesVar(node.name)) {
+        // Check if there's a user-defined variable with this name before treating as local series
+        // This handles the case where internal parameter names (p1, p2, etc.) collide with user variables
+        const [scopedName, kind] = scopeManager.getVariable(node.name);
+        const isUserVariable = scopedName !== node.name; // If renamed, it's a user variable
+
+        // If it's a local series variable (hoisted parameter) AND NOT a user variable, return as is
+        if (scopeManager.isLocalSeriesVar(node.name) && !isUserVariable) {
             return node;
         }
 
+        // If it's a user variable, transform it
+        if (isUserVariable) {
+            return ASTFactory.createContextVariableReference(kind, scopedName);
+        }
+
         // JavaScript global literals should never be transformed
-        // They are not in scopes, so return them as-is
-        const [scopedName, kind] = scopeManager.getVariable(node.name);
+        // Variable not found in scopes and not context-bound
         if (scopedName === node.name && !scopeManager.isContextBound(node.name)) {
-            // Variable not found in scopes and not context-bound
-            // Check if it's a JavaScript global before transforming
             return node; // Return as-is to preserve JavaScript globals
         }
 
-        // Otherwise transform with context variable reference
+        // Otherwise transform with context variable reference (shouldn't reach here in normal cases)
         return ASTFactory.createContextVariableReference(kind, scopedName);
     }
     return node;
@@ -403,6 +410,9 @@ function transformOperand(node: any, scopeManager: ScopeManager, namespace: stri
     switch (node.type) {
         case 'BinaryExpression': {
             return getParamFromBinaryExpression(node, scopeManager, namespace);
+        }
+        case 'LogicalExpression': {
+            return getParamFromLogicalExpression(node, scopeManager, namespace);
         }
         case 'MemberExpression': {
             // Handle array access

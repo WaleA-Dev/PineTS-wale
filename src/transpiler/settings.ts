@@ -2,7 +2,7 @@
 export const KNOWN_NAMESPACES = ['ta', 'math', 'request', 'array', 'input'];
 
 // This is used to transform ns() calls to ns.any() calls
-export const NAMESPACES_LIKE = ['hline', 'plot'];
+export const NAMESPACES_LIKE = ['hline', 'plot', 'fill'];
 
 // Async methods that require await keyword (format: 'namespace.method')
 export const ASYNC_METHODS = ['request.security', 'request.security_lower_tf'];
@@ -24,6 +24,7 @@ export const CONTEXT_PINE_VARS = [
     'bgcolor',
     'barcolor',
     'hline',
+    'fill',
 
     //declarations
     'indicator',
@@ -74,4 +75,4 @@ export const CONTEXT_PINE_VARS = [
 // All known core variables in the context
 //names exposed in legacy pine.core namespace
 //this will be deprecated then removed
-export const CONTEXT_CORE_VARS = ['na', 'nz', 'plot', 'plotchar', 'color', 'hline'];
+export const CONTEXT_CORE_VARS = ['na', 'nz', 'plot', 'plotchar', 'color', 'hline', 'fill'];
