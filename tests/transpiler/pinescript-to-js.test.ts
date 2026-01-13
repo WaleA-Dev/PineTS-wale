@@ -86,6 +86,29 @@ plot(result)
         expect(jsCode).toContain('$.get(close, 0) > $.get(open, 0)');
     });
 
+    it('should transpile scientific notation literals', () => {
+        const code = `
+//@version=6
+indicator("Scientific Notation Test")
+
+a = 10e10
+b = 1.2e-5
+c = 1E+5
+
+plot(a)
+        `;
+
+        const result = transpile(code);
+        const jsCode = result.toString();
+
+        // 10e10 -> 100000000000
+        expect(jsCode).toContain('100000000000');
+        // 1.2e-5 -> 0.000012
+        expect(jsCode).toContain('0.000012');
+        // 1E+5 -> 100000
+        expect(jsCode).toContain('100000');
+    });
+
     it('should reject Pine Script version < 5', () => {
         const code = '//@version=4\nindicator("Test")';
 

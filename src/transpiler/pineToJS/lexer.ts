@@ -298,6 +298,33 @@ export class Lexer {
             }
         }
 
+        // Check for scientific notation (e.g. 1e10, 1.5e-5)
+        if (this.pos < this.source.length) {
+            const ch = this.peek();
+            if (ch === 'e' || ch === 'E') {
+                const nextCh = this.peek(1);
+                if (this.isDigit(nextCh)) {
+                    // Case: 10e5
+                    value += this.advance(); // consume 'e'
+                    // consume digits
+                    while (this.pos < this.source.length && this.isDigit(this.peek())) {
+                        value += this.advance();
+                    }
+                } else if (nextCh === '+' || nextCh === '-') {
+                    // Case: 10e+5 or 10e-5
+                    const nextNextCh = this.peek(2);
+                    if (this.isDigit(nextNextCh)) {
+                        value += this.advance(); // consume 'e'
+                        value += this.advance(); // consume sign
+                        // consume digits
+                        while (this.pos < this.source.length && this.isDigit(this.peek())) {
+                            value += this.advance();
+                        }
+                    }
+                }
+            }
+        }
+
         this.addToken(TokenType.NUMBER, parseFloat(value));
     }
 

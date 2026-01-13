@@ -636,19 +636,6 @@ export function transformReturnStatement(node: any, scopeManager: ScopeManager):
                 type: 'ArrayExpression',
                 elements: [node.argument],
             };
-        } else if (node.argument.type === 'BinaryExpression') {
-            // Transform both operands of the binary expression
-            walk.recursive(node.argument, scopeManager, {
-                Identifier(node: any, state: ScopeManager) {
-                    transformIdentifier(node, state);
-                    if (node.type === 'Identifier') {
-                        addArrayAccess(node, state);
-                    }
-                },
-                MemberExpression(node: any) {
-                    transformMemberExpression(node, '', scopeManager);
-                },
-            });
         } else if (node.argument.type === 'ObjectExpression') {
             // Handle object expressions
             node.argument.properties = node.argument.properties.map((prop: any) => {

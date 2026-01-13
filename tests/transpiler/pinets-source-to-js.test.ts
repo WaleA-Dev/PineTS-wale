@@ -934,7 +934,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
     if ($.math.__eq($.get(avg_len, 0), 0)) {
       $.set($.let.fn2_ret_val, $.get($.let.fn2_cc, 1));
     }
-    return $.precision($.get($.let.fn2_ret_val, 0) / $.get($.get(avg_len, 0), 0));
+    return $.precision($.get($.let.fn2_ret_val, 0) / $.get(avg_len, 0));
   }
   const p2 = $.param(close, undefined, 'p2');
   const p3 = $.param(14, undefined, 'p3');
@@ -1127,7 +1127,7 @@ let src_open = input.any({ title: 'Open Source', defval: open });
     if ($.math.__eq($.get(avg_len, 0), 0)) {
       $.set($.let.fn1_ret_val, $.get($.let.fn1_cc, 1));
     }
-    return $.precision($.get($.let.fn1_ret_val, 0) / $.get($.get(avg_len, 0), 0));
+    return $.precision($.get($.let.fn1_ret_val, 0) / $.get(avg_len, 0));
   }
   const p0 = $.param(close, undefined, 'p0');
   const p1 = $.param(14, undefined, 'p1');
