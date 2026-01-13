@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.8.3] - 2026-01-13 - Transpiler Critical Fixes
+
+### Fixed
+
+-   **Scientific Notation Parsing**: Fixed Pine Script lexer to correctly parse scientific notation literals (e.g., `10e10`, `1.2e-5`, `1E+5`). Previously, these were incorrectly tokenized as separate tokens, causing syntax errors in transpiled code.
+-   **Namespace Function Calls in Return Statements**: Fixed critical bug where namespace function calls (e.g., `math.max()`, `ta.sma()`) in single-expression return statements were incorrectly transpiled with double parentheses (e.g., `math.max()()`), resulting in runtime errors. Removed redundant AST traversal in `transformReturnStatement`.
+
 ## [0.8.2] - 2026-01-13 - Plot Fill Method & Transpiler Fixes
 
 ### Added
