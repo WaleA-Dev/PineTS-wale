@@ -58,6 +58,7 @@ export class ScopeManager {
     private userCallIdCounter: number = 0;
     private hoistingStack: any[][] = [];
     private suppressHoisting: boolean = false;
+    private reservedNames: Set<string> = new Set();
 
     public get nextParamIdArg(): any {
         return {
@@ -172,6 +173,10 @@ export class ScopeManager {
         return this.loopVars.has(name);
     }
 
+    addReservedName(name: string): void {
+        this.reservedNames.add(name);
+    }
+
     addVariable(name: string, kind: string): string {
         // Regular variable handling
         if (this.isContextBound(name)) {
@@ -238,9 +243,47 @@ export class ScopeManager {
         return this.suppressHoisting;
     }
 
+    // Helper method to check if a variable exists in any scope
+    hasVariableInScope(name: string): boolean {
+        // Check reserved names (all user variables encountered in analysis pass)
+        if (this.reservedNames.has(name)) {
+            return true;
+        }
+        // Check regular scopes
+        for (let i = this.scopes.length - 1; i >= 0; i--) {
+            if (this.scopes[i].has(name)) {
+                return true;
+            }
+        }
+        // Check context bound vars
+        if (this.contextBoundVars.has(name)) {
+            return true;
+        }
+        // Check loop vars
+        if (this.loopVars.has(name)) {
+            return true;
+        }
+        // Check local series vars
+        if (this.localSeriesVars.has(name)) {
+            return true;
+        }
+        return false;
+    }
+
     // Param ID Generator Helper (for hoisting)
     public generateParamId(): string {
-        return `p${this.paramIdCounter++}`;
+        let candidate = `p${this.paramIdCounter++}`;
+        // Loop until we find a name that is NOT in the current scope
+        while (this.hasVariableInScope(candidate)) {
+            candidate = `p${this.paramIdCounter++}`;
+        }
+        // Reserve this name in the current scope to prevent future collisions
+        // We use a dummy scope entry to mark it as taken
+        const currentScope = this.scopes[this.scopes.length - 1];
+        if (currentScope) {
+            currentScope.set(candidate, candidate);
+        }
+        return candidate;
     }
 }
 

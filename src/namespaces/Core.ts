@@ -51,7 +51,7 @@ export class Core {
         param: (source, index = 0) => {
             return Series.from(source).get(index);
         },
-        rgb: (r: number, g: number, b: number, a?: number) => (a ? `rgba(${r}, ${g}, ${b}, ${a})` : `rgb(${r}, ${g}, ${b})`),
+        rgb: (r: number, g: number, b: number, a?: number) => (a ? `rgba(${r}, ${g}, ${b}, ${(100 - a) / 100})` : `rgb(${r}, ${g}, ${b})`),
         new: (color: string, a?: number) => {
             // Handle hexadecimal colors
             if (color && color.startsWith('#')) {
@@ -61,10 +61,10 @@ export class Core {
                 const g = parseInt(hex.slice(2, 4), 16);
                 const b = parseInt(hex.slice(4, 6), 16);
 
-                return a ? `rgba(${r}, ${g}, ${b}, ${a})` : `rgb(${r}, ${g}, ${b})`;
+                return a ? `rgba(${r}, ${g}, ${b}, ${(100 - a) / 100})` : `rgb(${r}, ${g}, ${b})`;
             }
             // Handle existing RGB format
-            return a ? `rgba(${color}, ${a})` : color;
+            return a ? `rgba(${color}, ${(100 - a) / 100})` : color;
         },
         white: 'white',
         lime: 'lime',

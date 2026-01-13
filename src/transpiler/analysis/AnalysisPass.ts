@@ -116,6 +116,9 @@ export function runAnalysisPass(ast: any, scopeManager: ScopeManager): string | 
     walk.simple(ast, {
         FunctionDeclaration(node: any) {
             registerFunctionParameters(node, scopeManager);
+            if (node.id && node.id.name) {
+                scopeManager.addReservedName(node.id.name);
+            }
         },
         ArrowFunctionExpression(node: any) {
             const isRootFunction = node.start === 0;
@@ -127,7 +130,22 @@ export function runAnalysisPass(ast: any, scopeManager: ScopeManager): string | 
         },
         VariableDeclaration(node: any) {
             node.declarations.forEach((decl: any) => {
-                if (decl.id.type === 'ArrayPattern') {
+                if (decl.id.type === 'Identifier') {
+                    scopeManager.addReservedName(decl.id.name);
+                } else if (decl.id.type === 'ObjectPattern') {
+                    decl.id.properties.forEach((prop: any) => {
+                        if (prop.key && prop.key.type === 'Identifier') {
+                            scopeManager.addReservedName(prop.key.name);
+                        }
+                    });
+                } else if (decl.id.type === 'ArrayPattern') {
+                    // Register array pattern elements as reserved
+                    decl.id.elements?.forEach((element: any) => {
+                        if (element && element.type === 'Identifier') {
+                            scopeManager.addReservedName(element.name);
+                        }
+                    });
+
                     // Generate a unique temporary variable name
                     const tempVarName = scopeManager.generateTempVar();
 

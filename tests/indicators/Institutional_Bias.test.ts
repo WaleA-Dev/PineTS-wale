@@ -7,7 +7,7 @@ describe('Indicators', () => {
     it('Institutional Bias', async () => {
         const pineTS = new PineTS(Provider.Binance, 'BTCUSDT', '1d', 100, 0, new Date('Dec 25 2024').getTime() - 1);
 
-        const { result } = await pineTS.run((context) => {
+        const context = await pineTS.run((context) => {
             const { ta } = context.pine;
             const { close } = context.data;
 
@@ -22,6 +22,7 @@ describe('Indicators', () => {
                 bear_bias,
             };
         });
+        const { result } = context;
 
         const part_bull_bias = result.bull_bias.reverse().slice(0, 10);
         const part_bear_bias = result.bear_bias.reverse().slice(0, 10);

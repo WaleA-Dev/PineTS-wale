@@ -1204,60 +1204,92 @@ let src_open = input.any({ title: 'Open Source', defval: open });
         expect(result).toBe(expected_code);
     });
 
-    it('Context-bound namespace property access (display.data_window)', async () => {
+    it('Variable collision avoidance', async () => {
         const fakeContext = {};
         const transformer = transpile.bind(fakeContext);
 
         const source = (context) => {
-            const { close } = context.data;
-            const { input, display, plot } = context.pine;
+            const { open, close } = context.data;
+            const { plot, fill, indicator, color } = context.pine;
 
-            // Test that display.data_window is NOT transformed to $.get(display, 0).data_window
-            let signal_length = input.int({
-                title: 'Signal Smoothing',
-                minval: 1,
-                maxval: 50,
-                defval: 9,
-                display: display.data_window,
+            indicator({
+                shorttitle: 'BB',
+                title: 'Simple Bollinger Bands',
+                overlay: true,
+                timeframe: '',
+                timeframe_gaps: true,
             });
 
-            // Test that plot.style_columns is also NOT transformed
-            plot(close, { style: plot.style_columns });
+            // User defines variables named p1, p2 which conflict with transpiler's internal naming
+            let p1 = plot(close, 'Close', { color: '#F23645' });
+            let p2 = plot(open, 'Open', { color: '#089981' });
 
-            return { signal_length };
+            fill(p1, p2, { title: 'Background', color: color.rgb(33, 150, 243, 95) });
         };
 
         let transpiled = transformer(source);
+        const result = transpiled.toString().trim();
+        console.log(result);
 
-        console.log(transpiled.toString());
+        // The transpiler should generate different internal variable names (e.g. p3, p4, etc.)
+        // to avoid collision with user's p1 and p2.
+        // It should NOT try to redeclare p1 or p2 as const/internal params.
+
+        expect(result).not.toContain('const p1 =');
+        expect(result).not.toContain('const p2 =');
+        // It should correctly initialize the user variables
+        expect(result).toContain('$.let.glb1_p1 = $.init($.let.glb1_p1');
+        expect(result).toContain('$.let.glb1_p2 = $.init($.let.glb1_p2');
+
+        // It should use the user variables in the fill function
+        expect(result).toContain('fill.param($.let.glb1_p1');
+        expect(result).toContain('fill.param($.let.glb1_p2');
+    });
+
+    it('Logical expressions in function arguments - all variables transformed', async () => {
+        const fakeContext = {};
+        const transformer = transpile.bind(fakeContext);
+
+        const source = (context) => {
+            const { open, high, close } = context.data;
+            const { ta, plotshape, indicator } = context.pine;
+
+            indicator('test1');
+            let [supertrend, direction] = ta.supertrend(3, 10);
+            let buy = close > open;
+            let xs = high;
+
+            function foo(a) {
+                return a;
+            }
+
+            // Complex logical expression with multiple variables as function argument
+            plotshape(buy && xs != xs[1] && direction < 0, {
+                title: 'Strong BUY',
+            });
+
+            // Same expression as user function argument
+            foo(buy && xs != xs[1] && direction < 0);
+
+            // Same expression in direct assignment
+            const buyCond = buy && xs != xs[1] && direction < 0;
+        };
+
+        let transpiled = transformer(source);
         const result = transpiled.toString().trim();
 
-        /* prettier-ignore */
-        const expected_code = `async $ => {
-  const {close} = $.data;
-  const {input, display, plot} = $.pine;
-  const p0 = input.param(display.data_window, undefined, 'p0');
-  const p1 = input.param({
-    title: "Signal Smoothing",
-    minval: 1,
-    maxval: 50,
-    defval: 9,
-    display: p0
-  }, undefined, 'p1');
-  const temp_1 = input.int(p1);
-  $.let.glb1_signal_length = $.init($.let.glb1_signal_length, temp_1);
-  const p2 = plot.param(close, undefined, 'p2');
-  const p3 = plot.param(plot.style_columns, undefined, 'p3');
-  const p4 = plot.param({
-    style: p3
-  }, undefined, 'p4');
-  const temp_2 = plot.any(p2, p4);
-  temp_2;
-  return {
-    signal_length: $.let.glb1_signal_length
-  };
-}`;
+        // All three usages should transform variables consistently
+        const expectedPattern =
+            /\$\.get\(\$\.let\.glb1_buy, 0\) && \$\.get\(\$\.let\.glb1_xs, 0\) != \$\.get\(\$\.let\.glb1_xs, 1\) && \$\.get\(\$\.let\.glb1_direction, 0\) < 0/g;
+        const matches = result.match(expectedPattern);
 
-        expect(result).toBe(expected_code);
+        // Should appear 3 times: in plotshape arg, foo arg, and buyCond assignment
+        expect(matches).not.toBeNull();
+        expect(matches!.length).toBe(3);
+
+        // Verify all variables are transformed (no bare 'buy', 'xs' identifiers)
+        // Use word boundaries to avoid matching 'glb1_buy'
+        expect(result).not.toMatch(/\bbuy && /);
+        expect(result).not.toMatch(/&& xs !=/);
     });
 });

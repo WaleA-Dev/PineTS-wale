@@ -60,7 +60,7 @@ parent: API Coverage
 | `color()`          |        | Color object          |
 | `dayofmonth()`     |        | Day of month function |
 | `dayofweek()`      |        | Day of week function  |
-| `fill()`           |        | Fill function         |
+| `fill()`           | ✅     | Fill function         |
 | `fixnan()`         |        | Fix NaN values        |
 | `float()`          | ✅     | Float conversion      |
 | `hline()`          | ✅     | Horizontal line       |

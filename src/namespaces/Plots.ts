@@ -39,6 +39,11 @@ const BARCOLOR_SIGNATURE = [
 ];
 
 //prettier-ignore
+const FILL_SIGNATURE = [
+    'plot1', 'plot2', 'color', 'title', 'editable', 'show_last', 'fillgaps', 'display',
+];
+
+//prettier-ignore
 const PLOT_ARGS_TYPES = {
     series: 'series', title: 'string', color: 'string', linewidth: 'number',
     style: 'string', trackprice: 'boolean', histbase: 'number', offset: 'number',
@@ -87,6 +92,11 @@ const BGCOLOR_ARGS_TYPES = {
 const BARCOLOR_ARGS_TYPES = {
     color: 'string', offset: 'number', editable: 'boolean', show_last: 'number', 
     title: 'string', display: 'string',
+};
+
+//prettier-ignore
+const FILL_ARGS_TYPES = {
+    plot1: 'object', plot2: 'object', color: 'string', title: 'string', editable: 'boolean', show_last: 'number', fillgaps: 'boolean', display: 'string',
 };
 
 export class PlotHelper {
@@ -158,9 +168,11 @@ export class PlotHelper {
         const value = Series.from(series).get(0);
 
         this.context.plots[title].data.push({
+            title,
             time: this.context.marketData[this.context.idx].openTime,
             value: value,
         });
+        return this.context.plots[title];
     }
 
     //this will map to plot() - see README.md for more details
@@ -177,10 +189,12 @@ export class PlotHelper {
         const value = Series.from(series).get(0);
 
         this.context.plots[title].data.push({
+            title,
             time: this.context.marketData[this.context.idx].openTime,
             value: value,
             options: { color: options.color, offset: options.offset },
         });
+        return this.context.plots[title];
     }
     plotshape(...args) {
         const _parsed = parseArgsForPineParams<PlotShapeOptions>(args, PLOT_SHAPE_SIGNATURE, PLOT_SHAPE_ARGS_TYPES);
@@ -196,6 +210,7 @@ export class PlotHelper {
         }
         const value = Series.from(series).get(0);
         this.context.plots[title].data.push({
+            title,
             time: this.context.marketData[this.context.idx].openTime,
             value: value,
             options:
@@ -211,6 +226,7 @@ export class PlotHelper {
                       }
                     : undefined,
         });
+        return this.context.plots[title];
     }
 
     plotarrow(...args) {
@@ -224,6 +240,7 @@ export class PlotHelper {
         }
 
         this.context.plots[title].data.push({
+            title,
             time: this.context.marketData[this.context.idx].openTime,
             value: value,
             options:
@@ -239,6 +256,7 @@ export class PlotHelper {
                       }
                     : undefined,
         });
+        return this.context.plots[title];
     }
 
     plotbar(...args) {
@@ -253,6 +271,7 @@ export class PlotHelper {
         const value = [Series.from(open).get(0), Series.from(high).get(0), Series.from(low).get(0), Series.from(close).get(0)];
 
         this.context.plots[title].data.push({
+            title,
             time: this.context.marketData[this.context.idx].openTime,
             value: value,
             options: { color: options.color },
@@ -271,10 +290,12 @@ export class PlotHelper {
         const value = [Series.from(open).get(0), Series.from(high).get(0), Series.from(low).get(0), Series.from(close).get(0)];
 
         this.context.plots[title].data.push({
+            title,
             time: this.context.marketData[this.context.idx].openTime,
             value: value,
             options: { color: options.color, wickcolor: options.wickcolor, bordercolor: options.bordercolor },
         });
+        return this.context.plots[title];
     }
 
     bgcolor(...args) {
@@ -287,6 +308,7 @@ export class PlotHelper {
         }
 
         this.context.plots[title].data.push({
+            title,
             time: this.context.marketData[this.context.idx].openTime,
             value: options.color && options.color !== 'na' && options?.color.toString() !== 'NaN',
             options: { color: options.color },
@@ -301,10 +323,12 @@ export class PlotHelper {
         }
 
         this.context.plots[title].data.push({
+            title,
             time: this.context.marketData[this.context.idx].openTime,
             value: options.color && options.color !== 'na' && options?.color.toString() !== 'NaN',
             options: { color: options.color },
         });
+        return this.context.plots[title];
     }
 }
 
@@ -329,5 +353,24 @@ export class HlineHelper {
     any(price, title, color, linestyle, linewidth, editable, display) {
         //plot.any is mapped to plot() at runtime
         return this.context.pine.plot.any(price, { title, color, linestyle, linewidth, editable, display });
+    }
+}
+
+export class FillHelper {
+    constructor(private context: any) {}
+    param(source: any, index: number = 0, name?: string) {
+        return Series.from(source).get(index);
+    }
+    any(...args) {
+        const _parsed = parseArgsForPineParams<FillOptions>(args, FILL_SIGNATURE, FILL_ARGS_TYPES);
+        const { plot1, plot2, color, title, editable, show_last, fillgaps, display } = _parsed;
+        if (!this.context.plots[title]) {
+            this.context.plots[title] = {
+                title,
+                plot1: plot1.title,
+                plot2: plot2.title,
+                options: { color, editable, show_last, fillgaps, display, style: 'fill' },
+            };
+        }
     }
 }
