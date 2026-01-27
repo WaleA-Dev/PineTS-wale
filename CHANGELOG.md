@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.8.6] - 2026-01-27 - Binance Data Provider Hotfixes
+### Fixed
+ - **Binance Provider** : Wrong handling of stream data when sDate and eDate are not provided
+
 ## [0.8.5] - 2026-01-27 - Transpiler Hotfixes
 
 ### Fixed
