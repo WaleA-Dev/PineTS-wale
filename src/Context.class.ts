@@ -17,6 +17,7 @@ import { Str } from './namespaces/Str';
 import types, { display, shape } from './namespaces/Types';
 import { Timeframe } from './namespaces/Timeframe';
 import { FillHelper, HlineHelper, PlotHelper } from './namespaces/Plots';
+import { Strategy } from './namespaces/strategy/Strategy';
 
 export class Context {
     public data: any = {
@@ -130,6 +131,7 @@ export class Context {
 
             nz: core.nz.bind(core),
             indicator: core.indicator.bind(core),
+            strategy: core.strategy.bind(core),
             fixnan: core.fixnan.bind(core),
             alertcondition: core.alertcondition.bind(core),
             //types
@@ -138,6 +140,7 @@ export class Context {
 
         // Initialize everything directly in pine - the default way to access everything
         const _this = this;
+        const strategyInstance = new Strategy(this);
         this.pine = {
             input: new Input(this),
             ta: new TechnicalAnalysis(this),
@@ -146,6 +149,7 @@ export class Context {
             array: new PineArray(this),
             map: new PineMap(this),
             matrix: new PineMatrix(this),
+            strategy: strategyInstance,
 
             syminfo: null,
             timeframe: new Timeframe(this),
@@ -172,6 +176,41 @@ export class Context {
             ...coreFunctions,
             ...types,
         };
+
+        // Store strategy instance for later access
+        (this as any)._strategyInstance = strategyInstance;
+
+        // Bind strategy methods to pine namespace
+        this.pine.strategy.strategy = strategyInstance.strategy.bind(strategyInstance);
+        this.pine.strategy.entry = strategyInstance.entry.bind(strategyInstance);
+        this.pine.strategy.close = strategyInstance.close.bind(strategyInstance);
+        this.pine.strategy.close_all = strategyInstance.close_all.bind(strategyInstance);
+        this.pine.strategy.exit = strategyInstance.exit.bind(strategyInstance);
+        this.pine.strategy.cancel = strategyInstance.cancel.bind(strategyInstance);
+        this.pine.strategy.cancel_all = strategyInstance.cancel_all.bind(strategyInstance);
+        this.pine.strategy.getResults = strategyInstance.getResults.bind(strategyInstance);
+        this.pine.strategy.getState = strategyInstance.getState.bind(strategyInstance);
+        this.pine.strategy.param = strategyInstance.param.bind(strategyInstance);
+
+        // Expose strategy constants
+        this.pine.strategy.long = strategyInstance.long;
+        this.pine.strategy.short = strategyInstance.short;
+        this.pine.strategy.cash = strategyInstance.cash;
+        this.pine.strategy.fixed = strategyInstance.fixed;
+        this.pine.strategy.percent_of_equity = strategyInstance.percent_of_equity;
+        this.pine.strategy.commission = strategyInstance.commission;
+        this.pine.strategy.direction = strategyInstance.direction;
+
+        // Expose position info as getters
+        Object.defineProperty(this.pine.strategy, 'position_size', {
+            get: () => strategyInstance.position_size,
+        });
+        Object.defineProperty(this.pine.strategy, 'position_avg_price', {
+            get: () => strategyInstance.position_avg_price,
+        });
+        Object.defineProperty(this.pine.strategy, 'equity', {
+            get: () => strategyInstance.equity,
+        });
 
         const plotHelper = new PlotHelper(this);
         const hlineHelper = new HlineHelper(this);

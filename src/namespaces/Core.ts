@@ -125,6 +125,23 @@ export class Core {
         return this.context.indicator;
     }
 
+    /**
+     * Strategy declaration function - delegates to the Strategy namespace
+     */
+    strategy(...args) {
+        // This is the top-level strategy() declaration
+        // The actual strategy logic is handled by the Strategy namespace
+        if (this.context.pine && this.context.pine.strategy) {
+            this.context.pine.strategy.strategy(...args);
+        }
+        // Store strategy options in context for reference
+        this.context.strategy = {
+            title: args[0] || '',
+            initialized: true,
+        };
+        return this.context.strategy;
+    }
+
     get bar_index() {
         return this.context.idx;
     }
